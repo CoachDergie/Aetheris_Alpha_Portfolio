@@ -34,6 +34,13 @@ jobs:
         run: |
           echo "Finding all build.gradle files in repository:"
           find . -name "build.gradle*" -o -name "settings.gradle*"
+          
+      - name: Verify Root Directory Files
+        run: |
+            echo "=== Root Directory Listing ==="
+            ls -la
+            echo "=== Checking Exact Case Matching ==="
+            ls -la | grep -i gradle
 
       - name: Build with Gradle
         run: gradle assembleDebug --stacktrace
