@@ -6,13 +6,16 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_NODE24: 'true'
+
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           lfs: true
 
@@ -28,7 +31,7 @@ jobs:
           packages: 'platforms;android-34 build-tools;34.0.0 ndk;25.2.9519653'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v4.3.0
 
       - name: Build with Gradle
         run: gradle assembleDebug --stacktrace
