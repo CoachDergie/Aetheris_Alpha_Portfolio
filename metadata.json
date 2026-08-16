@@ -1,0 +1,6 @@
+{
+  "name": "Aetheris Immersive HUD",
+  "description": "Immersive AR/VR spatial dashboard for astrological alignment, real-time lunar tracking, martial arts combat telemetry, 6ft zinc barbell qi-gong conditioning, Goetic sigils & alchemical matrices, and dynamic Barbarous Grimoire discovery.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
