@@ -30,8 +30,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Locate Gradle Build Files
+        run: |
+          echo "Finding all build.gradle files in repository:"
+          find . -name "build.gradle*" -o -name "settings.gradle*"
+
       - name: Build with Gradle
-        working-directory: ./src
         run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
