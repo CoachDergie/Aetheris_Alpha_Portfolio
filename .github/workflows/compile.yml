@@ -30,22 +30,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: List Available Gradle Tasks
-        run: gradle tasks --all
+      - name: Build Debug APK
+        run: gradle assembleDebug --stacktrace
 
-      - name: Build with Gradle
-        run: gradle assembleDebug --info
-
-      - name: Inspect All Build Outputs
+      - name: List All Generated Files
         run: |
-          echo "=== All Compiled Artifacts ==="
-          find . -type f \( -name "*.apk" -o -name "*.aar" -o -name "*.jar" -o -name "*.so" \)
+          echo "=== All Build Artifacts in Workspace ==="
+          find . -type f \( -name "*.apk" -o -name "*.aar" -o -name "*.so" \)
 
-      - name: Upload Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MetaQuest-Build-Output
-          path: |
-            **/*.apk
-            **/*.aar
+          name: MetaQuest-Debug-APK
+          path: '**/*.apk'
           if-no-files-found: error
