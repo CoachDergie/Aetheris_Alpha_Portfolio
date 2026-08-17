@@ -6,41 +6,32 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_NODE24: 'true'
+
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           lfs: true
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Android SDK & NDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
         with:
           packages: 'platforms;android-34 build-tools;34.0.0 ndk;25.2.9519653'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Locate Gradle Build Files
-        run: |
-          echo "Finding all build.gradle files in repository:"
-          find . -name "build.gradle*" -o -name "settings.gradle*"
-          
-      - name: Verify Root Directory Files
-        run: |
-            echo "=== Root Directory Listing ==="
-            ls -la
-            echo "=== Checking Exact Case Matching ==="
-            ls -la | grep -i gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build with Gradle
         run: gradle assembleDebug --stacktrace
@@ -49,4 +40,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MetaQuest-Debug-APK
-          path: '**build/outputs/apk/debug/*.apk'
+          path: '**/build/outputs/apk/debug/*.apk'
+          if-no-files-found: error
