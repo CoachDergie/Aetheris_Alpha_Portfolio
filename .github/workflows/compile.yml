@@ -6,9 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_NODE24: 'true'
-
 jobs:
   build:
     name: Build APK
@@ -33,17 +30,22 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: List Available Gradle Tasks
+        run: gradle tasks --all
+
       - name: Build with Gradle
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --info
 
-      - name: Locate Generated APKs
+      - name: Inspect All Build Outputs
         run: |
-          echo "Searching for all .apk files:"
-          find . -name "*.apk"
+          echo "=== All Compiled Artifacts ==="
+          find . -type f \( -name "*.apk" -o -name "*.aar" -o -name "*.jar" -o -name "*.so" \)
 
-      - name: Upload APK
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MetaQuest-Debug-APK
-          path: '**/*.apk'
+          name: MetaQuest-Build-Output
+          path: |
+            **/*.apk
+            **/*.aar
           if-no-files-found: error
