@@ -7,14 +7,19 @@
  */
 
 plugins {
-    // Apply the cpp-application plugin to add support for building C++ executables
-    `cpp-application`
-
-    // Apply the cpp-unit-test plugin to add support for building and running C++ test executables
-    `cpp-unit-test`
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android") // if using Kotlin
 }
 
-// Set the target operating system and architecture for this application
-application {
-    targetMachines.add(machines.linux.x86_64)
+android {
+    namespace = "com.dyzzy.aetheris"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.dyzzy.aetheris"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
 }
