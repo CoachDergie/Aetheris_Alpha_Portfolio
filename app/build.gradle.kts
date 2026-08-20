@@ -12,11 +12,25 @@ android {
     defaultConfig {
         applicationId = "com.dyzzy.aetheris"
         minSdk = 34
-        targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 35
+        versionCode = 16
+        versionName = "2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags("-std=c++20")
+                arguments("-DANDROID_STL=c++_shared")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {
@@ -27,11 +41,22 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
+    }
+    ndkVersion = "28.2.13676358"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        freeCompilerArgs.add("-opt-in=androidx.compose.foundation.style.ExperimentalFoundationStyleApi")
+        freeCompilerArgs.add("-opt-in=androidx.xr.compose.material3.ExperimentalMaterial3XrApi")
+        freeCompilerArgs.add("-opt-in=androidx.xr.compose.spatial.ExperimentalSpatialApi")
+        freeCompilerArgs.add("-opt-in=androidx.xr.compose.subspace.layout.ExperimentalSubspaceLayoutApi")
     }
 }
 
@@ -40,6 +65,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -50,6 +76,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.scenecore)
+    implementation(libs.androidx.xr.compose.material3)
     implementation(libs.extensions1.xr)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

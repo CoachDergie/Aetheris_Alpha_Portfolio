@@ -1,0 +1,3 @@
+/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/.cxx/Debug/462k4049/armeabi-v7a/CMakeFiles/aetheris_native.dir
+/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/.cxx/Debug/462k4049/armeabi-v7a/CMakeFiles/edit_cache.dir
+/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/.cxx/Debug/462k4049/armeabi-v7a/CMakeFiles/rebuild_cache.dir

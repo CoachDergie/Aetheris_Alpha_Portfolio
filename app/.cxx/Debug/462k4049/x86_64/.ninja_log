@@ -1,0 +1,6 @@
+# ninja log v5
+0	1889	1787019505381615276	CMakeFiles/aetheris_native.dir/xr_bridge.cpp.o	dc5da69d21e44e84
+1893	1929	1787019505425615461	/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/build/intermediates/cxx/Debug/462k4049/obj/x86_64/libaetheris_native.so	ffdfacf4e27dbd6c
+0	3	0	clean	1077423efc2600ee
+8	1844	1787021279603472179	CMakeFiles/aetheris_native.dir/xr_bridge.cpp.o	dc5da69d21e44e84
+1844	1887	1787021279654935216	/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/build/intermediates/cxx/Debug/462k4049/obj/x86_64/libaetheris_native.so	ffdfacf4e27dbd6c

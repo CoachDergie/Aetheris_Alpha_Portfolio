@@ -2,25 +2,66 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- CORE XR FEATURES -->
+    <uses-feature android:name="android.software.xr.api.spatial" android:required="false" />
+    <uses-feature android:name="android.software.xr.api.openxr" android:required="false" />
+
+    <!-- QUEST HARDWARE FEATURES -->
+    <uses-feature android:name="android.hardware.vr.headtracking" android:required="true" />
+    <uses-feature android:name="oculus.software.hand_tracking" android:required="false" />
+    <uses-feature android:name="com.oculus.software.handtracking" android:required="false" />
+    <uses-feature android:name="com.oculus.software.passthrough" android:required="false" />
+
+    <!-- PERMISSIONS -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.HAND_TRACKING" />
+    <uses-permission android:name="android.permission.SCENE_UNDERSTANDING_COARSE" />
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+    <uses-permission android:name="com.oculus.permission.USE_SCENE" />
+
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Aetheris">
+
+        <!-- ARCORE OPTIONAL METADATA (Prevents block on non-Google XR devices) -->
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+
+        <!-- QUEST SPATIAL METADATA -->
+        <meta-data android:name="com.oculus.supportedDevices" android:value="quest2|questpro|quest3" />
+        <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
+        <meta-data android:name="androidx.xr.scenecore.SPATIAL_APP" android:value="true" />
+
         <activity
             android:name=".MainActivity"
+            android:label="@string/app_name"
             android:exported="true"
             android:theme="@style/Theme.Aetheris"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:windowSoftInputMode="adjustResize">
+
+            <meta-data android:name="android.supports_size_changes" android:value="true" />
+
+            <layout
+                android:minWidth="480dp"
+                android:minHeight="480dp" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />
+
+            <property
+                android:name="android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED"
+                android:value="XR_BOUNDARY_TYPE_LARGE" />
         </activity>
     </application>
 
