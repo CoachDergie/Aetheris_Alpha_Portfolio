@@ -203,35 +203,35 @@ fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
                     .resizable(maintainAspectRatio = true)
             ) {
                 EnableXrComponentOverrides {
-                    AdaptiveResolutionBox {
-                        AetherisHUDContent(
-                            viewModel = viewModel,
-                            currentTab = currentTab,
-                            lunarInfo = lunarInfo,
-                            hudBackground = hudBackground,
-                            panelSurface = panelSurface,
-                            accentCyan = accentCyan,
-                            accentGold = accentGold,
-                            isSpatial = true
-                        )
-                    }
+                    AetherisHUDContent(
+                        viewModel = viewModel,
+                        currentTab = currentTab,
+                        lunarInfo = lunarInfo,
+                        hudBackground = hudBackground,
+                        panelSurface = panelSurface,
+                        accentCyan = accentCyan,
+                        accentGold = accentGold,
+                        isSpatial = true
+                    )
                 }
             }
         }
     } else {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-            Box(modifier = Modifier.align(Alignment.Center).scale(1.2f)) {
-                AetherisHUDContent(
-                    viewModel = viewModel,
-                    currentTab = currentTab,
-                    lunarInfo = lunarInfo,
-                    hudBackground = hudBackground,
-                    panelSurface = panelSurface,
-                    accentCyan = accentCyan,
-                    accentGold = accentGold,
-                    isSpatial = false
-                )
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF070913))
+        ) {
+            AetherisHUDContent(
+                viewModel = viewModel,
+                currentTab = currentTab,
+                lunarInfo = lunarInfo,
+                hudBackground = hudBackground,
+                panelSurface = panelSurface,
+                accentCyan = accentCyan,
+                accentGold = accentGold,
+                isSpatial = false
+            )
         }
     }
 }
@@ -242,36 +242,8 @@ fun AdaptiveResolutionBox(
     designHeight: Int = 720,
     content: @Composable () -> Unit
 ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val scaleW = maxWidth.value / designWidth
-        val scaleH = maxHeight.value / designHeight
-        val scale = minOf(scaleW, scaleH).coerceAtMost(1.0f)
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .wrapContentSize(unbounded = true)
-                .align(Alignment.TopCenter)
-                .layout { measurable, _ ->
-                    val scaledWidth = (designWidth * scale).toInt().dp.roundToPx()
-                    val scaledHeight = (designHeight * scale).toInt().dp.roundToPx()
-                    val placeable = measurable.measure(
-                        Constraints.fixed(designWidth.dp.roundToPx(), designHeight.dp.roundToPx())
-                    )
-                    layout(scaledWidth, scaledHeight) {
-                        placeable.placeRelative(0, 0)
-                    }
-                }
-                .graphicsLayer {
-                    this.scaleX = scale
-                    this.scaleY = scale
-                    this.transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
-                }
-                .border(2.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(32.dp))
-                .clipToBounds()
-        ) {
-            content()
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
+        content()
     }
 }
 
@@ -288,20 +260,22 @@ fun AetherisHUDContent(
     isSpatial: Boolean
 ) {
     Card(
-        modifier = Modifier.width(1000.dp).height(720.dp),
-        shape = RoundedCornerShape(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(if (isSpatial) 0.dp else 12.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = hudBackground),
+        border = BorderStroke(1.5.dp, accentCyan.copy(alpha = 0.4f)),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 48.dp)
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(64.dp))
-
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -309,59 +283,70 @@ fun AetherisHUDContent(
                     Text(
                         "⚡ AETHERIS // OCCULT CONSOLE",
                         fontWeight = FontWeight.Black,
-                        fontSize = 24.sp,
-                        letterSpacing = 3.sp,
+                        fontSize = 22.sp,
+                        letterSpacing = 2.5.sp,
                         color = accentCyan,
-                        maxLines = 1,
-                        softWrap = false
+                        textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "LUNAR PHASE: ${lunarInfo.phaseName.uppercase()}",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         color = accentGold,
                         fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        softWrap = false
+                        textAlign = TextAlign.Center
                     )
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
+                    // Scrollable Tab Navigation Bar so all 7 tabs are accessible & never clipped
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         HUDTabItem(currentTab == ViewTab.Dashboard, { viewModel.setTab(ViewTab.Dashboard) }, Icons.Default.Dashboard, "HUD", accentCyan)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        HUDTabItem(currentTab == ViewTab.Meditations, { viewModel.setTab(ViewTab.Meditations) }, Icons.Default.SelfImprovement, "MEDITATIONS", accentCyan)
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        HUDTabItem(currentTab == ViewTab.Natal, { viewModel.setTab(ViewTab.Natal) }, Icons.Default.AutoAwesome, "NATAL", accentCyan)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        HUDTabItem(currentTab == ViewTab.Combat, { viewModel.setTab(ViewTab.Combat) }, Icons.Default.SportsMartialArts, "COMBAT", accentCyan)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        HUDTabItem(currentTab == ViewTab.QiGong, { viewModel.setTab(ViewTab.QiGong) }, Icons.Default.FitnessCenter, "QI-GONG", accentCyan)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        HUDTabItem(currentTab == ViewTab.Meditations, { viewModel.setTab(ViewTab.Meditations) }, Icons.Default.SelfImprovement, "MEDITATION", accentCyan)
+                        Spacer(modifier = Modifier.width(8.dp))
                         HUDTabItem(currentTab == ViewTab.Tarot, { viewModel.setTab(ViewTab.Tarot) }, Icons.Default.Style, "TAROT", accentCyan)
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         HUDTabItem(currentTab == ViewTab.Occult, { viewModel.setTab(ViewTab.Occult) }, Icons.Default.AutoStories, "GRIMOIRE", accentCyan)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = accentCyan.copy(alpha = 0.3f), thickness = 1.dp)
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                when (currentTab) {
-                    ViewTab.Dashboard, ViewTab.Natal -> {
-                        MainHUDLayout(
-                            viewModel = viewModel,
-                            panelSurface = panelSurface,
-                            accentCyan = accentCyan,
-                            accentGold = accentGold
-                        )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 1100.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    when (currentTab) {
+                        ViewTab.Dashboard -> MainHUDLayout(viewModel, panelSurface, accentCyan, accentGold)
+                        ViewTab.Natal -> NatalMandalaView(viewModel, panelSurface, accentGold, accentCyan)
+                        ViewTab.Combat -> CombatTelemetryView(viewModel, panelSurface, accentCyan, accentGold)
+                        ViewTab.QiGong -> QiGongBarbellView(viewModel, panelSurface, accentCyan, accentGold)
+                        ViewTab.Meditations -> MeditationsListView(viewModel, accentGold)
+                        ViewTab.Tarot -> TarotDashboardView(viewModel, accentCyan, accentGold)
+                        ViewTab.Occult -> GrimoireInvocationsView(viewModel, panelSurface, accentCyan)
+                        else -> MainHUDLayout(viewModel, panelSurface, accentCyan, accentGold)
                     }
-                    ViewTab.Meditations -> MeditationsListView(viewModel, accentGold)
-                    ViewTab.Tarot -> TarotDashboardView(viewModel, accentCyan, accentGold)
-                    ViewTab.Occult -> GrimoireInvocationsView(viewModel, panelSurface, accentCyan)
-                    else -> MainHUDLayout(viewModel, panelSurface, accentCyan, accentGold)
                 }
                 
-                Spacer(modifier = Modifier.height(64.dp))
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -527,7 +512,7 @@ fun TarotLibraryMode(accentCyan: Color) {
     ) {
         rows.forEach { rowCards ->
             Row(
-                modifier = Modifier.width(900.dp),
+                modifier = Modifier.fillMaxWidth().widthIn(max = 900.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 rowCards.forEach { card ->
@@ -625,7 +610,10 @@ fun MeditationsListView(viewModel: MainViewModel, accentGold: Color) {
         
         meditations.forEach { med ->
             Card(
-                modifier = Modifier.width(800.dp).clickable { selectedMeditation = med },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 860.dp)
+                    .clickable { selectedMeditation = med },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0x22FFFFFF)),
                 border = BorderStroke(1.dp, accentGold.copy(alpha = 0.2f)),
@@ -728,11 +716,12 @@ fun MainHUDLayout(
             .fillMaxWidth()
             .padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Card(
             modifier = Modifier
-                .width(800.dp),
+                .fillMaxWidth()
+                .widthIn(max = 860.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = panelSurface),
             border = BorderStroke(1.dp, accentCyan.copy(alpha = 0.5f)),
@@ -742,7 +731,10 @@ fun MainHUDLayout(
         }
 
         Card(
-            modifier = Modifier.width(900.dp).wrapContentHeight(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 920.dp)
+                .wrapContentHeight(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = panelSurface),
             border = BorderStroke(1.dp, accentGold.copy(alpha = 0.35f)),
@@ -1103,7 +1095,8 @@ fun GrimoireInvocationsView(viewModel: MainViewModel, surfaceColor: Color, accen
         com.dyzzy.aetheris.logic.OccultEngine.DAILY_INVOCATIONS.forEach { inv ->
             Card(
                 modifier = Modifier
-                    .width(800.dp)
+                    .fillMaxWidth()
+                    .widthIn(max = 860.dp)
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = surfaceColor.copy(alpha = 0.5f)),
@@ -1162,6 +1155,250 @@ fun GrimoireInvocationsView(viewModel: MainViewModel, surfaceColor: Color, accen
                             fontWeight = FontWeight.Black
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun NatalMandalaView(
+    viewModel: MainViewModel,
+    surface: Color,
+    gold: Color,
+    cyan: Color
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            "✦ CELESTIAL NATAL ALIGNMENT",
+            fontWeight = FontWeight.Black,
+            fontSize = 24.sp,
+            letterSpacing = 2.sp,
+            color = gold
+        )
+        Text(
+            "PLANETARY MATRIX & QLIPHOTIC HARMONICS",
+            fontSize = 13.sp,
+            color = Color.LightGray
+        )
+
+        MainHUDLayout(viewModel, surface, cyan, gold)
+    }
+}
+
+@Composable
+fun CombatTelemetryView(
+    viewModel: MainViewModel,
+    surface: Color,
+    cyan: Color,
+    gold: Color
+) {
+    val punches by viewModel.punches.collectAsState()
+    val lastPunch = punches.firstOrNull()
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            "🥊 MARTIAL COMBAT TELEMETRY",
+            fontWeight = FontWeight.Black,
+            fontSize = 24.sp,
+            letterSpacing = 2.sp,
+            color = cyan
+        )
+        Text(
+            "STRIKE KINETICS // IMPACT FORCE & VECTOR RECOIL",
+            fontSize = 13.sp,
+            color = Color.LightGray
+        )
+
+        // STRIKE LIVE GAUGES
+        Row(
+            modifier = Modifier.fillMaxWidth().widthIn(max = 860.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(containerColor = surface),
+                border = BorderStroke(1.dp, cyan.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("PEAK VELOCITY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("${lastPunch?.speedMs ?: 0.0} m/s", fontSize = 28.sp, fontWeight = FontWeight.Black, color = cyan)
+                    Text("TARGET: > 9.0 m/s", fontSize = 10.sp, color = Color.DarkGray)
+                }
+            }
+
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(containerColor = surface),
+                border = BorderStroke(1.dp, gold.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("IMPACT FORCE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("${lastPunch?.impactForceJoules ?: 0.0} J", fontSize = 28.sp, fontWeight = FontWeight.Black, color = gold)
+                    Text("KINETIC CLIMAX", fontSize = 10.sp, color = Color.DarkGray)
+                }
+            }
+
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(containerColor = surface),
+                border = BorderStroke(1.dp, Color(0xFFFF5252).copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("RECOIL RETURN", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("${lastPunch?.returnTimeSec ?: 0.0} s", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color(0xFFFF5252))
+                    Text("TARGET: < 0.30 s", fontSize = 10.sp, color = Color.DarkGray)
+                }
+            }
+        }
+
+        // STRIKE TRIGGER ACTIONS
+        Row(
+            modifier = Modifier.fillMaxWidth().widthIn(max = 860.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(
+                onClick = { viewModel.recordPunch("Lead Jab") },
+                colors = ButtonDefaults.buttonColors(containerColor = cyan),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f).height(50.dp)
+            ) {
+                Text("RECORD LEAD JAB", color = Color.Black, fontWeight = FontWeight.Black)
+            }
+            Button(
+                onClick = { viewModel.recordPunch("Cross Strike") },
+                colors = ButtonDefaults.buttonColors(containerColor = gold),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f).height(50.dp)
+            ) {
+                Text("RECORD CROSS STRIKE", color = Color.Black, fontWeight = FontWeight.Black)
+            }
+            Button(
+                onClick = { viewModel.recordPunch("Iron Palm Thrust") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f).height(50.dp)
+            ) {
+                Text("IRON PALM THRUST", color = Color.Black, fontWeight = FontWeight.Black)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // STRIKE HISTORY LOG
+        Card(
+            modifier = Modifier.fillMaxWidth().widthIn(max = 860.dp),
+            colors = CardDefaults.cardColors(containerColor = surface),
+            border = BorderStroke(1.dp, cyan.copy(alpha = 0.2f)),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text("LIVE STRIKE TELEMETRY STREAM", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = cyan)
+                Spacer(modifier = Modifier.height(12.dp))
+                punches.take(6).forEach { p ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(p.type, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 13.sp)
+                        Text("${p.speedMs} m/s", color = cyan, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
+                        Text("${p.impactForceJoules} J", color = gold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("${p.returnTimeSec}s Recoil", color = Color.LightGray, fontSize = 11.sp)
+                    }
+                    HorizontalDivider(color = Color.DarkGray.copy(alpha = 0.3f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QiGongBarbellView(
+    viewModel: MainViewModel,
+    surface: Color,
+    cyan: Color,
+    gold: Color
+) {
+    val session by viewModel.barbellSession.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            "⚡ 6-FT BARBELL QI-GONG CONDITIONING",
+            fontWeight = FontWeight.Black,
+            fontSize = 24.sp,
+            letterSpacing = 2.sp,
+            color = gold
+        )
+        Text(
+            "ZINC-IMBUED BARBELL // HORSE STANCE (MA BU) ROOTING MATRIX",
+            fontSize = 13.sp,
+            color = Color.LightGray
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth().widthIn(max = 860.dp),
+            colors = CardDefaults.cardColors(containerColor = surface),
+            border = BorderStroke(1.dp, gold.copy(alpha = 0.4f)),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(session.movementName.uppercase(), fontWeight = FontWeight.Black, fontSize = 18.sp, color = gold)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("STANCE: ${session.focusStance}", fontSize = 13.sp, color = Color.White)
+                Text("COSMIC HOUR: ${session.associatedPlanetaryHour}", fontSize = 12.sp, color = cyan, fontWeight = FontWeight.Bold)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatBlock("BAR LENGTH", "${session.barbellLengthFt} FT", gold)
+                    StatBlock("BAR WEIGHT", "${session.barbellWeightKg} KG", cyan)
+                    StatBlock("SETS / REPS", "${session.sets} x ${session.reps}", gold)
+                    StatBlock("ENERGY", "${session.estimatedKcal} KCAL", Color.Green)
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { viewModel.logBarbellRep() },
+                    colors = ButtonDefaults.buttonColors(containerColor = gold),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.width(280.dp).height(54.dp)
+                ) {
+                    Text("LOG STANCE REP (+4 KCAL)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
             }
         }

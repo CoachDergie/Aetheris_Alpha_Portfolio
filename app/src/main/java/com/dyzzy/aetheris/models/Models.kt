@@ -94,6 +94,31 @@ data class Meditation(
     val focusArchetype: String
 )
 
+data class PunchTelemetry(
+    val id: String,
+    val timestamp: Long,
+    val type: String,
+    val speedMs: Double,
+    val anglePitchDeg: Double,
+    val angleYawDeg: Double,
+    val returnTimeSec: Double,
+    val impactForceJoules: Double,
+    val energyKcal: Double
+)
+
+data class QiGongBarbellSession(
+    val userBodyWeightKg: Double,
+    val barbellWeightKg: Double,
+    val barbellLengthFt: Double,
+    val durationMinutes: Int,
+    val movementName: String,
+    val sets: Int,
+    val reps: Int,
+    val estimatedKcal: Int,
+    val associatedPlanetaryHour: String,
+    val focusStance: String
+)
+
 enum class ViewTab {
-    Dashboard, Natal, Meditations, Transits, Occult, Tarot
+    Dashboard, Natal, Combat, QiGong, Meditations, Transits, Occult, Tarot
 }

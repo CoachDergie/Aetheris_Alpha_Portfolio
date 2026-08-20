@@ -7,6 +7,7 @@ import com.dyzzy.aetheris.models.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.random.Random
 
 class MainViewModel : ViewModel() {
 
@@ -41,6 +42,30 @@ class MainViewModel : ViewModel() {
         )
     )
     val meditations: StateFlow<List<Meditation>> = _meditations.asStateFlow()
+
+    private val _punches = MutableStateFlow<List<PunchTelemetry>>(
+        listOf(
+            PunchTelemetry("p_1", System.currentTimeMillis() - 4000, "Lead Jab", 8.4, 12.0, 2.1, 0.28, 52.4, 0.31),
+            PunchTelemetry("p_2", System.currentTimeMillis() - 10000, "Cross Strike", 10.2, 14.5, -1.2, 0.26, 84.6, 0.42)
+        )
+    )
+    val punches: StateFlow<List<PunchTelemetry>> = _punches.asStateFlow()
+
+    private val _barbellSession = MutableStateFlow(
+        QiGongBarbellSession(
+            userBodyWeightKg = 82.0,
+            barbellWeightKg = 20.0,
+            barbellLengthFt = 6.0,
+            durationMinutes = 25,
+            movementName = "Six-Foot Barbell Horse Stance Press (Ma Bu Tui)",
+            sets = 5,
+            reps = 12,
+            estimatedKcal = 198,
+            associatedPlanetaryHour = "Mars / Golachab",
+            focusStance = "Ma Bu (Rooted Horse Stance)"
+        )
+    )
+    val barbellSession: StateFlow<QiGongBarbellSession> = _barbellSession.asStateFlow()
 
     fun setTab(tab: ViewTab) {
         _currentTab.value = tab
@@ -82,5 +107,31 @@ class MainViewModel : ViewModel() {
     fun updateNatalData(newData: NatalData) {
         _natalData.value = newData
         _natalChart.value = OccultEngine.calculateNatalChart(newData.birthDate, newData.birthTime, newData.latitude, newData.longitude)
+    }
+
+    fun recordPunch(type: String = "Lead Jab") {
+        val speed = 7.0 + Random.nextDouble(1.0, 5.5)
+        val impact = (speed * speed * 0.9) + Random.nextDouble(5.0, 25.0)
+        val recoil = 0.22 + Random.nextDouble(0.02, 0.15)
+        val newPunch = PunchTelemetry(
+            id = "p_${System.currentTimeMillis()}",
+            timestamp = System.currentTimeMillis(),
+            type = type,
+            speedMs = (speed * 10).toInt() / 10.0,
+            anglePitchDeg = (10.0 + Random.nextDouble(-4.0, 8.0) * 10).toInt() / 10.0,
+            angleYawDeg = (Random.nextDouble(-3.0, 3.0) * 10).toInt() / 10.0,
+            returnTimeSec = (recoil * 100).toInt() / 100.0,
+            impactForceJoules = (impact * 10).toInt() / 10.0,
+            energyKcal = 0.25 + (speed * 0.02)
+        )
+        _punches.value = (listOf(newPunch) + _punches.value).take(20)
+    }
+
+    fun logBarbellRep() {
+        val cur = _barbellSession.value
+        _barbellSession.value = cur.copy(
+            reps = cur.reps + 1,
+            estimatedKcal = cur.estimatedKcal + 4
+        )
     }
 }

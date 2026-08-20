@@ -1,1 +1,6 @@
 /build
+/.cxx
+*.bin
+*.ninja
+*.ninja_deps
+*.ninja_log
