@@ -1,1 +1,0 @@
-/var/home/Dyzzy/AndroidStudioProjects/Aetheris/app/src/main/cpp/CMakeLists.txt
