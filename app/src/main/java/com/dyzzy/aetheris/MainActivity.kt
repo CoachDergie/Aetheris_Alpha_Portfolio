@@ -119,58 +119,41 @@ fun XRPermissionGuard(
     val permissionsToRequest = remember {
         val allTargetPermissions = arrayOf(
             "android.permission.HAND_TRACKING",
-            "android.permission.SCENE_UNDERSTANDING_COARSE",
-            "com.oculus.permission.HAND_TRACKING",
-            "com.oculus.permission.USE_SCENE"
+            "android.permission.RECORD_AUDIO"
         )
         
         allTargetPermissions.filter { permission ->
             try {
-                val info = context.packageManager.getPermissionInfo(permission, 0)
-                val isDangerous = (info.protectionLevel and android.content.pm.PermissionInfo.PROTECTION_DANGEROUS) != 0
                 val isGranted = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-                isDangerous && !isGranted
-            } catch (e: PackageManager.NameNotFoundException) {
+                !isGranted
+            } catch (e: Exception) {
                 false
             }
         }.toTypedArray()
     }
 
     var permissionsGranted by remember {
-        mutableStateOf(permissionsToRequest.isEmpty())
+        mutableStateOf(true) // Always allow UI to render without blocking
     }
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        permissionsGranted = result.values.all { it }
-        if (permissionsGranted) {
-            onGranted()
-        }
+        onGranted()
     }
 
-    LaunchedEffect(permissionsToRequest) {
+    LaunchedEffect(Unit) {
         if (permissionsToRequest.isNotEmpty()) {
-            launcher.launch(permissionsToRequest)
-        } else {
-            onGranted()
-        }
-    }
-
-    if (permissionsGranted) {
-        content()
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize().background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = Color(0xFF00E5FF))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("INITIALIZING SPATIAL DATA CURRENTS...", color = Color.Gray, fontSize = 12.sp)
+            try {
+                launcher.launch(permissionsToRequest)
+            } catch (e: Exception) {
+                Log.w("Aetheris", "Permission launch skipped: ${e.message}")
             }
         }
+        onGranted()
     }
+
+    content()
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3XrApi::class)
