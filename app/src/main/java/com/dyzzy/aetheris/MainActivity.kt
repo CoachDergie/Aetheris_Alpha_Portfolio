@@ -70,8 +70,14 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     companion object {
+        private var isNativeLoaded = false
         init {
-            System.loadLibrary("aetheris_native")
+            try {
+                System.loadLibrary("aetheris_native")
+                isNativeLoaded = true
+            } catch (e: Throwable) {
+                Log.w("Aetheris", "Native library load bypassed: ${e.message}")
+            }
         }
     }
 
@@ -79,22 +85,29 @@ class MainActivity : ComponentActivity() {
     private external fun nativeShutdownXR()
     private external fun nativeIsXRActive(): Boolean
 
-    fun isNativeXRActive(): Boolean = try { nativeIsXRActive() } catch (e: Exception) { false }
+    fun isNativeXRActive(): Boolean = try {
+        if (isNativeLoaded) nativeIsXRActive() else false
+    } catch (e: Throwable) {
+        false
+    }
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
-        // Ensure the window background is transparent to prevent grey artifacts in VR
-        window.setBackgroundDrawableResource(android.R.color.transparent)
 
         setContent {
             AetherisTheme(darkTheme = true) {
                 XRPermissionGuard(
                     onGranted = {
-                        val success = nativeInitializeXR()
-                        Log.i("Aetheris", "Native XR Initialization: $success")
+                        if (isNativeLoaded) {
+                            try {
+                                val success = nativeInitializeXR()
+                                Log.i("Aetheris", "Native XR Initialization: $success")
+                            } catch (e: Throwable) {
+                                Log.w("Aetheris", "Native XR init failed: ${e.message}")
+                            }
+                        }
                     }
                 ) {
                     AetherisHeadMountedHUD(viewModel = viewModel)
@@ -104,7 +117,13 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        nativeShutdownXR()
+        if (isNativeLoaded) {
+            try {
+                nativeShutdownXR()
+            } catch (e: Throwable) {
+                Log.w("Aetheris", "Native XR shutdown error: ${e.message}")
+            }
+        }
         super.onDestroy()
     }
 }
