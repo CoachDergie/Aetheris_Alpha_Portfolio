@@ -1,18 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark bg-[#070913]">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-    <meta name="description" content="An application built with Google AI Studio." />
-    <meta property="og:title" content="My Google AI Studio App" />
-    <meta property="og:description" content="An application built with Google AI Studio." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Aetheris // Occult Console XR</title>
+    <meta name="description" content="Aetheris Occult Console & Martial Telemetry Side-Screen Applet for Meta Quest XR" />
+    <meta name="theme-color" content="#070913" />
+    <meta name="color-scheme" content="dark" />
+    <style>
+      html, body, #root {
+        background-color: #070913 !important;
+        min-height: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color-scheme: dark !important;
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-[#070913] text-gray-200 min-h-screen overflow-x-hidden">
+    <div id="root" class="min-h-screen bg-[#070913] flex flex-col"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

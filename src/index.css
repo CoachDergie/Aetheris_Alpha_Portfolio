@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+html, body, #root {
+  background-color: #070913 !important;
+  color: #e2e8f0;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
 /* Hide scrollbar utility for clean XR HUD navigation */
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
@@ -10,4 +19,9 @@
 .no-scrollbar {
   -ms-overflow-style: none !important;  /* IE and Edge */
   scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Ensure smooth animations on mobile/XR browser */
+* {
+  box-sizing: border-box;
 }

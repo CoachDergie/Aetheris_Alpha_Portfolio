@@ -120,19 +120,19 @@ export const MeditationPanel: React.FC<MeditationPanelProps> = ({
   };
 
   return (
-    <div className="p-4 sm:p-6 flex flex-col items-center gap-6">
+    <div className="p-2 sm:p-4 flex flex-col items-center gap-4 w-full max-w-xl mx-auto">
       {/* Title */}
       <div className="text-center space-y-1">
-        <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest text-[#ffd700] uppercase drop-shadow-[0_0_12px_rgba(255,215,0,0.5)]">
+        <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#ffd700] uppercase drop-shadow-[0_0_12px_rgba(255,215,0,0.5)]">
           🧘 MEDITATION LIBRARY
         </h2>
-        <p className="text-xs font-mono text-gray-400 uppercase tracking-wider">
-          Guided Esoteric Respiration • Planetary Harmonic Alignment
+        <p className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
+          Guided Respiration • Planetary Harmonic Alignment
         </p>
       </div>
 
-      {/* Meditation Cards List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+      {/* Meditation Cards List (Single Column Stack) */}
+      <div className="flex flex-col gap-3 w-full">
         {MEDITATION_LIBRARY.map((med) => (
           <div
             key={med.id}

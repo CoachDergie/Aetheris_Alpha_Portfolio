@@ -43,14 +43,14 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto p-4 sm:p-6 text-center">
+    <div className="flex flex-col items-center gap-4 w-full max-w-xl mx-auto p-2 sm:p-4 text-center">
       {/* Title */}
       <div className="space-y-1">
-        <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_15px_rgba(0,229,255,0.6)]">
-          📜 ESOTERIC GRIMOIRE & INVOCATIONS
+        <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_12px_rgba(0,229,255,0.6)]">
+          📜 ESOTERIC GRIMOIRE
         </h2>
-        <p className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
-          Barbarous True Names • Planetary Spheres • Martial Harmonics
+        <p className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+          Barbarous Formulas • Planetary Spheres
         </p>
       </div>
 

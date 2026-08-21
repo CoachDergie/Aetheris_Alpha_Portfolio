@@ -188,6 +188,8 @@ export default function App() {
         birthCity={natal.birthCity}
         birthDate={natal.birthDate}
         birthTime={natal.birthTime}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => setSoundEnabled(!soundEnabled)}
         onOpenCalibrate={() => setIsCalibrateModalOpen(true)}
         onOpenDiscordShare={() => setIsDiscordModalOpen(true)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
