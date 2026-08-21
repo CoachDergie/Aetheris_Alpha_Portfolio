@@ -1,7 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { DrawnCard, TarotCard } from '../types';
 import { TAROT_DECK, getRandomTarotCards, synthesizeTarotGuidance } from '../utils/tarotData';
 import { Layers, Sparkles, RefreshCw, Eye, Info, X } from 'lucide-react';
+
+const TarotCardImage = ({ card, isReversed }: { card: TarotCard, isReversed?: boolean }) => {
+  const [imgError, setImgError] = useState(false);
+
+  if (imgError) {
+    return (
+      <div className="w-full h-full flex flex-col justify-between items-center p-2 relative bg-[#161B26] rounded-lg">
+        <div className="flex justify-between w-full text-[10px] font-mono text-yellow-400 font-bold">
+          <span>{card.glyph || '✦'}</span>
+          <span className="uppercase tracking-wider">{card.suit === 'Major' ? 'M.A.' : card.suit}</span>
+        </div>
+
+        <div className="text-center my-auto flex flex-col items-center justify-center">
+          <div className="text-3xl font-serif text-[#ffd700] drop-shadow-[0_0_12px_rgba(255,215,0,0.5)] mb-1">
+            {card.glyph || '🜂'}
+          </div>
+          <div className="text-[10px] font-black font-mono tracking-wider text-white uppercase leading-tight px-1 text-center">
+            {card.name}
+          </div>
+          {isReversed !== undefined && (
+            <div className="text-[8px] font-mono text-cyan-300 font-bold mt-0.5">
+              {isReversed ? '↺ REVERSED' : '↑ UPRIGHT'}
+            </div>
+          )}
+        </div>
+
+        <div className="text-[8px] font-mono text-yellow-300/80 border-t border-yellow-500/30 pt-1 w-full text-center truncate">
+          {card.associatedPlanetOrSign}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={`/Tarot/${card.imagePath}`}
+      alt={card.name}
+      onError={() => setImgError(true)}
+      className={`w-full h-full object-contain rounded-lg transition-transform duration-500 ${isReversed ? 'rotate-180' : ''}`}
+    />
+  );
+};
 
 interface TarotPanelProps {
   accentCyan?: string;
@@ -18,15 +60,6 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [suitFilter, setSuitFilter] = useState<string>('ALL');
-  const [images, setImages] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    // Load the base64 JSON mapping
-    fetch('/tarotImagesBase64.json')
-      .then(res => res.json())
-      .then(data => setImages(data))
-      .catch(err => console.error('Failed to load tarot images', err));
-  }, []);
 
   const handleDraw = (count: number) => {
     setDrawCount(count);
@@ -138,11 +171,7 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
 
                   {/* Centered Visual Card Artwork Frame */}
                   <div className="w-44 h-[250px] rounded-xl bg-[#161B26] border-2 border-yellow-500/40 shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden my-2 flex items-center justify-center p-1">
-                    <img
-                      src={images[drawn.card.imagePath] || ''}
-                      alt={drawn.card.name}
-                      className={`w-full h-full object-contain rounded-lg transition-transform duration-500 ${drawn.isReversed ? 'rotate-180' : ''}`}
-                    />
+                    <TarotCardImage card={drawn.card} isReversed={drawn.isReversed} />
                   </div>
 
                   {/* Title & Guidance */}
@@ -220,11 +249,7 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
                 className="cursor-pointer bg-[#1E2638] border border-[#2E3B57] hover:border-[#00e5ff] rounded-2xl p-3 flex flex-col items-center text-center transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(0,229,255,0.2)]"
               >
                 <div className="w-full h-40 rounded-xl bg-[#161B26] border border-yellow-500/30 flex justify-center items-center p-1 mb-1.5 overflow-hidden">
-                  <img
-                    src={images[card.imagePath] || ''}
-                    alt={card.name}
-                    className="w-full h-full object-contain rounded-lg"
-                  />
+                  <TarotCardImage card={card} />
                 </div>
                 <div className="text-xs font-black font-mono text-white truncate w-full">
                   {card.name}
@@ -251,11 +276,7 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
 
             <div className="flex flex-col items-center text-center">
               <div className="w-32 h-[180px] rounded-xl bg-[#161B26] border-2 border-yellow-500/50 flex justify-center items-center shadow-[0_0_20px_rgba(255,215,0,0.25)] mb-3 p-1 overflow-hidden">
-                <img
-                  src={images[selectedCard.imagePath] || ''}
-                  alt={selectedCard.name}
-                  className="w-full h-full object-contain rounded-lg"
-                />
+                <TarotCardImage card={selectedCard} />
               </div>
 
               <h2 className="text-base font-black font-mono text-[#00e5ff] uppercase tracking-wider">
