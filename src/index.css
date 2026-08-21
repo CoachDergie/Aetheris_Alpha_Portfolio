@@ -1,12 +1,20 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark !important;
+  background-color: #070913 !important;
+}
+
 html, body, #root {
   background-color: #070913 !important;
+  background: #070913 !important;
   color: #e2e8f0;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Hide scrollbar utility for clean XR HUD navigation */
@@ -21,7 +29,18 @@ html, body, #root {
   scrollbar-width: none !important;  /* Firefox */
 }
 
-/* Ensure smooth animations on mobile/XR browser */
+/* Samsung Internet & Android GPU fix: disable hardware backdrop filter crashes */
+.backdrop-blur-md,
+.backdrop-blur-xl,
+.backdrop-blur-lg,
+.backdrop-blur-sm,
+.backdrop-blur {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Ensure smooth touch scrolling on Samsung One UI and Oculus browser */
 * {
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }

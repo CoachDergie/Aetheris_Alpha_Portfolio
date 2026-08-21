@@ -58,7 +58,7 @@ const DEFAULT_BARBELL_SESSION: QiGongBarbellSession = {
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<ViewTab>('dashboard');
-  const [viewMode, setViewMode] = useState<EnvironmentViewMode>('headset_xr');
+  const [viewMode, setViewMode] = useState<EnvironmentViewMode>('direct_panel');
   const [showDevTelemetry, setShowDevTelemetry] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 

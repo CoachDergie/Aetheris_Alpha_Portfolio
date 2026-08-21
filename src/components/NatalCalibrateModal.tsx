@@ -52,7 +52,7 @@ export const NatalCalibrateModal: React.FC<NatalCalibrateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85">
       <div className="relative w-full max-w-xl bg-[#121626] border-2 border-[#00e5ff] rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,229,255,0.4)] text-gray-200 font-sans">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-cyan-500/30">

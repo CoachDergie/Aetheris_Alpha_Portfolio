@@ -1,25 +1,61 @@
 <!doctype html>
-<html lang="en" class="dark bg-[#070913]">
+<html lang="en" class="dark bg-[#070913]" style="background-color: #070913 !important; color-scheme: dark !important;">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <title>Aetheris // Occult Console XR</title>
     <meta name="description" content="Aetheris Occult Console & Martial Telemetry Side-Screen Applet for Meta Quest XR" />
     <meta name="theme-color" content="#070913" />
     <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <style>
-      html, body, #root {
+      :root {
+        color-scheme: dark !important;
         background-color: #070913 !important;
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      html {
+        background-color: #070913 !important;
+        background: #070913 !important;
         min-height: 100% !important;
+        min-height: 100dvh !important;
         height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
         color-scheme: dark !important;
+        overscroll-behavior: none !important;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background-color: #070913 !important;
+        background: #070913 !important;
+        min-height: 100% !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color-scheme: dark !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        background-color: #070913 !important;
+        background: #070913 !important;
+        min-height: 100% !important;
+        min-height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
       }
     </style>
   </head>
-  <body class="bg-[#070913] text-gray-200 min-h-screen overflow-x-hidden">
-    <div id="root" class="min-h-screen bg-[#070913] flex flex-col"></div>
+  <body class="bg-[#070913] text-gray-200 min-h-screen min-h-[100dvh] overflow-x-hidden">
+    <div id="root" class="min-h-screen min-h-[100dvh] bg-[#070913] flex flex-col w-full"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
