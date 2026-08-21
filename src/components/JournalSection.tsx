@@ -30,8 +30,8 @@ export const JournalSection: React.FC = () => {
   // Fetch texts
   useEffect(() => {
     Promise.all([
-      fetch('/MarcusAurelius.txt').then((res) => res.text()),
-      fetch('/ChristinaMaxims.txt').then((res) => res.text())
+      fetch('./MarcusAurelius.txt').then((res) => res.text()),
+      fetch('./ChristinaMaxims.txt').then((res) => res.text())
     ]).then(([aureliusText, christinaText]) => {
       const parsedAurelius = aureliusText
         .split('\n\n')
@@ -187,10 +187,7 @@ export const JournalSection: React.FC = () => {
             </button>
             <div className="text-[10px] font-mono text-[#00e5ff] flex items-center gap-1.5 mb-2">
               <Clock className="w-3 h-3" />
-              {new Date(entry.timestamp).toLocaleString(undefined, { 
-                year: 'numeric', month: 'short', day: 'numeric', 
-                hour: '2-digit', minute: '2-digit' 
-              })}
+              {new Date(entry.timestamp).toLocaleDateString()} {new Date(entry.timestamp).toLocaleTimeString()} 
             </div>
             <p className="text-sm text-gray-300 font-sans whitespace-pre-wrap leading-relaxed">
               {entry.text}
