@@ -20,10 +20,12 @@ export interface CelestialBody {
   isRetrograde?: boolean;
 }
 
+export type AspectType = 'Conjunction' | 'Opposition' | 'Trine' | 'Square' | 'Sextile';
+
 export interface PlanetaryAspect {
   planet1: string;
   planet2: string;
-  aspectType: 'Conjunction' | 'Opposition' | 'Trine' | 'Square' | 'Sextile';
+  aspectType: AspectType;
   orb: number;
   intensity: 'Extreme' | 'High' | 'Moderate' | 'Subtle';
   esotericMeaning: string;
@@ -42,7 +44,7 @@ export interface LunarPhaseInfo {
 export interface PunchTelemetry {
   id: string;
   timestamp: number;
-  type: 'Lead Jab' | 'Cross Strike' | 'Palm Strike' | 'Iron Fist' | 'Hook' | 'Spear Hand';
+  type: string;
   speedMs: number;
   anglePitchDeg: number;
   angleYawDeg: number;
@@ -84,4 +86,33 @@ export interface DiscoveredIncantation extends DailyInvocation {
   notes?: string;
 }
 
-export type ViewTab = 'dashboard' | 'natal' | 'combat' | 'qigong' | 'transits' | 'occult';
+export interface TarotCard {
+  id: string;
+  name: string;
+  imagePath: string;
+  suit?: 'Major' | 'Cups' | 'Wands' | 'Swords' | 'Pentacles';
+  uprightMeaning: string;
+  reversedMeaning: string;
+  associatedPlanetOrSign: string;
+  glyph?: string;
+}
+
+export interface DrawnCard {
+  card: TarotCard;
+  isReversed: boolean;
+  positionName?: string;
+}
+
+export interface Meditation {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  associatedPlanet: string;
+  focusArchetype: string;
+  breathingPattern: 'Box (4-4-4-4)' | 'Fire (2-1-2-1)' | 'Void (4-7-8)' | 'Deep (5-5-5-5)';
+  mantra: string;
+}
+
+export type ViewTab = 'dashboard' | 'natal' | 'combat' | 'qigong' | 'meditations' | 'tarot' | 'occult';
+export type EnvironmentViewMode = 'headset_xr' | 'direct_panel' | 'passthrough_ar';

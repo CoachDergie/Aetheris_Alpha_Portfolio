@@ -1,204 +1,158 @@
 import React, { useState, useEffect } from 'react';
 import { PunchTelemetry } from '../types';
 import { generatePunchTelemetry, soundEffects } from '../utils/telemetry';
-import { Flame, Zap, Target, RotateCcw, Activity, ShieldAlert, Award } from 'lucide-react';
+import { Flame, Zap, Target, Activity, ShieldAlert, Award } from 'lucide-react';
 
 interface CombatTelemetryPanelProps {
   punches: PunchTelemetry[];
   setPunches: React.Dispatch<React.SetStateAction<PunchTelemetry[]>>;
-  bodyWeightKg: number;
+  bodyWeightKg?: number;
 }
 
 export const CombatTelemetryPanel: React.FC<CombatTelemetryPanelProps> = ({
   punches,
   setPunches,
-  bodyWeightKg,
+  bodyWeightKg = 82,
 }) => {
-  const [activeType, setActiveType] = useState<PunchTelemetry['type']>('Lead Jab');
   const [isStriking, setIsStriking] = useState(false);
-  const [strengthModifier, setStrengthModifier] = useState(1.0);
 
-  const latestPunch = punches[0] || {
+  const lastPunch = punches[0] || {
+    id: 'init_p',
+    timestamp: Date.now(),
+    type: 'Lead Jab',
     speedMs: 7.4,
     anglePitchDeg: 12.0,
+    angleYawDeg: 2.1,
     returnTimeSec: 0.32,
-    energyKcal: 0.28,
     impactForceJoules: 43.8,
-    type: 'Lead Jab',
+    energyKcal: 0.28,
   };
 
-  const handleExecuteStrike = (strikeType?: PunchTelemetry['type']) => {
-    const typeToUse = strikeType || activeType;
+  const handleRecordPunch = (type: 'Lead Jab' | 'Cross Strike' | 'Palm Strike' | 'Iron Fist' | 'Hook' | 'Spear Hand') => {
     setIsStriking(true);
-    const newPunch = generatePunchTelemetry(typeToUse, strengthModifier);
+    const newPunch = generatePunchTelemetry(type, 1.0);
     soundEffects.playPunchSwoosh(newPunch.speedMs);
-
     setPunches((prev) => [newPunch, ...prev.slice(0, 19)]);
-
-    setTimeout(() => {
-      setIsStriking(false);
-    }, 250);
+    setTimeout(() => setIsStriking(false), 200);
   };
 
-  // Keyboard shortcut listener for rapid virtual sparring (Space or Enter to punch)
+  // Keyboard shortcut listener (Space = Lead Jab, KeyC = Cross Strike, KeyI = Palm Strike)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.code === 'Space' || e.code === 'KeyP') {
+      if (e.code === 'Space') {
         e.preventDefault();
-        handleExecuteStrike();
+        handleRecordPunch('Lead Jab');
+      } else if (e.code === 'KeyC') {
+        e.preventDefault();
+        handleRecordPunch('Cross Strike');
+      } else if (e.code === 'KeyI') {
+        e.preventDefault();
+        handleRecordPunch('Palm Strike');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeType, strengthModifier]);
-
-  const totalCaloriesExpended = punches.reduce((sum, p) => sum + p.energyKcal, 0);
-  const maxSpeed = punches.length > 0 ? Math.max(...punches.map((p) => p.speedMs)) : 7.4;
+  }, []);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      {/* 1. Primary Combat Telemetry Display (Matching Design HTML) */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-xl transition-all hover:border-orange-500/30">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-orange-500" />
-            Combat Telemetry (OpenXR)
-          </h2>
-          <span className="text-[9px] text-gray-400 font-mono">
-            {punches.length} Strikes Logged
+    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto p-4 sm:p-6 text-center">
+      {/* Title */}
+      <div className="space-y-1">
+        <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_15px_rgba(0,229,255,0.6)]">
+          🥊 MARTIAL COMBAT TELEMETRY
+        </h2>
+        <p className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
+          STRIKE KINETICS // IMPACT FORCE & VECTOR RECOIL
+        </p>
+      </div>
+
+      {/* 3 Large Live Gauges matching Headset */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+        {/* Peak Velocity Gauge */}
+        <div className="bg-gradient-to-b from-[#141b2e]/90 to-[#0a0e1a]/95 border border-cyan-500/40 rounded-2xl p-6 shadow-[0_0_25px_rgba(0,229,255,0.15)] flex flex-col items-center">
+          <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
+            PEAK VELOCITY
           </span>
+          <div className="text-3xl sm:text-4xl font-black font-mono text-[#00e5ff] my-2 drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">
+            {lastPunch.speedMs.toFixed(1)} m/s
+          </div>
+          <span className="text-[11px] font-mono text-gray-500 uppercase">TARGET: &gt; 9.0 m/s</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 font-mono">
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <p className="text-[9px] opacity-60 uppercase text-gray-300">Peak Velocity</p>
-            <p className="text-2xl font-bold text-orange-300">
-              {latestPunch.speedMs.toFixed(1)} <span className="text-[10px] font-normal text-gray-400">m/s</span>
-            </p>
-            <div className="w-full bg-white/10 h-1 rounded-full mt-1.5 overflow-hidden">
-              <div
-                className="bg-orange-500 h-full transition-all duration-300"
-                style={{ width: `${Math.min(100, (latestPunch.speedMs / 14) * 100)}%` }}
-              />
-            </div>
+        {/* Impact Force Gauge */}
+        <div className="bg-gradient-to-b from-[#141b2e]/90 to-[#0a0e1a]/95 border border-yellow-500/40 rounded-2xl p-6 shadow-[0_0_25px_rgba(255,215,0,0.15)] flex flex-col items-center">
+          <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
+            IMPACT FORCE
+          </span>
+          <div className="text-3xl sm:text-4xl font-black font-mono text-[#ffd700] my-2 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+            {lastPunch.impactForceJoules.toFixed(1)} J
           </div>
+          <span className="text-[11px] font-mono text-gray-500 uppercase">KINETIC CLIMAX</span>
+        </div>
 
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <p className="text-[9px] opacity-60 uppercase text-gray-300">Launch Angle</p>
-            <p className="text-2xl font-bold text-orange-300">
-              {latestPunch.anglePitchDeg > 0 ? `+${latestPunch.anglePitchDeg}` : latestPunch.anglePitchDeg}°{' '}
-              <span className="text-[10px] font-normal text-gray-400">pitch</span>
-            </p>
-            <p className="text-[9px] text-gray-500">Yaw: {latestPunch.angleYawDeg || 0}°</p>
+        {/* Recoil Return Gauge */}
+        <div className="bg-gradient-to-b from-[#141b2e]/90 to-[#0a0e1a]/95 border border-red-500/40 rounded-2xl p-6 shadow-[0_0_25px_rgba(239,68,68,0.15)] flex flex-col items-center">
+          <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
+            RECOIL RETURN
+          </span>
+          <div className="text-3xl sm:text-4xl font-black font-mono text-[#ff5252] my-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+            {lastPunch.returnTimeSec.toFixed(2)} s
           </div>
-
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <p className="text-[9px] opacity-60 uppercase text-gray-300">Return Recoil</p>
-            <p className="text-2xl font-bold text-orange-300">
-              {latestPunch.returnTimeSec.toFixed(2)} <span className="text-[10px] font-normal text-gray-400">s</span>
-            </p>
-            <p className="text-[9px] text-emerald-400/80">
-              {latestPunch.returnTimeSec < 0.28 ? 'Ultra-Rapid' : 'Standard'}
-            </p>
-          </div>
-
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <p className="text-[9px] opacity-60 uppercase text-gray-300">Kinetic Energy</p>
-            <p className="text-2xl font-bold text-orange-300">
-              {latestPunch.impactForceJoules ? latestPunch.impactForceJoules.toFixed(0) : '44'}{' '}
-              <span className="text-[10px] font-normal text-gray-400">J</span>
-            </p>
-            <p className="text-[9px] text-gray-400">Total: {totalCaloriesExpended.toFixed(1)} kcal</p>
-          </div>
+          <span className="text-[11px] font-mono text-gray-500 uppercase">TARGET: &lt; 0.30 s</span>
         </div>
       </div>
 
-      {/* 2. Interactive Strike Simulator & Hand Trigger */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono flex items-center gap-1">
-            <Target className="w-3 h-3" />
-            Gesture Strike Trigger
-          </h3>
-          <span className="text-[9px] text-gray-400 font-mono">Press [Space] or Tap</span>
-        </div>
-
-        {/* Strike Type Selector Chips */}
-        <div className="grid grid-cols-3 gap-1.5 mb-3 font-mono text-[10px]">
-          {(['Lead Jab', 'Cross Strike', 'Palm Strike', 'Iron Fist', 'Hook', 'Spear Hand'] as PunchTelemetry['type'][]).map(
-            (st) => (
-              <button
-                key={st}
-                onClick={() => {
-                  setActiveType(st);
-                  handleExecuteStrike(st);
-                }}
-                className={`py-1.5 px-2 rounded-lg border text-center transition-all ${
-                  activeType === st
-                    ? 'bg-orange-600/30 border-orange-500 text-orange-200 shadow-[0_0_8px_rgba(255,69,0,0.3)]'
-                    : 'bg-black/40 border-white/10 text-gray-400 hover:text-white'
-                }`}
-              >
-                {st}
-              </button>
-            )
-          )}
-        </div>
-
-        {/* Large Action Strike Button with Visual Flare */}
+      {/* Strike Trigger Buttons matching Headset */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
         <button
-          id="strike-telemetry-btn"
-          onClick={() => handleExecuteStrike()}
-          className={`w-full py-3.5 rounded-xl border flex items-center justify-center gap-2 font-mono text-sm uppercase tracking-widest font-bold transition-all relative overflow-hidden ${
-            isStriking
-              ? 'bg-orange-500 text-black border-white shadow-[0_0_25px_rgba(255,69,0,0.8)] scale-95'
-              : 'bg-gradient-to-r from-orange-600/80 to-red-600/80 text-white border-orange-500/80 hover:brightness-110 shadow-[0_0_15px_rgba(255,69,0,0.4)]'
-          }`}
+          id="btn-lead-jab"
+          onClick={() => handleRecordPunch('Lead Jab')}
+          className="py-3.5 rounded-xl bg-[#00e5ff] hover:bg-cyan-400 text-black font-mono font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.5)] transition-all hover:scale-105"
         >
-          <Zap className="w-4 h-4" />
-          <span>Execute Strike [{activeType}]</span>
+          RECORD LEAD JAB
+        </button>
+
+        <button
+          id="btn-cross-strike"
+          onClick={() => handleRecordPunch('Cross Strike')}
+          className="py-3.5 rounded-xl bg-[#ffd700] hover:bg-yellow-400 text-black font-mono font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.5)] transition-all hover:scale-105"
+        >
+          RECORD CROSS STRIKE
+        </button>
+
+        <button
+          id="btn-iron-palm"
+          onClick={() => handleRecordPunch('Palm Strike')}
+          className="py-3.5 rounded-xl bg-[#ff5252] hover:bg-red-400 text-black font-mono font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all hover:scale-105"
+        >
+          IRON PALM THRUST
         </button>
       </div>
 
-      {/* 3. Strike Telemetry History Log */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl flex-1 overflow-y-auto max-h-[220px]">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono flex items-center gap-1">
-            <Activity className="w-3 h-3" />
-            Strike Telemetry Log
-          </h3>
-          <button
-            onClick={() => setPunches([])}
-            className="text-[9px] text-gray-500 hover:text-gray-300 font-mono uppercase"
-          >
-            Clear Log
-          </button>
+      {/* Strike History Stream Log matching Headset */}
+      <div className="w-full bg-[#101628]/95 border border-cyan-500/30 rounded-2xl p-6 shadow-[0_0_20px_rgba(0,0,0,0.6)] text-left">
+        <div className="flex justify-between items-center pb-3 border-b border-cyan-500/20">
+          <span className="text-xs font-black font-mono text-[#00e5ff] uppercase tracking-widest">
+            LIVE STRIKE TELEMETRY STREAM
+          </span>
+          <span className="text-[10px] font-mono text-gray-500">
+            {punches.length} STRIKES RECORDED
+          </span>
         </div>
 
-        <div className="space-y-1.5 font-mono text-xs">
-          {punches.length === 0 ? (
-            <p className="text-gray-500 text-[11px] py-4 text-center">
-              No strikes captured yet. Trigger punches to track speed & angle telemetry.
-            </p>
-          ) : (
-            punches.slice(0, 8).map((p, idx) => (
-              <div
-                key={p.id || idx}
-                className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/5 hover:border-orange-500/30 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-orange-400 font-bold">#{punches.length - idx}</span>
-                  <span className="text-white text-[11px]">{p.type}</span>
-                </div>
-                <div className="flex items-center gap-3 text-[10px]">
-                  <span className="text-orange-300 font-semibold">{p.speedMs.toFixed(1)} m/s</span>
-                  <span className="text-gray-400">{p.anglePitchDeg}°</span>
-                  <span className="text-emerald-400">{p.returnTimeSec.toFixed(2)}s</span>
-                </div>
-              </div>
-            ))
-          )}
+        <div className="mt-3 space-y-2 font-mono">
+          {punches.slice(0, 7).map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between py-2 border-b border-gray-800 text-xs"
+            >
+              <span className="font-bold text-white tracking-wider">{p.type}</span>
+              <span className="font-black text-[#00e5ff]">{p.speedMs.toFixed(1)} m/s</span>
+              <span className="font-bold text-[#ffd700]">{p.impactForceJoules.toFixed(1)} J</span>
+              <span className="text-gray-400 text-[11px]">{p.returnTimeSec.toFixed(2)}s Recoil</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

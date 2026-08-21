@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { QiGongBarbellSession, DailyInvocation } from '../types';
-import { MARTIAL_MOVEMENTS, calculateBarbellKcal, soundEffects } from '../utils/telemetry';
-import { DAILY_INVOCATIONS } from '../utils/astronomy';
-import { Dumbbell, Flame, Volume2, Shield, Sparkles, CheckCircle, RefreshCw } from 'lucide-react';
+import { calculateBarbellKcal, soundEffects } from '../utils/telemetry';
+import { Dumbbell, Zap, Flame, RotateCcw, Check } from 'lucide-react';
 
 interface QiGongBarbellPanelProps {
   session: QiGongBarbellSession;
   setSession: React.Dispatch<React.SetStateAction<QiGongBarbellSession>>;
-  onExportPdf: () => void;
-  dayInvocation: DailyInvocation;
+  onExportPdf?: () => void;
+  dayInvocation?: DailyInvocation;
 }
 
 export const QiGongBarbellPanel: React.FC<QiGongBarbellPanelProps> = ({
@@ -17,234 +16,110 @@ export const QiGongBarbellPanel: React.FC<QiGongBarbellPanelProps> = ({
   onExportPdf,
   dayInvocation,
 }) => {
-  const [selectedDayIdx, setSelectedDayIdx] = useState(new Date().getDay());
-  const [selectedMovementIdx, setSelectedMovementIdx] = useState(0);
-  const [isChanting, setIsChanting] = useState(false);
+  const [repCount, setRepCount] = useState<number>(session.reps || 12);
+  const [setCount, setSetCount] = useState<number>(session.sets || 5);
 
-  const activeInvocation = DAILY_INVOCATIONS[selectedDayIdx] || dayInvocation;
-  const currentMovement = MARTIAL_MOVEMENTS[selectedMovementIdx] || MARTIAL_MOVEMENTS[0];
-
-  const handleBodyWeightChange = (val: number) => {
-    const newWeight = Math.max(30, Math.min(250, val));
-    const newKcal = calculateBarbellKcal(newWeight, session.barbellWeightKg, currentMovement.met, session.durationMinutes);
-    setSession((prev) => ({
-      ...prev,
-      userBodyWeightKg: newWeight,
-      estimatedKcal: newKcal,
-    }));
-  };
-
-  const handleBarbellWeightChange = (val: number) => {
-    const newBarWeight = Math.max(5, Math.min(100, val));
-    const newKcal = calculateBarbellKcal(session.userBodyWeightKg, newBarWeight, currentMovement.met, session.durationMinutes);
-    setSession((prev) => ({
-      ...prev,
-      barbellWeightKg: newBarWeight,
-      estimatedKcal: newKcal,
-    }));
-  };
-
-  const handleDurationChange = (minutes: number) => {
-    const newMins = Math.max(1, Math.min(180, minutes));
-    const newKcal = calculateBarbellKcal(session.userBodyWeightKg, session.barbellWeightKg, currentMovement.met, newMins);
-    setSession((prev) => ({
-      ...prev,
-      durationMinutes: newMins,
-      estimatedKcal: newKcal,
-    }));
-  };
-
-  const handleMovementSelect = (idx: number) => {
-    setSelectedMovementIdx(idx);
-    const mov = MARTIAL_MOVEMENTS[idx];
-    const newKcal = calculateBarbellKcal(session.userBodyWeightKg, session.barbellWeightKg, mov.met, session.durationMinutes);
-    setSession((prev) => ({
-      ...prev,
-      movementName: mov.name,
-      estimatedKcal: newKcal,
-      focusStance: mov.focus,
-    }));
+  const handleLogRep = () => {
     soundEffects.playHolographicChime(528);
+    setRepCount((r) => r + 1);
+    setSession((prev) => ({
+      ...prev,
+      reps: prev.reps + 1,
+      estimatedKcal: prev.estimatedKcal + 4,
+    }));
   };
 
-  const handleReciteInvocation = () => {
-    setIsChanting(true);
-    soundEffects.playHolographicChime(396);
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(`${activeInvocation.barbarousFormula}. ${activeInvocation.invocationText}`);
-      utterance.rate = 0.85;
-      utterance.pitch = 0.75;
-      utterance.onend = () => setIsChanting(false);
-      utterance.onerror = () => setIsChanting(false);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      setTimeout(() => setIsChanting(false), 2000);
-    }
+  const handleResetSession = () => {
+    setRepCount(12);
+    setSetCount(5);
+    setSession((prev) => ({
+      ...prev,
+      sets: 5,
+      reps: 12,
+      estimatedKcal: 198,
+    }));
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      {/* 1. Daily Invocations & Barbarous Names Card */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-xl transition-all hover:border-orange-500/30">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-            Qi-Gong Alignment & Barbarous Formula
-          </h2>
-          {/* Day of Week Selector */}
-          <select
-            value={selectedDayIdx}
-            onChange={(e) => setSelectedDayIdx(Number(e.target.value))}
-            className="bg-black/60 border border-white/15 rounded text-[10px] font-mono text-orange-300 px-2 py-0.5 outline-none"
-          >
-            {DAILY_INVOCATIONS.map((d, i) => (
-              <option key={d.dayOfWeek} value={i} className="bg-neutral-900 text-white">
-                {d.dayOfWeek} ({d.planet.split('/')[0].trim()})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Daily Invocations Quote Box */}
-        <div className="space-y-3 font-mono">
-          <div className="p-3 bg-black/40 rounded-xl border-l-2 border-orange-500 space-y-1.5">
-            <div className="flex justify-between items-center">
-              <span className="text-[9px] uppercase tracking-wider text-orange-400 font-bold">
-                Barbarous True Name Formula
-              </span>
-              <span className="text-[9px] text-gray-500">{activeInvocation.focusQlipha}</span>
-            </div>
-            <p className="text-xs font-bold text-orange-200 tracking-wider">
-              "{activeInvocation.barbarousFormula}"
-            </p>
-            <p className="text-[11px] text-gray-300 italic opacity-90 leading-relaxed">
-              "{activeInvocation.invocationText}"
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <button
-              onClick={handleReciteInvocation}
-              disabled={isChanting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-950/60 hover:bg-orange-900 border border-orange-700/60 text-orange-300 text-[10px] uppercase font-mono transition-colors"
-            >
-              <Volume2 className={`w-3.5 h-3.5 ${isChanting ? 'animate-bounce text-orange-400' : ''}`} />
-              <span>{isChanting ? 'Chanting Formula...' : 'Chant True Names'}</span>
-            </button>
-
-            <span className="text-[10px] text-gray-400">
-              Martial: <strong className="text-white">{activeInvocation.martialCorrelation.split('&')[0]}</strong>
-            </span>
-          </div>
-        </div>
+    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto p-4 sm:p-6 text-center">
+      {/* Title */}
+      <div className="space-y-1">
+        <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest text-[#ffd700] uppercase drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]">
+          ⚡ 6-FT BARBELL QI-GONG CONDITIONING
+        </h2>
+        <p className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
+          ZINC-IMBUED BARBELL // HORSE STANCE (MA BU) ROOTING MATRIX
+        </p>
       </div>
 
-      {/* 2. 6-Foot Trimmed Zinc Barbell Conditioning & kCal Calculator */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-xl flex-1 flex flex-col justify-between">
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono flex items-center gap-1.5">
-              <Dumbbell className="w-3.5 h-3.5 text-orange-500" />
-              6-Foot Zinc Barbell Conditioning
-            </h2>
-            <span className="text-[10px] font-mono text-orange-300 font-bold">
-              6FT | {session.barbellWeightKg}KG SLEEVELESS
+      {/* Main Condition Card matching Headset */}
+      <div className="w-full bg-gradient-to-b from-[#141b2e]/90 to-[#0a0e1a]/95 border-2 border-yellow-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_30px_rgba(255,215,0,0.2)] flex flex-col items-center">
+        <h3 className="text-base sm:text-lg font-black font-mono text-[#ffd700] uppercase tracking-wider">
+          {session.movementName.toUpperCase()}
+        </h3>
+
+        <p className="text-xs font-mono text-gray-300 mt-2">
+          STANCE: <strong className="text-white">{session.focusStance}</strong>
+        </p>
+        <p className="text-xs font-mono font-bold text-[#00e5ff] mt-0.5">
+          COSMIC HOUR: {session.associatedPlanetaryHour.toUpperCase()}
+        </p>
+
+        {/* 4 Stat Blocks */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full my-8 pt-6 border-t border-gray-800">
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+              BAR LENGTH
+            </span>
+            <span className="text-2xl font-black font-mono text-[#ffd700] mt-1">
+              {session.barbellLengthFt} FT
             </span>
           </div>
 
-          {/* Biometric Variables Inputs */}
-          <div className="grid grid-cols-3 gap-2.5 mb-3 font-mono">
-            <div className="p-2 bg-black/40 rounded-xl border border-white/5">
-              <label className="text-[9px] uppercase text-gray-400 block mb-0.5">Body Mass</label>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min="35"
-                  max="200"
-                  value={session.userBodyWeightKg}
-                  onChange={(e) => handleBodyWeightChange(Number(e.target.value))}
-                  className="w-full bg-transparent text-white text-base font-bold outline-none"
-                />
-                <span className="text-[10px] text-gray-500">kg</span>
-              </div>
-            </div>
-
-            <div className="p-2 bg-black/40 rounded-xl border border-white/5">
-              <label className="text-[9px] uppercase text-gray-400 block mb-0.5">Zinc Bar Load</label>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min="5"
-                  max="100"
-                  value={session.barbellWeightKg}
-                  onChange={(e) => handleBarbellWeightChange(Number(e.target.value))}
-                  className="w-full bg-transparent text-white text-base font-bold outline-none"
-                />
-                <span className="text-[10px] text-gray-500">kg</span>
-              </div>
-            </div>
-
-            <div className="p-2 bg-black/40 rounded-xl border border-white/5">
-              <label className="text-[9px] uppercase text-gray-400 block mb-0.5">Duration</label>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min="5"
-                  max="120"
-                  value={session.durationMinutes}
-                  onChange={(e) => handleDurationChange(Number(e.target.value))}
-                  className="w-full bg-transparent text-white text-base font-bold outline-none"
-                />
-                <span className="text-[10px] text-gray-500">min</span>
-              </div>
-            </div>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+              BAR WEIGHT
+            </span>
+            <span className="text-2xl font-black font-mono text-[#00e5ff] mt-1">
+              {session.barbellWeightKg} KG
+            </span>
           </div>
 
-          {/* Movement Stance Selector */}
-          <div className="space-y-1.5 mb-3 font-mono">
-            <label className="text-[9px] uppercase text-gray-400 block">Kung-Fu Qi-Gong Movement Pattern</label>
-            <div className="space-y-1">
-              {MARTIAL_MOVEMENTS.map((mov, idx) => (
-                <button
-                  key={mov.name}
-                  onClick={() => handleMovementSelect(idx)}
-                  className={`w-full text-left p-2 rounded-lg border text-[10px] flex items-center justify-between transition-all ${
-                    selectedMovementIdx === idx
-                      ? 'bg-orange-600/20 border-orange-500 text-orange-200'
-                      : 'bg-black/30 border-white/5 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <span className="truncate pr-2 font-medium">{mov.name}</span>
-                  <span className="text-[9px] text-orange-400 flex-shrink-0">MET {mov.met}</span>
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+              SETS / REPS
+            </span>
+            <span className="text-2xl font-black font-mono text-[#ffd700] mt-1">
+              {setCount} x {repCount}
+            </span>
           </div>
 
-          {/* Energy Usage (kCal) Output Banner */}
-          <div className="p-3 bg-gradient-to-r from-orange-950/40 to-black rounded-xl border border-orange-800/40 flex items-center justify-between font-mono">
-            <div>
-              <p className="text-[9px] text-gray-400 uppercase">Estimated Metabolic Energy</p>
-              <p className="text-2xl font-bold text-orange-300">
-                {session.estimatedKcal} <span className="text-xs font-normal text-gray-400">kCal</span>
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] text-gray-400 uppercase">Focus Stance</p>
-              <p className="text-[10px] text-white max-w-[150px] truncate">{session.focusStance}</p>
-            </div>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+              ENERGY
+            </span>
+            <span className="text-2xl font-black font-mono text-[#34d399] mt-1">
+              {session.estimatedKcal} KCAL
+            </span>
           </div>
         </div>
 
-        {/* Export PDF Button matching Design HTML */}
-        <div className="flex justify-center pt-3">
+        {/* Log Rep Button matching Headset */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
-            id="export-pdf-qigong-btn"
-            onClick={onExportPdf}
-            className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 transition-all border border-white/20 rounded-xl text-xs uppercase tracking-widest font-mono text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+            id="btn-log-barbell-rep"
+            onClick={handleLogRep}
+            className="px-8 py-3.5 rounded-xl bg-[#ffd700] hover:bg-yellow-400 text-black font-mono font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(255,215,0,0.6)] transition-all hover:scale-105"
           >
-            <span>Export Astrology & Telemetry PDF</span>
+            LOG STANCE REP (+4 KCAL)
+          </button>
+
+          <button
+            onClick={handleResetSession}
+            className="p-3 rounded-xl bg-black/40 border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white transition-colors"
+            title="Reset Session"
+          >
+            <RotateCcw className="w-4 h-4" />
           </button>
         </div>
       </div>
