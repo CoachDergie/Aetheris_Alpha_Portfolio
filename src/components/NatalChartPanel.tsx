@@ -21,8 +21,8 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
   midheaven,
 }) => {
   return (
-    <div className="flex flex-col gap-4 w-full p-2 sm:p-3 text-center">
-      {/* Headset Style Title */}
+    <div className="flex flex-col gap-4 w-full p-2.5 sm:p-4 text-center">
+      {/* Title */}
       <div className="space-y-1">
         <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#ffd700] uppercase drop-shadow-[0_0_12px_rgba(255,215,0,0.6)]">
           ✦ NATAL CELESTIAL MANDALA
@@ -34,16 +34,16 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
 
       <div className="h-px bg-gradient-to-r from-transparent via-[#ffd700]/40 to-transparent my-0.5"></div>
 
-      {/* Planetary Matrix Cards - Single Column Centered Stack Matching Headset Screenshot */}
+      {/* Planetary Matrix Cards */}
       <div className="flex flex-col gap-3 text-center w-full">
         {bodies.map((body) => (
           <div
             key={body.name}
             id={`natal-body-${body.name.toLowerCase()}`}
-            className="bg-gradient-to-b from-[#141b2e]/95 to-[#0a0e1a]/95 border border-yellow-500/30 hover:border-[#ffd700] rounded-2xl p-4 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all flex flex-col items-center justify-center space-y-1.5"
+            className="bg-[#1E2638] border border-yellow-500/30 hover:border-[#ffd700] rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all flex flex-col items-center justify-center space-y-1.5"
           >
             {/* Celestial Glyph */}
-            <div className="text-3xl text-[#ffd700] font-serif flex items-center justify-center w-10 h-10 rounded-xl bg-yellow-950/40 border border-yellow-500/40 shadow-[0_0_12px_rgba(255,215,0,0.3)]">
+            <div className="text-3xl text-[#ffd700] font-serif flex items-center justify-center w-10 h-10 rounded-xl bg-[#2B2312] border border-yellow-500/40 shadow-[0_0_12px_rgba(255,215,0,0.25)]">
               {body.symbol}
             </div>
 
@@ -59,7 +59,7 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
 
             {/* Qliphotic Correlation */}
             {body.qliphoticSphere && (
-              <div className="mt-1 px-2.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-400/40 text-[#00e5ff] text-[10px] font-mono font-bold shadow-[0_0_10px_rgba(0,229,255,0.2)]">
+              <div className="mt-1 px-2.5 py-0.5 rounded-md bg-[#122238] border border-cyan-400/40 text-[#00e5ff] text-[10px] font-mono font-bold">
                 ⚡ QLIPHA: {body.qliphoticSphere.toUpperCase()}
               </div>
             )}
@@ -67,7 +67,7 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
         ))}
       </div>
 
-      {/* Planetary Aspects Section - Single Column Stack */}
+      {/* Planetary Aspects Section */}
       <div className="mt-3 space-y-2.5">
         <h3 className="text-xs font-black font-mono text-[#ffd700] uppercase tracking-widest text-center drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
           ✦ PLANETARY ASPECTS
@@ -78,7 +78,7 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
             <div
               key={idx}
               id={`natal-aspect-${idx}`}
-              className="bg-[#101628]/95 border border-cyan-500/30 rounded-xl p-3 shadow-[0_0_12px_rgba(0,0,0,0.4)]"
+              className="bg-[#1E2638] border border-cyan-500/30 rounded-xl p-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black font-mono text-white uppercase tracking-wider">

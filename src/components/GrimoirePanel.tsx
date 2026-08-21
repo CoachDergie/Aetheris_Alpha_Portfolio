@@ -1,49 +1,53 @@
 import React, { useState } from 'react';
-import { DiscoveredIncantation } from '../utils/incantationDiscovery';
-import { DAILY_INVOCATIONS } from '../utils/astronomy';
+import { DiscoveredIncantation } from '../types';
+import { Sparkles, BookOpen, Volume2, Search, Plus, Compass } from 'lucide-react';
 import { soundEffects } from '../utils/telemetry';
-import { BookOpen, Volume2, Sparkles, Plus, Search, Check, Flame } from 'lucide-react';
 
 interface GrimoirePanelProps {
   grimoire: DiscoveredIncantation[];
   setGrimoire: React.Dispatch<React.SetStateAction<DiscoveredIncantation[]>>;
   activeDailyInvocation: DiscoveredIncantation;
-  setActiveDailyInvocation: (inc: DiscoveredIncantation) => void;
-  onDiscoverNew?: (queryPrompt?: string) => void;
+  setActiveDailyInvocation: React.Dispatch<React.SetStateAction<DiscoveredIncantation>>;
+  onDiscoverNew: (promptQuery?: string) => void;
 }
 
 export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
   grimoire,
-  setGrimoire,
   activeDailyInvocation,
   setActiveDailyInvocation,
   onDiscoverNew,
 }) => {
-  const [selectedDayIdx, setSelectedDayIdx] = useState<number>(new Date().getDay());
-  const [isChanting, setIsChanting] = useState<boolean>(false);
-  const [searchFilter, setSearchFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [customPrompt, setCustomPrompt] = useState<string>('');
 
-  const currentDaily = DAILY_INVOCATIONS[selectedDayIdx] || DAILY_INVOCATIONS[0];
+  const filteredGrimoire = grimoire.filter((inc) => {
+    return (
+      inc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inc.barbarousFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inc.planet.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
-  const handleChantFormula = (formula: string, text: string) => {
-    setIsChanting(true);
-    soundEffects.playHolographicChime(528);
+  const handleSynthesize = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customPrompt.trim()) return;
+    onDiscoverNew(customPrompt.trim());
+    setCustomPrompt('');
+  };
 
+  const handleVocalize = (text: string) => {
+    soundEffects.playHolographicChime(852);
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(`${formula}. ${text}`);
-      utterance.rate = 0.8;
-      utterance.pitch = 0.7;
-      utterance.onend = () => setIsChanting(false);
-      utterance.onerror = () => setIsChanting(false);
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.85;
+      utterance.pitch = 0.75;
       window.speechSynthesis.speak(utterance);
-    } else {
-      setTimeout(() => setIsChanting(false), 2500);
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full max-w-xl mx-auto p-2 sm:p-4 text-center">
+    <div className="flex flex-col items-center gap-4 w-full p-2.5 sm:p-4 text-center">
       {/* Title */}
       <div className="space-y-1">
         <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_12px_rgba(0,229,255,0.6)]">
@@ -54,73 +58,80 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
         </p>
       </div>
 
-      {/* Day Selector */}
-      <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full no-scrollbar">
-        {DAILY_INVOCATIONS.map((inv, idx) => (
-          <button
-            key={inv.dayOfWeek}
-            onClick={() => setSelectedDayIdx(idx)}
-            className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold uppercase transition-all whitespace-nowrap ${
-              selectedDayIdx === idx
-                ? 'bg-cyan-950 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
-                : 'bg-black/40 border border-gray-800 text-gray-400 hover:text-white'
+      {/* Active Selected Invocation Banner */}
+      {activeDailyInvocation && (
+        <div className="w-full bg-[#1E2638] border-2 border-cyan-500/50 rounded-2xl p-4 shadow-[0_4px_25px_rgba(0,0,0,0.4)] text-left space-y-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#122238] border border-cyan-500/40 text-cyan-300 font-bold uppercase">
+              ACTIVE TRANSMISSION // {activeDailyInvocation.planet}
+            </span>
+            <button
+              onClick={() => handleVocalize(activeDailyInvocation.barbarousFormula)}
+              className="p-1.5 rounded-lg bg-[#161B26] border border-cyan-500/40 text-[#00e5ff] hover:text-white transition-colors"
+              title="Vocalize Barbarous Vibration"
+            >
+              <Volume2 className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-black font-mono text-[#ffd700] uppercase tracking-wider">
+              {activeDailyInvocation.title}
+            </h3>
+            <p className="text-sm font-mono font-black text-[#00e5ff] tracking-wide mt-1 leading-relaxed">
+              "{activeDailyInvocation.barbarousFormula}"
+            </p>
+          </div>
+
+          <p className="text-xs text-gray-300 font-sans leading-relaxed">
+            {activeDailyInvocation.intent}
+          </p>
+
+          <div className="pt-2 border-t border-[#2A3650] flex items-center justify-between text-[10px] font-mono text-gray-400">
+            <span>SPHERE: {activeDailyInvocation.qliphoticSphere || 'NECHESHIRION'}</span>
+            <span>MARTIAL: {activeDailyInvocation.martialCorrelation}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Synthesis Input Bar */}
+      <form onSubmit={handleSynthesize} className="flex gap-2 w-full">
+        <input
+          type="text"
+          placeholder="Synthesize formula (e.g. 'Mars in Scorpio strike strength')..."
+          value={customPrompt}
+          onChange={(e) => setCustomPrompt(e.target.value)}
+          className="flex-1 px-3 py-2 bg-[#1E2638] border border-[#2E3B57] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder-gray-500"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-xl bg-[#00e5ff] hover:bg-cyan-400 text-black font-mono font-black text-xs uppercase tracking-wider shadow-[0_0_12px_rgba(0,229,255,0.4)] transition-all flex items-center gap-1 shrink-0"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>INVOKE</span>
+        </button>
+      </form>
+
+      {/* Grimoire List Cards */}
+      <div className="w-full space-y-2.5 text-left">
+        {filteredGrimoire.map((inc) => (
+          <div
+            key={inc.id}
+            onClick={() => setActiveDailyInvocation(inc)}
+            className={`cursor-pointer p-3.5 rounded-xl border transition-all ${
+              activeDailyInvocation?.id === inc.id
+                ? 'bg-[#122238] border-cyan-400 shadow-[0_0_15px_rgba(0,229,255,0.2)]'
+                : 'bg-[#1E2638] border-[#2E3B57] hover:border-cyan-500/40'
             }`}
           >
-            {inv.dayOfWeek} ({inv.planet.split('/')[0].trim()})
-          </button>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-black font-mono text-white uppercase">{inc.title}</span>
+              <span className="text-[10px] font-mono text-[#ffd700] font-bold">{inc.planet}</span>
+            </div>
+            <p className="text-xs font-mono text-cyan-300 font-bold mt-1">"{inc.barbarousFormula}"</p>
+            <p className="text-[11px] text-gray-400 mt-1 font-sans line-clamp-2">{inc.intent}</p>
+          </div>
         ))}
-      </div>
-
-      {/* Active Daily Planetary Invocation Card */}
-      <div className="w-full bg-gradient-to-b from-[#141b2e]/90 to-[#0a0e1a]/95 border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_30px_rgba(0,229,255,0.2)] text-left flex flex-col justify-between">
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-cyan-500/20 gap-2">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest">
-                PLANETARY CURRENT
-              </span>
-              <h3 className="text-lg font-black font-mono text-white uppercase">
-                {currentDaily.planet} // {currentDaily.focusQlipha}
-              </h3>
-            </div>
-
-            <div className="px-3 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/40 text-[#ffd700] text-xs font-mono font-bold">
-              MARTIAL: {currentDaily.martialCorrelation}
-            </div>
-          </div>
-
-          {/* Barbarous Formula */}
-          <div className="my-6 p-4 rounded-2xl bg-black/60 border border-cyan-500/30">
-            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest block mb-1">
-              BARBAROUS FORMULA
-            </span>
-            <p className="text-base sm:text-lg font-black font-mono text-[#ffd700] tracking-wider drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">
-              "{currentDaily.barbarousFormula}"
-            </p>
-          </div>
-
-          {/* Invocation Text */}
-          <div className="p-4 rounded-2xl bg-black/40 border border-gray-800">
-            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest block mb-1">
-              INVOCATION TRANSMISSION
-            </span>
-            <p className="text-xs sm:text-sm text-gray-200 leading-relaxed italic">
-              "{currentDaily.invocationText}"
-            </p>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => handleChantFormula(currentDaily.barbarousFormula, currentDaily.invocationText)}
-            disabled={isChanting}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#00e5ff] hover:bg-cyan-400 text-black font-mono font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.5)] transition-all"
-          >
-            <Volume2 className={`w-4 h-4 ${isChanting ? 'animate-bounce' : ''}`} />
-            <span>{isChanting ? 'CHANTING FORMULA...' : 'CHANT TRUE NAMES'}</span>
-          </button>
-        </div>
       </div>
     </div>
   );

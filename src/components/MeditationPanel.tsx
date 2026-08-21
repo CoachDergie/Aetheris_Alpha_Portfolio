@@ -1,273 +1,156 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Meditation } from '../types';
-import { MEDITATION_LIBRARY } from '../utils/meditationData';
-import { HeartHandshake, Play, Pause, RotateCcw, Sparkles, Volume2, VolumeX, CheckCircle, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, RotateCcw, Wind, Sparkles } from 'lucide-react';
+import { soundEffects } from '../utils/telemetry';
 
-interface MeditationPanelProps {
-  accentGold?: string;
-  accentCyan?: string;
-}
+type BreathPhase = 'INHALE' | 'HOLD_IN' | 'EXHALE' | 'HOLD_OUT';
 
-export const MeditationPanel: React.FC<MeditationPanelProps> = ({
-  accentGold = '#ffd700',
-  accentCyan = '#00e5ff',
-}) => {
-  const [selectedMeditation, setSelectedMeditation] = useState<Meditation | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(600);
-  const [breathPhase, setBreathPhase] = useState<'INHALE' | 'HOLD' | 'EXHALE' | 'VOID'>('INHALE');
-  const [breathCount, setBreathCount] = useState<number>(4);
-  const [isAudioDroneOn, setIsAudioDroneOn] = useState<boolean>(true);
+export const MeditationPanel: React.FC = () => {
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [phase, setPhase] = useState<BreathPhase>('INHALE');
+  const [countdown, setCountdown] = useState<number>(4);
+  const [totalSeconds, setTotalSeconds] = useState<number>(0);
+  const [inhaleDuration, setInhaleDuration] = useState<number>(4);
+  const [holdInDuration, setHoldInDuration] = useState<number>(4);
+  const [exhaleDuration, setExhaleDuration] = useState<number>(4);
+  const [holdOutDuration, setHoldOutDuration] = useState<number>(4);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
+  // Box Breathing Loop
+  useEffect(() => {
+    let timer: any = null;
+    if (isActive) {
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            // Transition phase
+            if (phase === 'INHALE') {
+              setPhase('HOLD_IN');
+              soundEffects.playHolographicChime(528);
+              return holdInDuration;
+            } else if (phase === 'HOLD_IN') {
+              setPhase('EXHALE');
+              soundEffects.playHolographicChime(432);
+              return exhaleDuration;
+            } else if (phase === 'EXHALE') {
+              setPhase('HOLD_OUT');
+              soundEffects.playHolographicChime(396);
+              return holdOutDuration;
+            } else {
+              setPhase('INHALE');
+              soundEffects.playHolographicChime(639);
+              return inhaleDuration;
+            }
+          }
+          return prev - 1;
+        });
 
-  // Initialize timer when meditation is chosen
-  const handleSelectMeditation = (med: Meditation) => {
-    setSelectedMeditation(med);
-    setSecondsRemaining(med.durationMinutes * 60);
-    setIsPlaying(false);
+        setTotalSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timer);
+  }, [isActive, phase, inhaleDuration, holdInDuration, exhaleDuration, holdOutDuration]);
+
+  const handleToggle = () => {
+    if (!isActive) {
+      soundEffects.playHolographicChime(639);
+    }
+    setIsActive(!isActive);
   };
 
-  // Timer logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying && secondsRemaining > 0) {
-      interval = setInterval(() => {
-        setSecondsRemaining((prev) => prev - 1);
-      }, 1000);
-    } else if (secondsRemaining === 0 && isPlaying) {
-      setIsPlaying(false);
+  const handleReset = () => {
+    setIsActive(false);
+    setPhase('INHALE');
+    setCountdown(inhaleDuration);
+    setTotalSeconds(0);
+  };
+
+  const getPhaseColor = () => {
+    switch (phase) {
+      case 'INHALE':
+        return '#00e5ff';
+      case 'HOLD_IN':
+        return '#ffd700';
+      case 'EXHALE':
+        return '#ff5252';
+      case 'HOLD_OUT':
+        return '#a855f7';
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, secondsRemaining]);
+  };
 
-  // Breathing Pacer cycle
-  useEffect(() => {
-    let breathInterval: NodeJS.Timeout;
-    if (isPlaying) {
-      let count = 4;
-      let phase: 'INHALE' | 'HOLD' | 'EXHALE' | 'VOID' = 'INHALE';
-
-      breathInterval = setInterval(() => {
-        count--;
-        if (count <= 0) {
-          if (phase === 'INHALE') phase = 'HOLD';
-          else if (phase === 'HOLD') phase = 'EXHALE';
-          else if (phase === 'EXHALE') phase = 'VOID';
-          else phase = 'INHALE';
-          count = 4;
-        }
-        setBreathPhase(phase);
-        setBreathCount(count);
-      }, 1000);
+  const getPhaseInstruction = () => {
+    switch (phase) {
+      case 'INHALE':
+        return 'DRAW PRANA INTO LOWER DANTIAN';
+      case 'HOLD_IN':
+        return 'COMPRESS & CIRCULATE QI';
+      case 'EXHALE':
+        return 'RELEASE TOXINS & EXCESS HEAT';
+      case 'HOLD_OUT':
+        return 'REST IN OCCULT VOID / STILLNESS';
     }
-    return () => clearInterval(breathInterval);
-  }, [isPlaying]);
-
-  // Web Audio Synth Harmonic Drone
-  useEffect(() => {
-    if (isPlaying && isAudioDroneOn) {
-      try {
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new AudioContextClass();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        // 432 Hz Solfeggio harmonic drone
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(432, ctx.currentTime);
-        gain.gain.setValueAtTime(0.05, ctx.currentTime);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        audioCtxRef.current = ctx;
-        oscRef.current = osc;
-        gainRef.current = gain;
-      } catch (err) {
-        console.warn('AudioContext disabled or not supported:', err);
-      }
-    } else {
-      if (oscRef.current) {
-        oscRef.current.stop();
-        oscRef.current.disconnect();
-      }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-      }
-      oscRef.current = null;
-      audioCtxRef.current = null;
-    }
-
-    return () => {
-      if (oscRef.current) {
-        oscRef.current.stop();
-        oscRef.current.disconnect();
-      }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-      }
-    };
-  }, [isPlaying, isAudioDroneOn]);
-
-  const formatTime = (secs: number) => {
-    const mins = Math.floor(secs / 60);
-    const remainderSecs = secs % 60;
-    return `${mins.toString().padStart(2, '0')}:${remainderSecs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="p-2 sm:p-4 flex flex-col items-center gap-4 w-full max-w-xl mx-auto">
+    <div className="flex flex-col items-center gap-4 w-full p-2.5 sm:p-4 text-center">
       {/* Title */}
-      <div className="text-center space-y-1">
-        <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#ffd700] uppercase drop-shadow-[0_0_12px_rgba(255,215,0,0.5)]">
-          🧘 MEDITATION LIBRARY
+      <div className="space-y-1">
+        <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_12px_rgba(0,229,255,0.6)]">
+          🧘 OCCULT RESPIRATION PACER
         </h2>
-        <p className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
-          Guided Respiration • Planetary Harmonic Alignment
+        <p className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+          TANTRA PRANAYAMA • DANTIAN INTERNAL COMPRESSION
         </p>
       </div>
 
-      {/* Meditation Cards List (Single Column Stack) */}
-      <div className="flex flex-col gap-3 w-full">
-        {MEDITATION_LIBRARY.map((med) => (
-          <div
-            key={med.id}
-            onClick={() => handleSelectMeditation(med)}
-            className="cursor-pointer bg-gradient-to-b from-[#141a2e]/90 to-[#0c1020]/95 border border-yellow-500/30 hover:border-[#ffd700] rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(255,215,0,0.25)] transition-all flex flex-col justify-between"
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-yellow-950/60 border border-yellow-500/50 flex items-center justify-center text-[#ffd700] shadow-[0_0_12px_rgba(255,215,0,0.3)]">
-                <HeartHandshake className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-black font-mono text-white uppercase tracking-wider">
-                  {med.title}
-                </h3>
-                <span className="text-[11px] font-mono font-bold text-[#ffd700]">
-                  {med.associatedPlanet}
-                </span>
-                <p className="text-xs text-gray-400 mt-1 line-clamp-2">{med.description}</p>
-              </div>
-            </div>
+      {/* Visual Breathing Ring */}
+      <div className="relative w-52 h-52 flex items-center justify-center my-2">
+        <div
+          className={`absolute inset-0 rounded-full border-4 transition-all duration-1000 ${
+            phase === 'INHALE' ? 'scale-110 shadow-[0_0_30px_rgba(0,229,255,0.4)]' : ''
+          } ${phase === 'HOLD_IN' ? 'scale-110 shadow-[0_0_30px_rgba(255,215,0,0.4)]' : ''} ${
+            phase === 'EXHALE' ? 'scale-90 shadow-[0_0_30px_rgba(239,68,68,0.4)]' : ''
+          } ${phase === 'HOLD_OUT' ? 'scale-90 shadow-[0_0_30px_rgba(168,85,247,0.4)]' : ''}`}
+          style={{ borderColor: getPhaseColor() }}
+        ></div>
 
-            <div className="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between text-xs font-mono text-gray-400">
-              <span>PATTERN: {med.breathingPattern}</span>
-              <span className="font-bold text-white px-2.5 py-1 rounded-lg bg-yellow-500/20 border border-yellow-500/40 text-yellow-300">
-                {med.durationMinutes} MIN
-              </span>
-            </div>
-          </div>
-        ))}
+        <div className="z-10 flex flex-col items-center justify-center space-y-1 font-mono">
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: getPhaseColor() }}>
+            {phase.replace('_', ' ')}
+          </span>
+          <span className="text-5xl font-black text-white">{countdown}</span>
+          <span className="text-[10px] text-gray-400">SECONDS</span>
+        </div>
       </div>
 
-      {/* ACTIVE MEDITATION SESSION MODAL */}
-      {selectedMeditation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="relative w-full max-w-xl bg-[#101526] border-2 border-[#ffd700] rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(255,215,0,0.35)] text-gray-200 font-sans flex flex-col items-center text-center">
-            <button
-              onClick={() => {
-                setIsPlaying(false);
-                setSelectedMeditation(null);
-              }}
-              className="absolute top-5 right-5 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* Phase Instruction */}
+      <div className="px-4 py-2 rounded-xl bg-[#1E2638] border border-[#2E3B57] shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
+        <p className="text-xs font-mono font-black text-[#00e5ff] tracking-wider">
+          {getPhaseInstruction()}
+        </p>
+      </div>
 
-            <div className="w-16 h-16 rounded-full bg-yellow-950/60 border border-yellow-500/60 flex items-center justify-center text-[#ffd700] shadow-[0_0_20px_rgba(255,215,0,0.5)] mb-3">
-              <HeartHandshake className="w-8 h-8" />
-            </div>
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-3">
+        <button
+          onClick={handleToggle}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-mono font-black text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(0,229,255,0.4)] ${
+            isActive
+              ? 'bg-amber-500 hover:bg-amber-400 text-black'
+              : 'bg-[#00e5ff] hover:bg-cyan-400 text-black'
+          }`}
+        >
+          {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          <span>{isActive ? 'PAUSE' : 'BEGIN PACER'}</span>
+        </button>
 
-            <h2 className="text-xl font-black font-mono text-[#ffd700] uppercase tracking-wider">
-              {selectedMeditation.title}
-            </h2>
-            <span className="text-xs font-mono text-cyan-300 font-bold uppercase mt-1">
-              {selectedMeditation.associatedPlanet} • {selectedMeditation.focusArchetype}
-            </span>
-
-            {/* Breathing Visualizer Orb */}
-            <div className="my-8 relative w-48 h-48 flex items-center justify-center">
-              {/* Outer Pulsing Ring */}
-              <div
-                className={`absolute inset-0 rounded-full border-2 border-[#ffd700] transition-transform duration-1000 ease-in-out ${
-                  breathPhase === 'INHALE'
-                    ? 'scale-125 opacity-100 shadow-[0_0_40px_rgba(255,215,0,0.6)]'
-                    : breathPhase === 'HOLD'
-                    ? 'scale-125 opacity-80 border-cyan-400 shadow-[0_0_40px_rgba(0,229,255,0.6)]'
-                    : breathPhase === 'EXHALE'
-                    ? 'scale-75 opacity-40 shadow-none'
-                    : 'scale-75 opacity-20 border-gray-600'
-                }`}
-              ></div>
-
-              {/* Center Core */}
-              <div className="z-10 text-center font-mono">
-                <div className="text-sm font-black text-white uppercase tracking-widest">
-                  {isPlaying ? breathPhase : 'READY'}
-                </div>
-                <div className="text-3xl font-black text-[#ffd700] my-1">
-                  {isPlaying ? breathCount : '4'}s
-                </div>
-                <div className="text-[10px] text-gray-400">
-                  {selectedMeditation.breathingPattern}
-                </div>
-              </div>
-            </div>
-
-            {/* Mantra transmission */}
-            <div className="w-full p-3 rounded-xl bg-black/60 border border-cyan-500/30 font-mono text-xs text-cyan-300 mb-6">
-              <span className="text-gray-500 block text-[10px] uppercase font-bold">MANTRA / CURRENT:</span>
-              <span className="font-extrabold tracking-wider">{selectedMeditation.mantra}</span>
-            </div>
-
-            {/* Timer & Controls */}
-            <div className="text-4xl font-black font-mono text-white tracking-widest mb-6">
-              {formatTime(secondsRemaining)}
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsAudioDroneOn(!isAudioDroneOn)}
-                className={`p-3 rounded-xl border transition-all ${
-                  isAudioDroneOn
-                    ? 'bg-cyan-950 border-cyan-400 text-cyan-300'
-                    : 'bg-black/40 border-gray-700 text-gray-400'
-                }`}
-                title="Toggle 432Hz Ambient Harmonic Drone"
-              >
-                {isAudioDroneOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-              </button>
-
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-mono text-sm font-black uppercase tracking-widest transition-all ${
-                  isPlaying
-                    ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.5)]'
-                    : 'bg-[#ffd700] hover:bg-yellow-400 text-black shadow-[0_0_25px_rgba(255,215,0,0.6)]'
-                }`}
-              >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                <span>{isPlaying ? 'PAUSE SESSION' : 'BEGIN SESSION'}</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsPlaying(false);
-                  setSecondsRemaining(selectedMeditation.durationMinutes * 60);
-                }}
-                className="p-3 rounded-xl bg-black/40 border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white transition-colors"
-                title="Reset Timer"
-              >
-                <RotateCcw className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <button
+          onClick={handleReset}
+          className="p-2.5 rounded-xl bg-[#1E2638] border border-[#2E3B57] text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+          title="Reset"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

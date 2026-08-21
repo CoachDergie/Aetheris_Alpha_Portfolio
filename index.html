@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" class="dark bg-[#070913]" style="background-color: #070913 !important; color-scheme: dark !important;">
+<html lang="en" class="dark" style="background-color: #161B26 !important; color-scheme: dark !important; height: 100% !important; min-height: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <title>Aetheris // Occult Console XR</title>
     <meta name="description" content="Aetheris Occult Console & Martial Telemetry Side-Screen Applet for Meta Quest XR" />
-    <meta name="theme-color" content="#070913" />
+    <meta name="theme-color" content="#161B26" />
     <meta name="color-scheme" content="dark" />
     <meta name="supported-color-schemes" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -14,17 +14,19 @@
     <style>
       :root {
         color-scheme: dark !important;
-        background-color: #070913 !important;
+        background-color: #161B26 !important;
+        --xr-canvas-base: #161B26;
       }
       *, *::before, *::after {
         box-sizing: border-box;
       }
       html {
-        background-color: #070913 !important;
-        background: #070913 !important;
+        background-color: #161B26 !important;
+        background: #161B26 !important;
         min-height: 100% !important;
         min-height: 100dvh !important;
-        height: auto !important;
+        height: 100% !important;
+        width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         color-scheme: dark !important;
@@ -32,10 +34,12 @@
         -webkit-tap-highlight-color: transparent;
       }
       body {
-        background-color: #070913 !important;
-        background: #070913 !important;
+        background-color: #161B26 !important;
+        background: #161B26 !important;
         min-height: 100% !important;
         min-height: 100dvh !important;
+        height: 100% !important;
+        width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         color-scheme: dark !important;
@@ -44,18 +48,19 @@
         -webkit-font-smoothing: antialiased;
       }
       #root {
-        background-color: #070913 !important;
-        background: #070913 !important;
+        background-color: #161B26 !important;
+        background: #161B26 !important;
         min-height: 100% !important;
         min-height: 100dvh !important;
+        height: 100% !important;
+        width: 100% !important;
         display: flex !important;
         flex-direction: column !important;
-        width: 100% !important;
       }
     </style>
   </head>
-  <body class="bg-[#070913] text-gray-200 min-h-screen min-h-[100dvh] overflow-x-hidden">
-    <div id="root" class="min-h-screen min-h-[100dvh] bg-[#070913] flex flex-col w-full"></div>
+  <body class="bg-[#161B26] text-gray-200 min-h-screen min-h-[100dvh] h-full w-full overflow-x-hidden">
+    <div id="root" class="min-h-screen min-h-[100dvh] h-full bg-[#161B26] flex flex-col w-full"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
