@@ -24,6 +24,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import com.dyzzy.aetheris.ui.components.NativeXRBridge
+import com.dyzzy.aetheris.ui.components.GrimoireSpatialPanel
+import com.dyzzy.aetheris.ui.components.GrimoireWebView
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -178,16 +181,16 @@ fun XRPermissionGuard(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3XrApi::class)
 @Composable
 fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
-    val currentTab by viewModel.currentTab.collectAsState()
-    val lunarInfo by viewModel.lunarInfo.collectAsState()
     val session = LocalSession.current
-
     val isSpatialEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
+    val context = LocalContext.current
     
-    val hudBackground = Color(0x990A0C14)
-    val panelSurface = Color(0xCC121626)
-    val accentCyan = Color(0xFF00E5FF)
-    val accentGold = Color(0xFFFFD54F)
+    val xrBridge = remember { 
+        NativeXRBridge(context) { 
+            // Handle spatial anchor request
+            Log.d("Aetheris", "Spatial Anchor Requested")
+        } 
+    }
 
     LaunchedEffect(session, isSpatialEnabled) {
         if (session != null && isSpatialEnabled) {
@@ -198,26 +201,7 @@ fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
 
     if (isSpatialEnabled) {
         Subspace {
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(1280.dp)
-                    .height(720.dp)
-                    .movable()
-                    .resizable(maintainAspectRatio = true)
-            ) {
-                EnableXrComponentOverrides {
-                    AetherisHUDContent(
-                        viewModel = viewModel,
-                        currentTab = currentTab,
-                        lunarInfo = lunarInfo,
-                        hudBackground = hudBackground,
-                        panelSurface = panelSurface,
-                        accentCyan = accentCyan,
-                        accentGold = accentGold,
-                        isSpatial = true
-                    )
-                }
-            }
+            GrimoireSpatialPanel(xrBridge = xrBridge)
         }
     } else {
         Box(
@@ -225,15 +209,9 @@ fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
                 .fillMaxSize()
                 .background(Color(0xFF070913))
         ) {
-            AetherisHUDContent(
-                viewModel = viewModel,
-                currentTab = currentTab,
-                lunarInfo = lunarInfo,
-                hudBackground = hudBackground,
-                panelSurface = panelSurface,
-                accentCyan = accentCyan,
-                accentGold = accentGold,
-                isSpatial = false
+            GrimoireWebView(
+                xrBridge = xrBridge,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }

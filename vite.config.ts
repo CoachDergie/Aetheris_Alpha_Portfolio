@@ -5,6 +5,14 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: './',
+    build: {
+      outDir: path.resolve(__dirname, 'app/src/main/assets/grimoire_ui'),
+      emptyOutDir: true,
+      assetsDir: 'assets',
+      sourcemap: false,
+      minify: 'terser',
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

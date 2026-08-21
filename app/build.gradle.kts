@@ -1,3 +1,4 @@
+import org.apache.tools.ant.taskdefs.condition.Os
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -85,4 +86,24 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+val webAppDir = project.rootDir 
+
+val buildReactApp = tasks.register<Exec>("buildReactApp") {
+    group = "build"
+    description = "Compiles React UI and injects output into Android assets."
+    
+    workingDir = webAppDir
+    
+    // Cross-platform command resolution
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine("cmd", "/c", "npm run build")
+    } else {
+        commandLine("npm", "run", "build")
+    }
+}
+
+// Hook into the Android build lifecycle before resources are merged
+project.afterEvaluate {
+    tasks.findByName("preBuild")?.dependsOn(buildReactApp)
 }

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meditative 4-Step Breathing Visualizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0a0a0c;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #e2e8f0;
+    }
+
+    #canvas-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #121218 0%, #0a0a0c 70%, #050507 100%);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Minimalist floating UI overlay */
+    .controls-overlay {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 18px;
+      background: rgba(18, 22, 34, 0.75);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.15);
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn {
+      background: rgba(0, 229, 255, 0.12);
+      color: #00e5ff;
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      padding: 8px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .btn:hover {
+      background: #00e5ff;
+      color: #0a0a0c;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .cadence-badge {
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.08em;
+      padding: 4px 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container">
+    <canvas id="meditationCanvas"></canvas>
+
+    <div class="controls-overlay" id="controls">
+      <button class="btn" id="toggleBtn">
+        <span id="playIcon">⏸</span>
+        <span id="playText">PAUSE</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn">RESET CYCLE</button>
+      <div class="cadence-badge">4-4-4-4 PRANAYAMA</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("meditationCanvas");
+      const ctx = canvas.getContext("2d");
+      const toggleBtn = document.getElementById("toggleBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const playIcon = document.getElementById("playIcon");
+      const playText = document.getElementById("playText");
+
+      // App State
+      let isPlaying = true;
+      let width = 0;
+      let height = 0;
+      let dpr = window.devicePixelRatio || 1;
+
+      // Timing & Phases (4 seconds per phase = 4000ms, with 0.25s = 250ms smooth transition)
+      const PHASE_DURATION = 4000;
+      const FADE_DURATION = 250; // 0.25-second smooth cross-fade window
+
+      const PHASES = [
+        {
+          id: "INHALE",
+          name: "Inhale: Draw Prana into the Lower Dantian",
+          sub: "PULL VITAL COSMIC BREATH INWARD THROUGH CROWN & PORES",
+          color: "#00e5ff",
+          rgb: [0, 229, 255],
+          glowColor: "rgba(0, 229, 255, 0.6)",
+        },
+        {
+          id: "HOLD_IN",
+          name: "Hold: Compress and Circulate Qi",
+          sub: "CONDENSE ENERGY INTO CORE • MICROCOSMIC SPINAL ORBIT",
+          color: "#ffd700",
+          rgb: [255, 215, 0],
+          glowColor: "rgba(255, 215, 0, 0.7)",
+        },
+        {
+          id: "EXHALE",
+          name: "Exhale: Release Toxins and Excess Heat",
+          sub: "DISCHARGE TURBIDITY, STAGNANT CHI & INTERNAL HEAT",
+          color: "#ff5252",
+          rgb: [255, 82, 82],
+          glowColor: "rgba(255, 82, 82, 0.6)",
+        },
+        {
+          id: "HOLD_OUT",
+          name: "Hold: Rest in the Void",
+          sub: "ABSOLUTE STILLNESS • BOUNDLESS ZERO-POINT AWARENESS",
+          color: "#8b5cf6",
+          rgb: [139, 92, 246],
+          glowColor: "rgba(139, 92, 246, 0.3)",
+        },
+      ];
+
+      // Color Interpolation Helper
+      function lerpRgb(rgbA, rgbB, t) {
+        const r = Math.round(rgbA[0] + (rgbB[0] - rgbA[0]) * t);
+        const g = Math.round(rgbA[1] + (rgbB[1] - rgbA[1]) * t);
+        const b = Math.round(rgbA[2] + (rgbB[2] - rgbA[2]) * t);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      function lerpRgba(rgbA, rgbB, alphaA, alphaB, t) {
+        const r = Math.round(rgbA[0] + (rgbB[0] - rgbA[0]) * t);
+        const g = Math.round(rgbA[1] + (rgbB[1] - rgbA[1]) * t);
+        const b = Math.round(rgbA[2] + (rgbB[2] - rgbA[2]) * t);
+        const a = (alphaA + (alphaB - alphaA) * t).toFixed(3);
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+      }
+
+      let currentPhaseIdx = 0;
+      let phaseStartTime = performance.now();
+      let lastFrameTime = performance.now();
+      let totalElapsed = 0;
+      let cycleCount = 1;
+
+      // Particle System
+      const particles = [];
+      const MAX_PARTICLES = 160;
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.x = 0;
+          this.y = 0;
+          this.vx = 0;
+          this.vy = 0;
+          this.size = Math.random() * 2.5 + 1.2;
+          this.alpha = 0;
+          this.maxAlpha = Math.random() * 0.7 + 0.3;
+          this.life = 0;
+          this.maxLife = Math.random() * 120 + 80;
+          this.orbitAngle = Math.random() * Math.PI * 2;
+          this.orbitRadius = Math.random() * 35 + 8;
+          this.orbitSpeed = (Math.random() * 0.06 + 0.03) * (Math.random() < 0.5 ? 1 : -1);
+          this.spineProgress = Math.random();
+          this.color = "#00e5ff";
+        }
+
+        spawnInhale(targetX, targetY, scale) {
+          // Spawn from outer perimeter or above crown
+          const angle = Math.random() * Math.PI * 2;
+          const dist = (Math.random() * 220 + 100) * scale;
+          this.x = targetX + Math.cos(angle) * dist;
+          this.y = targetY - 40 * scale + Math.sin(angle) * (dist * 0.85);
+          this.targetX = targetX;
+          this.targetY = targetY;
+          this.size = Math.random() * 2.4 + 1.2;
+          this.maxLife = Math.random() * 100 + 70;
+          this.life = 0;
+          this.alpha = 0;
+          this.maxAlpha = Math.random() * 0.8 + 0.2;
+          this.color = Math.random() < 0.3 ? "#ffffff" : Math.random() < 0.7 ? "#00e5ff" : "#80f4ff";
+        }
+
+        updateInhale(targetX, targetY, dtFactor) {
+          this.life += dtFactor;
+          const progress = Math.min(1, this.life / this.maxLife);
+          // Ease inward
+          const dx = targetX - this.x;
+          const dy = targetY - this.y;
+          const speed = (0.04 + progress * 0.05) * dtFactor;
+          this.x += dx * speed;
+          this.y += dy * speed;
+          
+          if (progress < 0.2) {
+            this.alpha = (progress / 0.2) * this.maxAlpha;
+          } else if (progress > 0.85) {
+            this.alpha = (1 - (progress - 0.85) / 0.15) * this.maxAlpha;
+          } else {
+            this.alpha = this.maxAlpha;
+          }
+
+          return progress < 1;
+        }
+
+        spawnHoldOrbit(dantianX, dantianY, scale, isSpine) {
+          this.isSpine = isSpine;
+          this.dantianX = dantianX;
+          this.dantianY = dantianY;
+          this.scale = scale;
+          this.life = 0;
+          this.maxLife = Math.random() * 140 + 90;
+          this.orbitAngle = Math.random() * Math.PI * 2;
+          this.orbitRadius = (Math.random() * 32 + 6) * scale;
+          this.orbitSpeed = (Math.random() * 0.08 + 0.04) * (Math.random() < 0.5 ? 1 : -1);
+          this.spineProgress = Math.random();
+          this.spineSpeed = Math.random() * 0.012 + 0.008;
+          this.size = Math.random() * 2.5 + 1.2;
+          this.alpha = 0;
+          this.maxAlpha = Math.random() * 0.85 + 0.2;
+          this.color = Math.random() < 0.4 ? "#ffd700" : Math.random() < 0.7 ? "#fff3a8" : "#00e5ff";
+        }
+
+        updateHold(dantianX, dantianY, spineTopY, spineBottomY, dtFactor) {
+          this.life += dtFactor;
+          const progress = Math.min(1, this.life / this.maxLife);
+
+          if (this.isSpine) {
+            // Microcosmic orbit along spine
+            this.spineProgress += this.spineSpeed * dtFactor;
+            if (this.spineProgress > 1) this.spineProgress -= 1;
+            
+            // Go up the back (Du channel), down the front (Ren channel)
+            const isUp = this.spineProgress < 0.5;
+            const subProg = isUp ? (this.spineProgress / 0.5) : ((this.spineProgress - 0.5) / 0.5);
+            const spineHeight = spineBottomY - spineTopY;
+            
+            if (isUp) {
+              this.y = spineBottomY - subProg * spineHeight;
+              this.x = dantianX - 6 * this.scale + Math.sin(subProg * Math.PI) * 4 * this.scale;
+            } else {
+              this.y = spineTopY + subProg * spineHeight;
+              this.x = dantianX + 6 * this.scale - Math.sin(subProg * Math.PI) * 4 * this.scale;
+            }
+          } else {
+            // Whirlpool orbit around Dantian
+            this.orbitAngle += this.orbitSpeed * dtFactor;
+            this.orbitRadius = Math.max(3, this.orbitRadius - 0.05 * dtFactor);
+            this.x = dantianX + Math.cos(this.orbitAngle) * this.orbitRadius;
+            this.y = dantianY + Math.sin(this.orbitAngle) * (this.orbitRadius * 0.7);
+          }
+
+          if (progress < 0.15) {
+            this.alpha = (progress / 0.15) * this.maxAlpha;
+          } else if (progress > 0.85) {
+            this.alpha = (1 - (progress - 0.85) / 0.15) * this.maxAlpha;
+          } else {
+            this.alpha = this.maxAlpha;
+          }
+
+          return progress < 1;
+        }
+
+        spawnExhale(startX, startY, scale) {
+          this.x = startX + (Math.random() * 20 - 10) * scale;
+          this.y = startY + (Math.random() * 20 - 10) * scale;
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 2.2 + 0.8) * scale;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - (Math.random() * 0.8 + 0.2) * scale; // thermal upward draft
+          this.size = Math.random() * 3.2 + 1.2;
+          this.life = 0;
+          this.maxLife = Math.random() * 90 + 60;
+          this.alpha = 0;
+          this.maxAlpha = Math.random() * 0.8 + 0.2;
+          this.color = Math.random() < 0.4 ? "#ff5252" : Math.random() < 0.8 ? "#ff9100" : "#ffb74d";
+        }
+
+        updateExhale(dtFactor) {
+          this.life += dtFactor;
+          const progress = Math.min(1, this.life / this.maxLife);
+          this.x += this.vx * dtFactor;
+          this.y += this.vy * dtFactor;
+          this.vy -= 0.015 * dtFactor; // subtle upward thermal rise
+          this.size = Math.max(0.2, this.size - 0.015 * dtFactor);
+
+          if (progress < 0.15) {
+            this.alpha = (progress / 0.15) * this.maxAlpha;
+          } else {
+            this.alpha = (1 - progress) * this.maxAlpha;
+          }
+
+          return progress < 1;
+        }
+
+        draw(ctx) {
+          if (this.alpha <= 0.01) return;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, this.alpha));
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Initialize Particle Pool
+      for (let i = 0; i < MAX_PARTICLES; i++) {
+        particles.push(new Particle());
+      }
+
+      // Resize Canvas Handler
+      function resizeCanvas() {
+        const container = document.getElementById("canvas-container");
+        width = container.clientWidth;
+        height = container.clientHeight;
+        dpr = window.devicePixelRatio || 1;
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // Controls Setup
+      toggleBtn.addEventListener("click", () => {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          phaseStartTime = performance.now() - (totalElapsed % PHASE_DURATION);
+          playIcon.textContent = "⏸";
+          playText.textContent = "PAUSE";
+        } else {
+          playIcon.textContent = "▶";
+          playText.textContent = "RESUME";
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        currentPhaseIdx = 0;
+        phaseStartTime = performance.now();
+        totalElapsed = 0;
+        cycleCount = 1;
+      });
+
+      // Easing Functions
+      function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      }
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      // ==========================================
+      // MAIN RENDERING ROUTINES
+      // ==========================================
+
+      function drawBackground(centerX, centerY, scale, currentPhase, prevPhase, smoothFade) {
+        // Deep Charcoal base
+        ctx.fillStyle = "#0a0a0c";
+        ctx.fillRect(0, 0, width, height);
+
+        // Faint atmospheric aura centered on mannequin smoothly blended across 0.25s
+        const gradient = ctx.createRadialGradient(
+          centerX,
+          centerY,
+          20 * scale,
+          centerX,
+          centerY,
+          320 * scale
+        );
+
+        const curAlpha = currentPhase.id === "HOLD_OUT" ? 0.03 : 0.09;
+        const prevAlpha = prevPhase.id === "HOLD_OUT" ? 0.03 : 0.09;
+        const centerColor = lerpRgba(prevPhase.rgb, currentPhase.rgb, prevAlpha, curAlpha, smoothFade);
+        const midColor = lerpRgba(prevPhase.rgb, currentPhase.rgb, prevAlpha * 0.4, curAlpha * 0.4, smoothFade);
+
+        gradient.addColorStop(0, centerColor);
+        gradient.addColorStop(0.5, midColor);
+        gradient.addColorStop(1, "rgba(10, 10, 12, 0)");
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle Sacred Geometry Rings in background
+        ctx.save();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 160 * scale, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, 240 * scale, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Floor base line / meditation ground line
+        const groundY = centerY + 130 * scale;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.beginPath();
+        ctx.moveTo(centerX - 180 * scale, groundY);
+        ctx.lineTo(centerX + 180 * scale, groundY);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawMannequin(centerX, centerY, scale, chestExpansion, currentPhase, prevPhase, smoothFade, dantianGlow) {
+        ctx.save();
+
+        // Smooth wireframe color interpolation over 0.25s
+        const prevBaseAlpha = prevPhase.id === "HOLD_OUT" ? 0.25 : 0.45;
+        const curBaseAlpha = currentPhase.id === "HOLD_OUT" ? 0.25 : 0.45;
+        const strokeColor = lerpRgba(prevPhase.rgb, currentPhase.rgb, prevBaseAlpha, curBaseAlpha + chestExpansion * 0.2, smoothFade);
+        const glowColor = lerpRgba(prevPhase.rgb, currentPhase.rgb, 0.2, 0.45, smoothFade);
+        const blendedColor = lerpRgb(prevPhase.rgb, currentPhase.rgb, smoothFade);
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.6;
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 10;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Anatomical Reference Positions (Cross-Legged Lotus Model)
+        const headRadius = 18 * scale;
+        const headCenterY = centerY - 110 * scale;
+        const crownNodeY = headCenterY - headRadius;
+        const thirdEyeY = headCenterY - 2 * scale;
+        const throatY = headCenterY + headRadius + 12 * scale;
+        
+        // Dynamic chest expansion factors
+        const chestWidth = (36 + chestExpansion * 9) * scale;
+        const shoulderWidth = (48 + chestExpansion * 6) * scale;
+        const chestHeight = (28 + chestExpansion * 4) * scale;
+        
+        const shoulderY = throatY + 8 * scale;
+        const leftShoulderX = centerX - shoulderWidth;
+        const rightShoulderX = centerX + shoulderWidth;
+
+        const sternumY = shoulderY + chestHeight;
+        const leftChestX = centerX - chestWidth;
+        const rightChestX = centerX + chestWidth;
+
+        const navelY = sternumY + 36 * scale;
+        const dantianY = navelY + 16 * scale;
+        const pelvicY = dantianY + 20 * scale;
+        const pelvicWidth = 32 * scale;
+
+        // Knees & Limbs
+        const kneeY = pelvicY + 28 * scale;
+        const leftKneeX = centerX - 95 * scale;
+        const rightKneeX = centerX + 95 * scale;
+
+        const elbowY = shoulderY + 45 * scale;
+        const leftElbowX = centerX - 62 * scale;
+        const rightElbowX = centerX + 62 * scale;
+        const leftHandX = leftKneeX + 10 * scale;
+        const leftHandY = kneeY - 8 * scale;
+        const rightHandX = rightKneeX - 10 * scale;
+        const rightHandY = kneeY - 8 * scale;
+
+        // 1. Head Wireframe & Crown Halo
+        ctx.beginPath();
+        ctx.arc(centerX, headCenterY, headRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Inner Third-Eye / Ajna focal point
+        ctx.beginPath();
+        ctx.arc(centerX, thirdEyeY, 2.5 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = blendedColor;
+        ctx.fill();
+
+        // Crown aura arc
+        ctx.beginPath();
+        ctx.arc(centerX, crownNodeY - 4 * scale, 7 * scale, Math.PI, 0);
+        ctx.stroke();
+
+        // 2. Neck
+        ctx.beginPath();
+        ctx.moveTo(centerX, headCenterY + headRadius);
+        ctx.lineTo(centerX, throatY);
+        ctx.stroke();
+
+        // 3. Collarbone & Shoulders
+        ctx.beginPath();
+        ctx.moveTo(leftShoulderX, shoulderY);
+        ctx.lineTo(centerX, throatY);
+        ctx.lineTo(rightShoulderX, shoulderY);
+        ctx.stroke();
+
+        // 4. Ribcage / Thoracic Geometric Wireframe
+        ctx.beginPath();
+        ctx.moveTo(leftShoulderX, shoulderY);
+        ctx.lineTo(leftChestX, sternumY);
+        ctx.lineTo(centerX, sternumY + 8 * scale);
+        ctx.lineTo(rightChestX, sternumY);
+        ctx.lineTo(rightShoulderX, shoulderY);
+        ctx.stroke();
+
+        // Sternum to Centerline
+        ctx.beginPath();
+        ctx.moveTo(centerX, throatY);
+        ctx.lineTo(centerX, sternumY + 8 * scale);
+        ctx.stroke();
+
+        // 5. Central Spinal Column (Sushumna Nadi)
+        ctx.beginPath();
+        ctx.setLineDash([3 * scale, 3 * scale]);
+        ctx.moveTo(centerX, crownNodeY);
+        ctx.lineTo(centerX, pelvicY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Major Chakra / Spinal Nodes
+        const spineNodes = [throatY, sternumY, navelY, dantianY, pelvicY];
+        spineNodes.forEach((ny) => {
+          ctx.beginPath();
+          ctx.arc(centerX, ny, 2 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = blendedColor;
+          ctx.fill();
+        });
+
+        // 6. Abdomen & Pelvis Lines
+        ctx.beginPath();
+        ctx.moveTo(leftChestX, sternumY);
+        ctx.lineTo(centerX - pelvicWidth, pelvicY);
+        ctx.lineTo(centerX + pelvicWidth, pelvicY);
+        ctx.lineTo(rightChestX, sternumY);
+        ctx.stroke();
+
+        // 7. Arms: Shoulders -> Elbows -> Hands
+        ctx.beginPath();
+        ctx.moveTo(leftShoulderX, shoulderY);
+        ctx.lineTo(leftElbowX, elbowY);
+        ctx.lineTo(leftHandX, leftHandY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(rightShoulderX, shoulderY);
+        ctx.lineTo(rightElbowX, elbowY);
+        ctx.lineTo(rightHandX, rightHandY);
+        ctx.stroke();
+
+        // Gyan Mudra circles at hands
+        ctx.beginPath();
+        ctx.arc(leftHandX, leftHandY, 4.5 * scale, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(rightHandX, rightHandY, 4.5 * scale, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 8. Cross-Legged Base
+        ctx.beginPath();
+        ctx.moveTo(centerX - pelvicWidth, pelvicY);
+        ctx.lineTo(leftKneeX, kneeY);
+        ctx.lineTo(centerX + 15 * scale, kneeY + 14 * scale);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(centerX + pelvicWidth, pelvicY);
+        ctx.lineTo(rightKneeX, kneeY);
+        ctx.lineTo(centerX - 15 * scale, kneeY + 14 * scale);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(leftKneeX - 5 * scale, kneeY);
+        ctx.quadraticCurveTo(centerX, kneeY + 24 * scale, rightKneeX + 5 * scale, kneeY);
+        ctx.stroke();
+
+        const joints = [
+          [leftShoulderX, shoulderY],
+          [rightShoulderX, shoulderY],
+          [leftElbowX, elbowY],
+          [rightElbowX, elbowY],
+          [leftKneeX, kneeY],
+          [rightKneeX, kneeY],
+        ];
+
+        joints.forEach(([jx, jy]) => {
+          ctx.beginPath();
+          ctx.arc(jx, jy, 2.5 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = blendedColor;
+          ctx.fill();
+        });
+
+        // 9. DANTIAN NODE (Smoothly Faded Radial Glow)
+        const dantianRadius = (8 + dantianGlow * 6) * scale;
+        const dGlow = ctx.createRadialGradient(
+          centerX,
+          dantianY,
+          1 * scale,
+          centerX,
+          dantianY,
+          dantianRadius * 3.2
+        );
+
+        const glowOuter = lerpRgba(prevPhase.rgb, currentPhase.rgb, 0.4, 0.6, smoothFade);
+        dGlow.addColorStop(0, "#ffffff");
+        dGlow.addColorStop(0.3, blendedColor);
+        dGlow.addColorStop(0.65, glowOuter);
+        dGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+        ctx.fillStyle = dGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, dantianY, dantianRadius * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Solid Core Orb
+        ctx.beginPath();
+        ctx.arc(centerX, dantianY, dantianRadius * 0.85, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = blendedColor;
+        ctx.shadowBlur = 18;
+        ctx.fill();
+
+        // Rotating Dantian Rings during Hold Phase (fade smoothly in/out across 0.25s)
+        const ringAlpha = currentPhase.id === "HOLD_IN" 
+          ? smoothFade 
+          : (prevPhase.id === "HOLD_IN" ? 1 - smoothFade : 0);
+
+        if (ringAlpha > 0.01) {
+          const time = performance.now() * 0.003;
+          ctx.save();
+          ctx.globalAlpha = ringAlpha;
+          ctx.strokeStyle = "rgba(255, 215, 0, 0.8)";
+          ctx.lineWidth = 1.4;
+          
+          ctx.beginPath();
+          ctx.ellipse(centerX, dantianY, dantianRadius * 1.8, dantianRadius * 0.8, time, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.8)";
+          ctx.beginPath();
+          ctx.ellipse(centerX, dantianY, dantianRadius * 1.8, dantianRadius * 0.8, -time * 1.2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.restore();
+
+        return {
+          dantianX: centerX,
+          dantianY: dantianY,
+          crownY: crownNodeY,
+          pelvicY: pelvicY,
+        };
+      }
+
+      function drawUI(centerX, centerY, scale, currentPhase, prevPhase, smoothFade, phaseProgress, remainingSeconds) {
+        ctx.save();
+        ctx.textAlign = "center";
+
+        const topY = Math.max(48, centerY - 230 * scale);
+        const blendedColor = lerpRgb(prevPhase.rgb, currentPhase.rgb, smoothFade);
+
+        // Phase Step Badge with 0.25s cross-fade
+        const stepNum = currentPhaseIdx + 1;
+        ctx.font = `700 ${Math.max(11, Math.round(11 * scale))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        ctx.fillStyle = blendedColor;
+        ctx.fillText(`PHASE 0${stepNum} // 04 • ${currentPhase.id.replace("_", " ")}`, centerX, topY);
+
+        // Bold Primary Phase Name with smooth fade-in
+        ctx.save();
+        ctx.globalAlpha = 0.25 + 0.75 * smoothFade;
+        ctx.font = `900 ${Math.max(17, Math.round(21 * scale))}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = blendedColor;
+        ctx.shadowBlur = 16;
+        ctx.fillText(currentPhase.name, centerX, topY + 28 * scale);
+
+        // Subtitle / Esoteric Instruction
+        ctx.font = `600 ${Math.max(10, Math.round(11 * scale))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        ctx.fillStyle = "#94a3b8";
+        ctx.shadowBlur = 0;
+        ctx.fillText(currentPhase.sub, centerX, topY + 48 * scale);
+        ctx.restore();
+
+        // 2. Center Countdown Display Dial
+        const timerY = centerY + 180 * scale;
+        const dialRadius = 26 * scale;
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerX, timerY, dialRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Active Arc with blended color
+        ctx.strokeStyle = blendedColor;
+        ctx.shadowColor = blendedColor;
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.arc(
+          centerX,
+          timerY,
+          dialRadius,
+          -Math.PI / 2,
+          -Math.PI / 2 + phaseProgress * Math.PI * 2
+        );
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Big Countdown Number inside Dial
+        ctx.font = `900 ${Math.max(16, Math.round(18 * scale))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        ctx.fillStyle = "#ffffff";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`${remainingSeconds}s`, centerX, timerY);
+
+        // Cycle Counter below dial
+        ctx.font = `700 ${Math.max(9, Math.round(10 * scale))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        ctx.fillStyle = "#64748b";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(`CYCLE #${cycleCount}`, centerX, timerY + dialRadius + 16 * scale);
+
+        ctx.restore();
+      }
+
+      // ==========================================
+      // ANIMATION & PARTICLE UPDATE TICK
+      // ==========================================
+
+      function animate(now) {
+        requestAnimationFrame(animate);
+
+        const delta = now - lastFrameTime;
+        lastFrameTime = now;
+        const dtFactor = Math.min(2.5, delta / 16.666); // Normalize to 60fps
+
+        if (isPlaying) {
+          totalElapsed += delta;
+        }
+
+        // Calculate Phase Progress (0 to 1)
+        const phaseElapsed = totalElapsed % PHASE_DURATION;
+        const phaseProgress = phaseElapsed / PHASE_DURATION;
+        const newPhaseIdx = Math.floor((totalElapsed / PHASE_DURATION) % PHASES.length);
+
+        if (newPhaseIdx !== currentPhaseIdx) {
+          currentPhaseIdx = newPhaseIdx;
+          if (currentPhaseIdx === 0) {
+            cycleCount++;
+          }
+        }
+
+        const prevPhaseIdx = (currentPhaseIdx + PHASES.length - 1) % PHASES.length;
+        const currentPhase = PHASES[currentPhaseIdx];
+        const prevPhase = PHASES[prevPhaseIdx];
+
+        // 0.25-second (250ms) smooth transition progress (0 to 1)
+        const transitionFactor = Math.min(1, phaseElapsed / FADE_DURATION);
+        const smoothFade = easeInOutQuad(transitionFactor);
+
+        const remainingSeconds = Math.max(1, Math.ceil((PHASE_DURATION - phaseElapsed) / 1000));
+
+        // Spatial Layout Dimensions
+        const centerX = width / 2;
+        const centerY = height * 0.48;
+        // Dynamically scale mannequin based on viewport height and width
+        const scale = Math.min(1.2, Math.max(0.65, Math.min(width / 600, height / 700)));
+
+        // Chest Expansion & Dantian Glow Calculations
+        let chestExpansion = 0; // 0 = baseline, 1 = fully expanded
+        let dantianGlow = 0;
+
+        if (currentPhase.id === "INHALE") {
+          chestExpansion = easeInOutQuad(phaseProgress);
+          dantianGlow = phaseProgress;
+        } else if (currentPhase.id === "HOLD_IN") {
+          chestExpansion = 1;
+          dantianGlow = 1 + Math.sin(now * 0.008) * 0.25;
+        } else if (currentPhase.id === "EXHALE") {
+          chestExpansion = 1 - easeInOutQuad(phaseProgress);
+          dantianGlow = (1 - phaseProgress) * 0.8;
+        } else {
+          // HOLD_OUT (Void)
+          chestExpansion = 0;
+          dantianGlow = 0.15 + Math.sin(now * 0.003) * 0.1;
+        }
+
+        // 1. Draw Background
+        drawBackground(centerX, centerY, scale, currentPhase, prevPhase, smoothFade);
+
+        // 2. Draw Mannequin & Retrieve Landmarks
+        const landmarks = drawMannequin(centerX, centerY, scale, chestExpansion, currentPhase, prevPhase, smoothFade, dantianGlow);
+
+        // 3. Particle System Phase Handling
+        if (isPlaying) {
+          if (currentPhase.id === "INHALE") {
+            // Spawn continuous incoming prana stream
+            const spawnCount = Math.floor(2 * dtFactor);
+            for (let i = 0; i < spawnCount; i++) {
+              const p = particles.find((item) => item.life >= item.maxLife || item.alpha <= 0);
+              if (p) {
+                p.spawnInhale(landmarks.dantianX, landmarks.dantianY, scale);
+              }
+            }
+
+            particles.forEach((p) => {
+              if (p.life < p.maxLife) {
+                const alive = p.updateInhale(landmarks.dantianX, landmarks.dantianY, dtFactor);
+                if (alive) p.draw(ctx);
+              }
+            });
+          } else if (currentPhase.id === "HOLD_IN") {
+            // Circulate Qi in Microcosmic Orbit & condense in Dantian
+            const spawnCount = Math.floor(2 * dtFactor);
+            for (let i = 0; i < spawnCount; i++) {
+              const p = particles.find((item) => item.life >= item.maxLife || item.alpha <= 0);
+              if (p) {
+                const isSpine = Math.random() < 0.45;
+                p.spawnHoldOrbit(landmarks.dantianX, landmarks.dantianY, scale, isSpine);
+              }
+            }
+
+            particles.forEach((p) => {
+              if (p.life < p.maxLife) {
+                const alive = p.updateHold(
+                  landmarks.dantianX,
+                  landmarks.dantianY,
+                  landmarks.crownY,
+                  landmarks.pelvicY,
+                  dtFactor
+                );
+                if (alive) p.draw(ctx);
+              }
+            });
+          } else if (currentPhase.id === "EXHALE") {
+            // Dissipate toxins and heat outward as warm embers
+            const spawnCount = Math.floor(3 * dtFactor);
+            for (let i = 0; i < spawnCount; i++) {
+              const p = particles.find((item) => item.life >= item.maxLife || item.alpha <= 0);
+              if (p) {
+                p.spawnExhale(landmarks.dantianX, landmarks.dantianY - 10 * scale, scale);
+              }
+            }
+
+            particles.forEach((p) => {
+              if (p.life < p.maxLife) {
+                const alive = p.updateExhale(dtFactor);
+                if (alive) p.draw(ctx);
+              }
+            });
+          } else {
+            // HOLD_OUT: Rest in the Void -> Fade out remaining particles and hold pure silence
+            particles.forEach((p) => {
+              if (p.alpha > 0) {
+                p.alpha = Math.max(0, p.alpha - 0.04 * dtFactor);
+                p.draw(ctx);
+              }
+            });
+          }
+        }
+
+        // 4. Draw Canvas UI Text & Phase Dials with 0.25s smooth cross-fade
+        drawUI(centerX, centerY, scale, currentPhase, prevPhase, smoothFade, phaseProgress, remainingSeconds);
+      }
+
+      // Start loop
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
