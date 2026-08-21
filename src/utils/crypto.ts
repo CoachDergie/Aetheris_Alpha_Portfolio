@@ -96,17 +96,26 @@ export async function decryptData(cipherBase64: string, secretKey = DEFAULT_SALT
 export async function saveToEncryptedVault(data: unknown): Promise<void> {
   const jsonStr = JSON.stringify(data);
   const encrypted = await encryptData(jsonStr);
-  localStorage.setItem(STORAGE_KEY, encrypted);
+  try {
+    localStorage.setItem(STORAGE_KEY, encrypted);
+  } catch (err) {
+    console.warn('XR localStorage restricted, cannot save encrypted vault to disk', err);
+  }
 }
 
 export async function loadFromEncryptedVault<T>(): Promise<T | null> {
-  const encrypted = localStorage.getItem(STORAGE_KEY);
-  if (!encrypted) return null;
-  const jsonStr = await decryptData(encrypted);
-  if (!jsonStr) return null;
   try {
-    return JSON.parse(jsonStr) as T;
-  } catch {
+    const encrypted = localStorage.getItem(STORAGE_KEY);
+    if (!encrypted) return null;
+    const jsonStr = await decryptData(encrypted);
+    if (!jsonStr) return null;
+    try {
+      return JSON.parse(jsonStr) as T;
+    } catch {
+      return null;
+    }
+  } catch (err) {
+    console.warn('XR localStorage restricted, cannot load from vault', err);
     return null;
   }
 }

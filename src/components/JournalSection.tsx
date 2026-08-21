@@ -80,7 +80,11 @@ export const JournalSection: React.FC = () => {
     
     const updated = [newEntry, ...entries];
     setEntries(updated);
-    localStorage.setItem('occult_journal_entries', JSON.stringify(updated));
+    try {
+      localStorage.setItem('occult_journal_entries', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('XR localStorage restricted, state saved in memory only', e);
+    }
     setCurrentInput('');
   };
 
@@ -98,7 +102,11 @@ export const JournalSection: React.FC = () => {
     soundEffects.playHolographicChime(222);
     const updated = entries.filter((e) => e.id !== id);
     setEntries(updated);
-    localStorage.setItem('occult_journal_entries', JSON.stringify(updated));
+    try {
+      localStorage.setItem('occult_journal_entries', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('XR localStorage restricted, state saved in memory only', e);
+    }
   };
 
   const filteredEntries = entries.filter((e) =>
@@ -180,8 +188,8 @@ export const JournalSection: React.FC = () => {
             <div className="text-[10px] font-mono text-[#00e5ff] flex items-center gap-1.5 mb-2">
               <Clock className="w-3 h-3" />
               {new Date(entry.timestamp).toLocaleString(undefined, { 
-                dateStyle: 'medium', 
-                timeStyle: 'short' 
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
               })}
             </div>
             <p className="text-sm text-gray-300 font-sans whitespace-pre-wrap leading-relaxed">
