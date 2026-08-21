@@ -56,14 +56,23 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
   if (!isOpen) return null;
 
   const filteredGrimoire = grimoire.filter((item) => {
+    const searchLower = (searchQuery || '').toLowerCase();
+    const formula = (item.barbarousFormula || '').toLowerCase();
+    const text = (item.invocationText || '').toLowerCase();
+    const planet = (item.planet || '').toLowerCase();
+    const qlipha = (item.focusQlipha || '').toLowerCase();
+    const martial = (item.martialCorrelation || '').toLowerCase();
+    const source = (item.source || '').toLowerCase();
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+
     const matchesSearch =
-      item.barbarousFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.invocationText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.planet.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.focusQlipha.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.martialCorrelation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      formula.includes(searchLower) ||
+      text.includes(searchLower) ||
+      planet.includes(searchLower) ||
+      qlipha.includes(searchLower) ||
+      martial.includes(searchLower) ||
+      source.includes(searchLower) ||
+      tags.some((t) => (t || '').toLowerCase().includes(searchLower));
 
     const matchesFilter = selectedFilter === 'All' || item.element === selectedFilter;
     return matchesSearch && matchesFilter;

@@ -48,13 +48,13 @@ export const Header: React.FC<HeaderProps> = ({
   onExportPdf,
 }) => {
   const tabs: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'HUD', icon: <LayoutGrid className="w-5 h-5" /> },
-    { id: 'natal', label: 'NATAL', icon: <Sparkles className="w-5 h-5" /> },
-    { id: 'combat', label: 'COMBAT', icon: <Flame className="w-5 h-5" /> },
-    { id: 'qigong', label: 'QI-GONG', icon: <Dumbbell className="w-5 h-5" /> },
-    { id: 'meditations', label: 'MEDITATION', icon: <HeartHandshake className="w-5 h-5" /> },
-    { id: 'tarot', label: 'TAROT', icon: <Layers className="w-5 h-5" /> },
-    { id: 'occult', label: 'GRIMOIRE', icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'dashboard', label: 'HUD', icon: <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'natal', label: 'NATAL', icon: <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'combat', label: 'COMBAT', icon: <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'qigong', label: 'QI-GONG', icon: <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'meditations', label: 'MEDITATION', icon: <HeartHandshake className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'tarot', label: 'TAROT', icon: <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'occult', label: 'GRIMOIRE', icon: <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
   ];
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
@@ -134,35 +134,35 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="px-3 sm:px-4 pt-3 pb-3 bg-[#1A2130] border-b border-[#263148] select-none w-full">
+    <header className="px-2 sm:px-4 pt-2.5 pb-2.5 bg-[#1A2130] border-b border-[#263148] select-none w-full min-w-0 max-w-full overflow-hidden">
       {/* 1. Top Quick Action Bar (Search, Discord, PDF, Audio) */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#263148] text-[10px] font-mono">
-        <span className="text-[#00e5ff] font-bold tracking-widest flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#00e5ff] animate-pulse"></span>
-          SPATIAL CONSOLE
+      <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#263148] text-[9px] sm:text-[10px] font-mono min-w-0">
+        <span className="text-[#00e5ff] font-bold tracking-widest flex items-center gap-1 sm:gap-1.5 truncate">
+          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00e5ff] animate-pulse shrink-0"></span>
+          <span className="truncate">SPATIAL CONSOLE</span>
         </span>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           <button
             id="header-search-btn"
             onClick={onOpenSearch}
-            className="p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 hover:border-cyan-400 transition-colors"
+            className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 hover:border-cyan-400 transition-colors"
             title="Search Grimoire"
           >
-            <Search className="w-3.5 h-3.5" />
+            <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
           <button
             id="header-discord-btn"
             onClick={onOpenDiscordShare}
-            className="p-1.5 rounded-md bg-[#161B26] border border-[#3E4A6B] text-indigo-400 hover:text-indigo-300 hover:border-indigo-400 transition-colors"
+            className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#3E4A6B] text-indigo-400 hover:text-indigo-300 hover:border-indigo-400 transition-colors"
             title="Share Dossier"
           >
-            <Share2 className="w-3.5 h-3.5" />
+            <Share2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
           <button
             id="header-pdf-btn"
             onClick={onExportPdf}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-bold text-[10px] tracking-wider transition-all shadow-[0_0_10px_rgba(255,215,0,0.3)]"
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-bold text-[9px] sm:text-[10px] tracking-wider transition-all shadow-[0_0_10px_rgba(255,215,0,0.3)]"
             title="Export Report PDF"
           >
             <FileText className="w-3 h-3" />
@@ -172,29 +172,29 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="header-audio-btn"
               onClick={onToggleSound}
-              className="p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 transition-colors"
+              className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 transition-colors"
               title="Toggle Audio"
             >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#00e5ff]" /> : <VolumeX className="w-3.5 h-3.5" />}
+              {soundEnabled ? <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#00e5ff]" /> : <VolumeX className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
             </button>
           )}
         </div>
       </div>
 
-      {/* 2. Main Headset Title & Lunar Status */}
-      <div className="text-center space-y-1 mb-3">
-        <h1 className="text-base sm:text-lg font-black tracking-[0.18em] uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center gap-2 font-mono">
-          <span className="text-yellow-400">⚡</span>
-          <span>AETHERIS // OCCULT CONSOLE</span>
+      {/* 2. Main Headset Title & Lunar Status with Fluid Responsive Clamp Typography */}
+      <div className="text-center space-y-0.5 mb-2 px-1 min-w-0 w-full">
+        <h1 className="text-[clamp(12px,3.8vw,18px)] font-black tracking-wider uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center gap-1.5 font-mono truncate w-full">
+          <span className="text-yellow-400 shrink-0">⚡</span>
+          <span className="truncate">AETHERIS // OCCULT CONSOLE</span>
         </h1>
-        <p className="text-[11px] font-mono font-bold tracking-widest text-[#00e5ff] uppercase">
+        <p className="text-[clamp(8.5px,2.4vw,11px)] font-mono font-bold tracking-wider text-[#00e5ff] uppercase truncate w-full">
           LUNAR PHASE: {lunarPhaseName.toUpperCase()}
-          <span className="text-gray-400 ml-1.5 font-normal">({lunarIllumination}%)</span>
+          <span className="text-gray-400 ml-1 font-normal">({lunarIllumination}%)</span>
         </p>
       </div>
 
-      {/* 3. 7 Navigation Tabs matching Headset Screenshot (Icon Stacked on Label) */}
-      <div className="relative group/nav mb-3">
+      {/* 3. 7 Navigation Tabs with Fluid Scaling (Zero Horizontal Clipping) */}
+      <div className="relative w-full mb-2 min-w-0 group/nav">
         <div
           ref={navContainerRef}
           onMouseDown={handleMouseDown}
@@ -202,7 +202,7 @@ export const Header: React.FC<HeaderProps> = ({
           onMouseUp={handleMouseUpOrLeave}
           onMouseLeave={handleMouseUpOrLeave}
           onWheel={handleWheel}
-          className={`flex items-center justify-between gap-1 sm:gap-1.5 overflow-x-auto py-1 px-1 no-scrollbar transition-all ${
+          className={`w-full flex items-center justify-between gap-1 overflow-x-auto py-1 px-0.5 no-scrollbar transition-all min-w-0 ${
             isMouseDown ? 'cursor-grabbing select-none' : 'cursor-grab'
           }`}
           style={{
@@ -218,37 +218,41 @@ export const Header: React.FC<HeaderProps> = ({
                 ref={(el) => (tabButtonRefs.current[tab.id] = el)}
                 id={`tab-btn-${tab.id}`}
                 onClick={() => handleTabClick(tab.id)}
-                className={`flex flex-col items-center justify-center p-1.5 sm:px-2.5 sm:py-2 rounded-xl text-[9px] sm:text-[10px] font-black tracking-wider uppercase font-mono transition-all shrink-0 min-w-[50px] sm:min-w-[56px] ${
+                className={`flex flex-col items-center justify-center py-1 sm:py-1.5 px-0.5 sm:px-1.5 rounded-lg sm:rounded-xl text-[clamp(7px,1.9vw,9.5px)] font-black tracking-tight sm:tracking-wider uppercase font-mono transition-all flex-1 min-w-[32px] sm:min-w-[46px] shrink-0 ${
                   isActive
-                    ? 'bg-[#122238] text-[#00e5ff] border-2 border-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.4)] scale-105'
+                    ? 'bg-[#122238] text-[#00e5ff] border-2 border-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.4)] scale-[1.03]'
                     : 'bg-[#161B26] text-gray-400 hover:text-white border border-[#2E3B57] hover:border-cyan-500/40 hover:bg-[#1E2638]'
                 }`}
               >
-                <span className={`mb-1 ${isActive ? 'text-[#00e5ff]' : 'text-gray-400'}`}>
+                <span className={`mb-0.5 ${isActive ? 'text-[#00e5ff]' : 'text-gray-400'}`}>
                   {tab.icon}
                 </span>
-                <span className="leading-tight">{tab.label}</span>
+                <span className="leading-none truncate w-full text-center">{tab.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 4. CALIBRATE ORIGIN BUTTON */}
-      <div className="w-full bg-[#161B26] border border-[#2E3B57] rounded-xl p-2 flex items-center justify-between gap-2 shadow-[0_2px_10px_rgba(0,0,0,0.4)]">
-        <div className="flex items-center gap-2 pl-1">
-          <MapPin className="w-4 h-4 text-[#00e5ff] shrink-0" />
-          <span className="text-[10px] font-mono font-bold text-gray-300 hidden xs:inline truncate">
-            {birthCity.toUpperCase()} ({birthDate})
-          </span>
+      {/* 4. CALIBRATE ORIGIN BAR (Dynamic min/max scaling for phone and narrow viewports) */}
+      <div 
+        id="calibrate-origin-bar-container"
+        className="w-full bg-[#161B26] border border-[#2E3B57] hover:border-cyan-500/50 rounded-xl p-1.5 sm:p-2 flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-1.5 sm:gap-2 shadow-[0_2px_10px_rgba(0,0,0,0.4)] transition-all min-w-0"
+      >
+        <div className="flex items-center gap-1.5 sm:gap-2 pl-1 min-w-0 overflow-hidden">
+          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00e5ff] shrink-0" />
+          <div className="flex items-center gap-1 text-[clamp(9px,2.4vw,11px)] font-mono font-bold text-gray-300 truncate min-w-0">
+            <span className="text-white uppercase truncate">{birthCity}</span>
+            <span className="text-gray-500 shrink-0">({birthDate})</span>
+          </div>
         </div>
 
         <button
           id="calibrate-origin-ribbon-btn"
           onClick={onOpenCalibrate}
-          className="flex-1 xs:flex-initial text-center px-4 py-1.5 rounded-lg bg-[#122238] hover:bg-[#172D4A] border border-[#00e5ff] text-[#00e5ff] hover:text-white font-mono text-xs font-black tracking-widest uppercase transition-all shadow-[0_0_12px_rgba(0,229,255,0.25)]"
+          className="w-full xs:w-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg bg-[#122238] hover:bg-[#172D4A] border border-[#00e5ff] text-[#00e5ff] hover:text-white font-mono text-[clamp(9.5px,2.6vw,12px)] font-black tracking-widest uppercase transition-all shadow-[0_0_12px_rgba(0,229,255,0.25)] flex items-center justify-center gap-1.5 shrink-0"
         >
-          CALIBRATE ORIGIN
+          <span>CALIBRATE ORIGIN</span>
         </button>
       </div>
     </header>

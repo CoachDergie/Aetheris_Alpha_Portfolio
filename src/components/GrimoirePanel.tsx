@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DiscoveredIncantation } from '../types';
 import { Sparkles, BookOpen, Volume2, Search, Plus, Compass } from 'lucide-react';
 import { soundEffects } from '../utils/telemetry';
+import { JournalSection } from './JournalSection';
 
 interface GrimoirePanelProps {
   grimoire: DiscoveredIncantation[];
@@ -21,10 +22,16 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
   const [customPrompt, setCustomPrompt] = useState<string>('');
 
   const filteredGrimoire = grimoire.filter((inc) => {
+    const searchLower = (searchQuery || '').toLowerCase();
+    const title = (inc.dayOfWeek ? `${inc.dayOfWeek} Invocation` : (inc as any).title || '').toLowerCase();
+    const formula = (inc.barbarousFormula || '').toLowerCase();
+    const planet = (inc.planet || '').toLowerCase();
+    const intent = (inc.invocationText || (inc as any).intent || '').toLowerCase();
     return (
-      inc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inc.barbarousFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inc.planet.toLowerCase().includes(searchQuery.toLowerCase())
+      title.includes(searchLower) ||
+      formula.includes(searchLower) ||
+      planet.includes(searchLower) ||
+      intent.includes(searchLower)
     );
   });
 
@@ -51,7 +58,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
       {/* Title */}
       <div className="space-y-1">
         <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_12px_rgba(0,229,255,0.6)]">
-          📜 ESOTERIC GRIMOIRE
+          📜 GRIMOIRE
         </h2>
         <p className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
           Barbarous Formulas • Planetary Spheres
@@ -76,7 +83,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
 
           <div>
             <h3 className="text-sm font-black font-mono text-[#ffd700] uppercase tracking-wider">
-              {activeDailyInvocation.title}
+              {activeDailyInvocation.dayOfWeek ? `${activeDailyInvocation.dayOfWeek} • ${activeDailyInvocation.planet}` : (activeDailyInvocation as any).title || 'INVOCATION FORMULA'}
             </h3>
             <p className="text-sm font-mono font-black text-[#00e5ff] tracking-wide mt-1 leading-relaxed">
               "{activeDailyInvocation.barbarousFormula}"
@@ -84,12 +91,12 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
           </div>
 
           <p className="text-xs text-gray-300 font-sans leading-relaxed">
-            {activeDailyInvocation.intent}
+            {activeDailyInvocation.invocationText || (activeDailyInvocation as any).intent || ''}
           </p>
 
           <div className="pt-2 border-t border-[#2A3650] flex items-center justify-between text-[10px] font-mono text-gray-400">
-            <span>SPHERE: {activeDailyInvocation.qliphoticSphere || 'NECHESHIRION'}</span>
-            <span>MARTIAL: {activeDailyInvocation.martialCorrelation}</span>
+            <span>SPHERE: {activeDailyInvocation.focusQlipha || (activeDailyInvocation as any).qliphoticSphere || 'NECHESHIRION'}</span>
+            <span>MARTIAL: {activeDailyInvocation.martialCorrelation || 'Universal Centerline'}</span>
           </div>
         </div>
       )}
@@ -125,14 +132,21 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
             }`}
           >
             <div className="flex justify-between items-center">
-              <span className="text-xs font-black font-mono text-white uppercase">{inc.title}</span>
+              <span className="text-xs font-black font-mono text-white uppercase">
+                {inc.dayOfWeek ? `${inc.dayOfWeek} Transmission` : (inc as any).title || 'INVOCATION'}
+              </span>
               <span className="text-[10px] font-mono text-[#ffd700] font-bold">{inc.planet}</span>
             </div>
             <p className="text-xs font-mono text-cyan-300 font-bold mt-1">"{inc.barbarousFormula}"</p>
-            <p className="text-[11px] text-gray-400 mt-1 font-sans line-clamp-2">{inc.intent}</p>
+            <p className="text-[11px] text-gray-400 mt-1 font-sans line-clamp-2">
+              {inc.invocationText || (inc as any).intent || ''}
+            </p>
           </div>
         ))}
       </div>
+
+      {/* Journal Section added to bottom */}
+      <JournalSection />
     </div>
   );
 };

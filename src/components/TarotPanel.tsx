@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DrawnCard, TarotCard } from '../types';
 import { TAROT_DECK, getRandomTarotCards, synthesizeTarotGuidance } from '../utils/tarotData';
 import { Layers, Sparkles, RefreshCw, Eye, Info, X } from 'lucide-react';
@@ -18,15 +18,41 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [suitFilter, setSuitFilter] = useState<string>('ALL');
+  const [images, setImages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Load the base64 JSON mapping
+    fetch('/tarotImagesBase64.json')
+      .then(res => res.json())
+      .then(data => setImages(data))
+      .catch(err => console.error('Failed to load tarot images', err));
+  }, []);
 
   const handleDraw = (count: number) => {
     setDrawCount(count);
     setCurrentDraw(getRandomTarotCards(count));
   };
 
+  const suitCounts: Record<string, number> = {
+    ALL: TAROT_DECK.length,
+    Major: TAROT_DECK.filter((c) => c.suit === 'Major').length,
+    Wands: TAROT_DECK.filter((c) => c.suit === 'Wands').length,
+    Cups: TAROT_DECK.filter((c) => c.suit === 'Cups').length,
+    Swords: TAROT_DECK.filter((c) => c.suit === 'Swords').length,
+    Pentacles: TAROT_DECK.filter((c) => c.suit === 'Pentacles').length,
+  };
+
   const filteredCards = TAROT_DECK.filter((c) => {
-    const matchesSearch = c.name.toLowerCase().includes(searchFilter.toLowerCase()) || 
-                          c.associatedPlanetOrSign.toLowerCase().includes(searchFilter.toLowerCase());
+    const searchLower = (searchFilter || '').toLowerCase();
+    const name = (c.name || '').toLowerCase();
+    const astro = (c.associatedPlanetOrSign || '').toLowerCase();
+    const upright = (c.uprightMeaning || '').toLowerCase();
+    const reversed = (c.reversedMeaning || '').toLowerCase();
+    const matchesSearch = 
+      name.includes(searchLower) || 
+      astro.includes(searchLower) ||
+      upright.includes(searchLower) ||
+      reversed.includes(searchLower);
     const matchesSuit = suitFilter === 'ALL' || c.suit === suitFilter;
     return matchesSearch && matchesSuit;
   });
@@ -111,27 +137,12 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
                   )}
 
                   {/* Centered Visual Card Artwork Frame */}
-                  <div className="w-44 h-60 rounded-2xl bg-[#161B26] border-2 border-yellow-500/40 shadow-[0_0_20px_rgba(255,215,0,0.15)] p-4 flex flex-col justify-between items-center relative overflow-hidden my-2">
-                    <div className="flex justify-between w-full text-xs font-mono text-yellow-400 font-bold">
-                      <span>{drawn.card.glyph || '✦'}</span>
-                      <span className="text-[10px] uppercase tracking-wider">{drawn.card.suit}</span>
-                    </div>
-
-                    <div className="text-center my-auto">
-                      <div className="text-4xl font-serif text-[#ffd700] drop-shadow-[0_0_12px_rgba(255,215,0,0.5)] mb-1">
-                        {drawn.card.glyph || '🜂'}
-                      </div>
-                      <div className="text-xs font-black font-mono tracking-wider text-white uppercase">
-                        {drawn.card.name}
-                      </div>
-                      <div className="text-[10px] font-mono text-cyan-300 font-bold mt-1">
-                        {drawn.isReversed ? '↺ REVERSED' : '↑ UPRIGHT'}
-                      </div>
-                    </div>
-
-                    <div className="text-[10px] font-mono text-yellow-300/80 border-t border-yellow-500/30 pt-1 w-full text-center">
-                      {drawn.card.associatedPlanetOrSign}
-                    </div>
+                  <div className="w-44 h-[250px] rounded-xl bg-[#161B26] border-2 border-yellow-500/40 shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden my-2 flex items-center justify-center p-1">
+                    <img
+                      src={images[drawn.card.imagePath] || ''}
+                      alt={drawn.card.name}
+                      className={`w-full h-full object-contain rounded-lg transition-transform duration-500 ${drawn.isReversed ? 'rotate-180' : ''}`}
+                    />
                   </div>
 
                   {/* Title & Guidance */}
@@ -175,17 +186,26 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
             />
 
             <div className="flex items-center justify-center gap-1.5 overflow-x-auto w-full py-0.5">
-              {['ALL', 'Major', 'Wands', 'Cups', 'Swords', 'Pentacles'].map((suit) => (
+              {[
+                { key: 'ALL', label: 'ALL', glyph: '✦' },
+                { key: 'Major', label: 'Major', glyph: '👑' },
+                { key: 'Wands', label: 'Wands', glyph: '🜂' },
+                { key: 'Cups', label: 'Cups', glyph: '🜄' },
+                { key: 'Swords', label: 'Swords', glyph: '🜁' },
+                { key: 'Pentacles', label: 'Pentacles', glyph: '🜃' },
+              ].map((suit) => (
                 <button
-                  key={suit}
-                  onClick={() => setSuitFilter(suit)}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
-                    suitFilter === suit
-                      ? 'bg-[#122238] border border-cyan-400 text-cyan-300'
+                  key={suit.key}
+                  onClick={() => setSuitFilter(suit.key)}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all whitespace-nowrap flex items-center gap-1 ${
+                    suitFilter === suit.key
+                      ? 'bg-[#122238] border border-cyan-400 text-cyan-300 shadow-[0_0_8px_rgba(0,229,255,0.3)]'
                       : 'bg-[#161B26] border border-[#2E3B57] text-gray-400 hover:text-white'
                   }`}
                 >
-                  {suit}
+                  <span>{suit.glyph}</span>
+                  <span>{suit.label}</span>
+                  <span className="text-[9px] opacity-75 font-normal">({suitCounts[suit.key] || 0})</span>
                 </button>
               ))}
             </div>
@@ -199,10 +219,12 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
                 onClick={() => setSelectedCard(card)}
                 className="cursor-pointer bg-[#1E2638] border border-[#2E3B57] hover:border-[#00e5ff] rounded-2xl p-3 flex flex-col items-center text-center transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(0,229,255,0.2)]"
               >
-                <div className="w-full h-24 rounded-xl bg-[#161B26] border border-yellow-500/30 flex flex-col justify-between items-center p-2 mb-1.5">
-                  <span className="text-yellow-400 text-[10px] font-mono">{card.glyph || '✦'}</span>
-                  <span className="text-xl text-[#ffd700] font-serif">{card.glyph || '🜂'}</span>
-                  <span className="text-[9px] font-mono text-gray-400 uppercase">{card.suit}</span>
+                <div className="w-full h-40 rounded-xl bg-[#161B26] border border-yellow-500/30 flex justify-center items-center p-1 mb-1.5 overflow-hidden">
+                  <img
+                    src={images[card.imagePath] || ''}
+                    alt={card.name}
+                    className="w-full h-full object-contain rounded-lg"
+                  />
                 </div>
                 <div className="text-xs font-black font-mono text-white truncate w-full">
                   {card.name}
@@ -228,8 +250,12 @@ export const TarotPanel: React.FC<TarotPanelProps> = ({
             </button>
 
             <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-32 rounded-2xl bg-[#161B26] border-2 border-yellow-500/50 flex flex-col justify-center items-center shadow-[0_0_20px_rgba(255,215,0,0.25)] mb-3 p-3">
-                <span className="text-3xl text-[#ffd700] font-serif">{selectedCard.glyph || '✦'}</span>
+              <div className="w-32 h-[180px] rounded-xl bg-[#161B26] border-2 border-yellow-500/50 flex justify-center items-center shadow-[0_0_20px_rgba(255,215,0,0.25)] mb-3 p-1 overflow-hidden">
+                <img
+                  src={images[selectedCard.imagePath] || ''}
+                  alt={selectedCard.name}
+                  className="w-full h-full object-contain rounded-lg"
+                />
               </div>
 
               <h2 className="text-base font-black font-mono text-[#00e5ff] uppercase tracking-wider">

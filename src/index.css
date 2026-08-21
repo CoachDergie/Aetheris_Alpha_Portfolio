@@ -9,14 +9,26 @@ html, body, #root {
   background-color: #161B26 !important;
   background: #161B26 !important;
   color: #e2e8f0;
-  min-height: 100vh;
-  min-height: 100dvh;
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  height: 100% !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Universal bounding container safeguard to prevent viewport blowout on narrow screens */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Ensure no element inadvertently exceeds viewport width */
+div, section, header, main, nav, footer, button, input, p, span, h1, h2, h3, h4 {
+  max-width: 100%;
 }
 
 /* Hide scrollbar utility for clean XR HUD navigation */
@@ -43,6 +55,6 @@ html, body, #root {
 
 /* Ensure smooth touch scrolling on Samsung One UI and Oculus browser */
 * {
-  box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
+

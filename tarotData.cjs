@@ -1,0 +1,835 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var tarotData_exports = {};
+__export(tarotData_exports, {
+  TAROT_DECK: () => TAROT_DECK,
+  getRandomTarotCards: () => getRandomTarotCards,
+  synthesizeTarotGuidance: () => synthesizeTarotGuidance
+});
+module.exports = __toCommonJS(tarotData_exports);
+const TAROT_DECK = [
+  // ==========================================
+  // MAJOR ARCANA (22 Cards: 0 - 21)
+  // ==========================================
+  {
+    id: "MAJOR_0",
+    name: "The Fool",
+    imagePath: "00-TheFool.png",
+    suit: "Major",
+    uprightMeaning: "New beginnings, spiritual spontaneity, leap into the primordial void without fear.",
+    reversedMeaning: "Recklessness, fear of initiation, foolish naivety and misjudged risks.",
+    associatedPlanetOrSign: "Uranus / Air",
+    glyph: "\u2645"
+  },
+  {
+    id: "MAJOR_1",
+    name: "The Magician",
+    imagePath: "01-TheMagician.png",
+    suit: "Major",
+    uprightMeaning: "Direct will, elemental manifestation, conscious channel of the four sacred weapons.",
+    reversedMeaning: "Deception, blocked channel, scattered kinetic focus and manipulative intent.",
+    associatedPlanetOrSign: "Mercury",
+    glyph: "\u263F"
+  },
+  {
+    id: "MAJOR_2",
+    name: "The High Priestess",
+    imagePath: "02-TheHighPriestess.png",
+    suit: "Major",
+    uprightMeaning: "Lunar subconscious, veil of Isis, hidden esoteric currents and silent gnosis.",
+    reversedMeaning: "Repressed intuition, secrets revealed with malice, shallow superficiality.",
+    associatedPlanetOrSign: "Moon",
+    glyph: "\u263D"
+  },
+  {
+    id: "MAJOR_3",
+    name: "The Empress",
+    imagePath: "03-TheEmpress.png",
+    suit: "Major",
+    uprightMeaning: "Abundance, generative cosmic matrix, sensual organic vitality and fruitful creation.",
+    reversedMeaning: "Creative stagnation, over-indulgence, smothering control, barren soil.",
+    associatedPlanetOrSign: "Venus",
+    glyph: "\u2640"
+  },
+  {
+    id: "MAJOR_4",
+    name: "The Emperor",
+    imagePath: "04-TheEmperor.png",
+    suit: "Major",
+    uprightMeaning: "Sovereign authority, iron structure, unyielding centerline posture and strategic mastery.",
+    reversedMeaning: "Tyranny, brittle rigidity, loss of physical grounding and chaotic discipline.",
+    associatedPlanetOrSign: "Aries",
+    glyph: "\u2648"
+  },
+  {
+    id: "MAJOR_5",
+    name: "The Hierophant",
+    imagePath: "05-TheHierophant.png",
+    suit: "Major",
+    uprightMeaning: "Esoteric lineage transmission, traditional occult discipline, keys of the mysteries.",
+    reversedMeaning: "Dogma, blind orthodoxy, spiritual rebellion, obsolete rituals.",
+    associatedPlanetOrSign: "Taurus",
+    glyph: "\u2649"
+  },
+  {
+    id: "MAJOR_6",
+    name: "The Lovers",
+    imagePath: "06-TheLovers.png",
+    suit: "Major",
+    uprightMeaning: "Alchemical marriage, sacred polarity synthesis, unified will and aligned choices.",
+    reversedMeaning: "Internal disharmony, conflicting paths, severed trust, fragmented desire.",
+    associatedPlanetOrSign: "Gemini",
+    glyph: "\u264A"
+  },
+  {
+    id: "MAJOR_7",
+    name: "The Chariot",
+    imagePath: "07-TheChariot.png",
+    suit: "Major",
+    uprightMeaning: "Triumphant vector, disciplined kinetic momentum, conquering sphinxes of duality.",
+    reversedMeaning: "Loss of momentum, catastrophic derailment, blind aggression, collapse under pressure.",
+    associatedPlanetOrSign: "Cancer",
+    glyph: "\u264B"
+  },
+  {
+    id: "MAJOR_8",
+    name: "Strength",
+    imagePath: "08-Strength.png",
+    suit: "Major",
+    uprightMeaning: "Internal fortitude, mastering the primal beast, soft power overcoming hard steel.",
+    reversedMeaning: "Self-doubt, explosive uncontrolled rage, weakness in core stance.",
+    associatedPlanetOrSign: "Leo",
+    glyph: "\u264C"
+  },
+  {
+    id: "MAJOR_9",
+    name: "The Hermit",
+    imagePath: "09-TheHermit.png",
+    suit: "Major",
+    uprightMeaning: "Inner lantern of truth, sacred solitude, deep contemplation of the abyssal mysteries.",
+    reversedMeaning: "Paralyzing isolation, withdrawal from reality, closed mind, refusing guidance.",
+    associatedPlanetOrSign: "Virgo",
+    glyph: "\u264D"
+  },
+  {
+    id: "MAJOR_10",
+    name: "Wheel of Fortune",
+    imagePath: "10-WheelOfFortune.png",
+    suit: "Major",
+    uprightMeaning: "Cosmic cycles, karma in motion, destiny shifting, inevitable ascending turn.",
+    reversedMeaning: "Resisting the inevitable cycle, temporary misfortune, clinging to past loops.",
+    associatedPlanetOrSign: "Jupiter",
+    glyph: "\u2643"
+  },
+  {
+    id: "MAJOR_11",
+    name: "Justice",
+    imagePath: "11-Justice.png",
+    suit: "Major",
+    uprightMeaning: "Karmic equilibrium, precision of the scales, unwavering blade of absolute truth.",
+    reversedMeaning: "Biased judgment, hypocrisy, dishonest evasion, unbalanced kinetic vectors.",
+    associatedPlanetOrSign: "Libra",
+    glyph: "\u264E"
+  },
+  {
+    id: "MAJOR_12",
+    name: "The Hanged Man",
+    imagePath: "12-TheHangedMan.png",
+    suit: "Major",
+    uprightMeaning: "Sacred suspension, inverted perspective, voluntary surrender for transcendental insight.",
+    reversedMeaning: "Needless martyrdom, stalling, stubborn resistance to required sacrifice.",
+    associatedPlanetOrSign: "Neptune / Water",
+    glyph: "\u2646"
+  },
+  {
+    id: "MAJOR_13",
+    name: "Death",
+    imagePath: "13-Death.png",
+    suit: "Major",
+    uprightMeaning: "Profound metamorphosis, death of the obsolete ego, total alchemical renewal.",
+    reversedMeaning: "Clinging to dead forms, fear of transmutation, lingering decay and stagnation.",
+    associatedPlanetOrSign: "Scorpio",
+    glyph: "\u264F"
+  },
+  {
+    id: "MAJOR_14",
+    name: "Temperance",
+    imagePath: "14-Temperance.png",
+    suit: "Major",
+    uprightMeaning: "Alchemical blending of opposites, fluid harmony, patient distillation of vital fluids.",
+    reversedMeaning: "Extreme excess, disharmonious breath rhythm, wasted spiritual energy.",
+    associatedPlanetOrSign: "Sagittarius",
+    glyph: "\u2650"
+  },
+  {
+    id: "MAJOR_15",
+    name: "The Devil",
+    imagePath: "15-TheDevil.png",
+    suit: "Major",
+    uprightMeaning: "Shadow confrontation, raw chthonic drive, recognizing material chains to shatter them.",
+    reversedMeaning: "Liberation from illusion, breaking ancient bindings, overcoming primal traps.",
+    associatedPlanetOrSign: "Capricorn",
+    glyph: "\u2651"
+  },
+  {
+    id: "MAJOR_16",
+    name: "The Tower",
+    imagePath: "16-TheTower.png",
+    suit: "Major",
+    uprightMeaning: "Sudden lightning awakening, catastrophic shattering of false structures, liberating shock.",
+    reversedMeaning: "Fear of necessary breakdown, averting truth, prolonged internal collapse.",
+    associatedPlanetOrSign: "Mars",
+    glyph: "\u2642"
+  },
+  {
+    id: "MAJOR_17",
+    name: "The Star",
+    imagePath: "17-TheStar.png",
+    suit: "Major",
+    uprightMeaning: "Astral illumination, pure hope, divine celestial pouring, serene inspiration.",
+    reversedMeaning: "Despair, clouded vision, cynicism, disconnected from stellar guidance.",
+    associatedPlanetOrSign: "Aquarius",
+    glyph: "\u2652"
+  },
+  {
+    id: "MAJOR_18",
+    name: "The Moon",
+    imagePath: "18-TheMoon.png",
+    suit: "Major",
+    uprightMeaning: "Dream realm illusions, twilight subconscious gateway, astral beast instincts.",
+    reversedMeaning: "Piercing deceit, clearing fog, waking from nightmares, dispelling dread.",
+    associatedPlanetOrSign: "Pisces",
+    glyph: "\u2653"
+  },
+  {
+    id: "MAJOR_19",
+    name: "The Sun",
+    imagePath: "19-TheSun.png",
+    suit: "Major",
+    uprightMeaning: "Solar radiance, supreme martial vitality, crystal clarity, triumphant success.",
+    reversedMeaning: "Temporary burnout, dim light, arrogance, clouded optimism.",
+    associatedPlanetOrSign: "Sun",
+    glyph: "\u2609"
+  },
+  {
+    id: "MAJOR_20",
+    name: "Judgement",
+    imagePath: "20-Judgement.png",
+    suit: "Major",
+    uprightMeaning: "Astral awakening, resurrection of the true higher self, answering the cosmic call.",
+    reversedMeaning: "Self-doubt, ignoring the awakening trumpet, clinging to guilt and fear.",
+    associatedPlanetOrSign: "Pluto / Fire",
+    glyph: "\u2647"
+  },
+  {
+    id: "MAJOR_21",
+    name: "The World",
+    imagePath: "21-TheWorld.png",
+    suit: "Major",
+    uprightMeaning: "Cosmic completion, ouroboric wholeness, mastery over all four elemental realms.",
+    reversedMeaning: "Unfinished cycle, seeking lazy shortcuts, lingering lack of closure.",
+    associatedPlanetOrSign: "Saturn / Earth",
+    glyph: "\u2644"
+  },
+  // ==========================================
+  // MINOR ARCANA: SUIT OF WANDS (14 Cards - Fire / 🜂)
+  // ==========================================
+  {
+    id: "WANDS_1",
+    name: "Ace of Wands",
+    imagePath: "Wands01.png",
+    suit: "Wands",
+    uprightMeaning: "Primordial spark of martial will, explosive creative force, pure vital ignition.",
+    reversedMeaning: "Delayed execution, misdirected strike power, lack of passion or spark.",
+    associatedPlanetOrSign: "Root of Fire // Mars",
+    glyph: "\u{1F702}"
+  },
+  {
+    id: "WANDS_2",
+    name: "Two of Wands",
+    imagePath: "Wands02.png",
+    suit: "Wands",
+    uprightMeaning: "Dominion, sovereign vision, planning global conquest from high battlements.",
+    reversedMeaning: "Fear of unknown realms, hesitation, trapped in small ambitions.",
+    associatedPlanetOrSign: "Mars in Aries",
+    glyph: "\u2648"
+  },
+  {
+    id: "WANDS_3",
+    name: "Three of Wands",
+    imagePath: "Wands03.png",
+    suit: "Wands",
+    uprightMeaning: "Established strength, ships returning with spoils, expansion into new horizons.",
+    reversedMeaning: "Obstacles at sea, delayed ventures, frustrated anticipation.",
+    associatedPlanetOrSign: "Sun in Aries",
+    glyph: "\u2648"
+  },
+  {
+    id: "WANDS_4",
+    name: "Four of Wands",
+    imagePath: "Wands04.png",
+    suit: "Wands",
+    uprightMeaning: "Completed work, sacred hearth ceremony, triumphant homecoming and stable refuge.",
+    reversedMeaning: "Family tension, disrupted celebration, transient instability.",
+    associatedPlanetOrSign: "Venus in Aries",
+    glyph: "\u2648"
+  },
+  {
+    id: "WANDS_5",
+    name: "Five of Wands",
+    imagePath: "Wands05.png",
+    suit: "Wands",
+    uprightMeaning: "Sparring match, clash of egos, martial contest refining reflexes and technique.",
+    reversedMeaning: "Destructive infighting, avoidance of healthy competition, chaotic violence.",
+    associatedPlanetOrSign: "Saturn in Leo",
+    glyph: "\u264C"
+  },
+  {
+    id: "WANDS_6",
+    name: "Six of Wands",
+    imagePath: "Wands06.png",
+    suit: "Wands",
+    uprightMeaning: "Martial victory, laurel crown, public acclaim and justified pride in conquest.",
+    reversedMeaning: "Hubris, fall from grace, hollow accolades, sudden betrayal.",
+    associatedPlanetOrSign: "Jupiter in Leo",
+    glyph: "\u264C"
+  },
+  {
+    id: "WANDS_7",
+    name: "Seven of Wands",
+    imagePath: "Wands07.png",
+    suit: "Wands",
+    uprightMeaning: "Valour on high ground, defending centerline against overwhelming odds with resolve.",
+    reversedMeaning: "Overwhelmed defenses, surrendering position, exhaustion under assault.",
+    associatedPlanetOrSign: "Mars in Leo",
+    glyph: "\u264C"
+  },
+  {
+    id: "WANDS_8",
+    name: "Eight of Wands",
+    imagePath: "Wands08.png",
+    suit: "Wands",
+    uprightMeaning: "Swiftness, spears flying through air, rapid kinetic velocity, imminent culmination.",
+    reversedMeaning: "Panicked rush, arrows missing target, kinetic deceleration and delays.",
+    associatedPlanetOrSign: "Mercury in Sagittarius",
+    glyph: "\u2650"
+  },
+  {
+    id: "WANDS_9",
+    name: "Nine of Wands",
+    imagePath: "Wands09.png",
+    suit: "Wands",
+    uprightMeaning: "Great strength, battle-tested warrior holding the final perimeter, iron resilience.",
+    reversedMeaning: "Paranoia, chronic fatigue, dropping guard right before victory.",
+    associatedPlanetOrSign: "Moon in Sagittarius",
+    glyph: "\u2650"
+  },
+  {
+    id: "WANDS_10",
+    name: "Ten of Wands",
+    imagePath: "Wands10.png",
+    suit: "Wands",
+    uprightMeaning: "Oppression, carrying extreme martial burdens, heavy kinetic load near destination.",
+    reversedMeaning: "Crushed beneath the load, refusing to delegate, collapse from overwork.",
+    associatedPlanetOrSign: "Saturn in Sagittarius",
+    glyph: "\u2650"
+  },
+  {
+    id: "WANDS_PAGE",
+    name: "Page of Wands",
+    imagePath: "Wands11.png",
+    suit: "Wands",
+    uprightMeaning: "The eager scout, adventurous discovery, initial transmission of fiery creative ideas.",
+    reversedMeaning: "Procrastination, loud braggart with no follow-through, childish tantrums.",
+    associatedPlanetOrSign: "Earth of Fire",
+    glyph: "\u{1F702}"
+  },
+  {
+    id: "WANDS_KNIGHT",
+    name: "Knight of Wands",
+    imagePath: "Wands12.png",
+    suit: "Wands",
+    uprightMeaning: "Fiery charge, dynamic warrior passion, daring raid and bold charismatic thrust.",
+    reversedMeaning: "Hot-headed reckless plunge, volatile temper, leaving behind smoking ruins.",
+    associatedPlanetOrSign: "Fire of Fire",
+    glyph: "\u{1F702}"
+  },
+  {
+    id: "WANDS_QUEEN",
+    name: "Queen of Wands",
+    imagePath: "Wands13.png",
+    suit: "Wands",
+    uprightMeaning: "Sovereign magnetic radiance, feline poise, fierce independence and creative warmth.",
+    reversedMeaning: "Jealous wrath, demanding tyranny, vindictive manipulation.",
+    associatedPlanetOrSign: "Water of Fire",
+    glyph: "\u{1F702}"
+  },
+  {
+    id: "WANDS_KING",
+    name: "King of Wands",
+    imagePath: "Wands14.png",
+    suit: "Wands",
+    uprightMeaning: "Supreme martial general, visionary leader commanding with absolute fiery conviction.",
+    reversedMeaning: "Autocratic bully, unrealistic demands, burning down one\u2019s own kingdom.",
+    associatedPlanetOrSign: "Air of Fire",
+    glyph: "\u{1F702}"
+  },
+  // ==========================================
+  // MINOR ARCANA: SUIT OF CUPS (14 Cards - Water / 🜄)
+  // ==========================================
+  {
+    id: "CUPS_1",
+    name: "Ace of Cups",
+    imagePath: "Cups01.png",
+    suit: "Cups",
+    uprightMeaning: "Holy Grail overflowing, pure spiritual fountain of compassion and deep intuition.",
+    reversedMeaning: "Spilled chalice, emotional drought, blocked intuitive current.",
+    associatedPlanetOrSign: "Root of Water // Neptune",
+    glyph: "\u{1F704}"
+  },
+  {
+    id: "CUPS_2",
+    name: "Two of Cups",
+    imagePath: "Cups02.png",
+    suit: "Cups",
+    uprightMeaning: "Sacred mutual bond, harmonious resonance between two souls, alchemical connection.",
+    reversedMeaning: "Fractured rapport, misunderstanding, imbalance of emotional exchange.",
+    associatedPlanetOrSign: "Venus in Cancer",
+    glyph: "\u264B"
+  },
+  {
+    id: "CUPS_3",
+    name: "Three of Cups",
+    imagePath: "Cups03.png",
+    suit: "Cups",
+    uprightMeaning: "Abundant celebration, sisterhood/brotherhood in arms, joyous communal communion.",
+    reversedMeaning: "Gossip, clique exclusion, hedonistic over-indulgence masking inner sorrow.",
+    associatedPlanetOrSign: "Mercury in Cancer",
+    glyph: "\u264B"
+  },
+  {
+    id: "CUPS_4",
+    name: "Four of Cups",
+    imagePath: "Cups04.png",
+    suit: "Cups",
+    uprightMeaning: "Quiet contemplation, meditative apathy, ignoring offered chalices for inner reflection.",
+    reversedMeaning: "Snapping out of apathy, recognizing renewed inspiration, fresh appetite for life.",
+    associatedPlanetOrSign: "Moon in Cancer",
+    glyph: "\u264B"
+  },
+  {
+    id: "CUPS_5",
+    name: "Five of Cups",
+    imagePath: "Cups05.png",
+    suit: "Cups",
+    uprightMeaning: "Grief over spilled wine, mourning past losses while two full cups stand behind.",
+    reversedMeaning: "Healing from heartache, turning around to claim remaining blessings.",
+    associatedPlanetOrSign: "Mars in Scorpio",
+    glyph: "\u264F"
+  },
+  {
+    id: "CUPS_6",
+    name: "Six of Cups",
+    imagePath: "Cups06.png",
+    suit: "Cups",
+    uprightMeaning: "Ancestral memory, golden innocence, sweet reunion with roots and pure nostalgia.",
+    reversedMeaning: "Living in the past, childish evasion of duty, idealized illusions.",
+    associatedPlanetOrSign: "Sun in Scorpio",
+    glyph: "\u264F"
+  },
+  {
+    id: "CUPS_7",
+    name: "Seven of Cups",
+    imagePath: "Cups07.png",
+    suit: "Cups",
+    uprightMeaning: "Chalice of illusions, seductive astral visions, labyrinth of endless possibilities.",
+    reversedMeaning: "Disillusionment piercing through mist, decisive clarity of true purpose.",
+    associatedPlanetOrSign: "Venus in Scorpio",
+    glyph: "\u264F"
+  },
+  {
+    id: "CUPS_8",
+    name: "Eight of Cups",
+    imagePath: "Cups08.png",
+    suit: "Cups",
+    uprightMeaning: "Voluntary pilgrimage, abandoning stale emotional reservoirs to seek higher peaks.",
+    reversedMeaning: "Fear of moving on, returning to toxic waters, stagnation.",
+    associatedPlanetOrSign: "Saturn in Pisces",
+    glyph: "\u2653"
+  },
+  {
+    id: "CUPS_9",
+    name: "Nine of Cups",
+    imagePath: "Cups09.png",
+    suit: "Cups",
+    uprightMeaning: "Wish fulfillment, emotional satiety, the banquet of spiritual and sensual contentment.",
+    reversedMeaning: "Smug materialism, hollow indulgence, physical gluttony with inner emptiness.",
+    associatedPlanetOrSign: "Jupiter in Pisces",
+    glyph: "\u2653"
+  },
+  {
+    id: "CUPS_10",
+    name: "Ten of Cups",
+    imagePath: "Cups10.png",
+    suit: "Cups",
+    uprightMeaning: "Rainbow arch of total harmony, sanctuary of peace, fulfilled lineage and clan bliss.",
+    reversedMeaning: "Domestic discord, shattered ideal, conflicting emotional values.",
+    associatedPlanetOrSign: "Mars in Pisces",
+    glyph: "\u2653"
+  },
+  {
+    id: "CUPS_PAGE",
+    name: "Page of Cups",
+    imagePath: "Cups11.png",
+    suit: "Cups",
+    uprightMeaning: "The mystic youth, gentle poetic inspiration, fish speaking from the sacred chalice.",
+    reversedMeaning: "Emotional vulnerability exploited, daydreamer with no discipline.",
+    associatedPlanetOrSign: "Earth of Water",
+    glyph: "\u{1F704}"
+  },
+  {
+    id: "CUPS_KNIGHT",
+    name: "Knight of Cups",
+    imagePath: "Cups12.png",
+    suit: "Cups",
+    uprightMeaning: "The romantic quest, chivalrous offering, graceful diplomat riding with heart exposed.",
+    reversedMeaning: "Deceptive charmer, moody manipulator, ungrounded fantasy merchant.",
+    associatedPlanetOrSign: "Fire of Water",
+    glyph: "\u{1F704}"
+  },
+  {
+    id: "CUPS_QUEEN",
+    name: "Queen of Cups",
+    imagePath: "Cups13.png",
+    suit: "Cups",
+    uprightMeaning: "Deep psychic oracle, ocean of empathy, holding the sealed ornate chalice of mystery.",
+    reversedMeaning: "Emotional drowning, codependency, martyrdom, hypersensitivity.",
+    associatedPlanetOrSign: "Water of Water",
+    glyph: "\u{1F704}"
+  },
+  {
+    id: "CUPS_KING",
+    name: "King of Cups",
+    imagePath: "Cups14.png",
+    suit: "Cups",
+    uprightMeaning: "Master of emotional depths, calm sovereign unruffled by storm, deep emotional wisdom.",
+    reversedMeaning: "Cold emotional manipulation, volatile temper suppressed under icy facade.",
+    associatedPlanetOrSign: "Air of Water",
+    glyph: "\u{1F704}"
+  },
+  // ==========================================
+  // MINOR ARCANA: SUIT OF SWORDS (14 Cards - Air / 🜁)
+  // ==========================================
+  {
+    id: "SWORDS_1",
+    name: "Ace of Swords",
+    imagePath: "Swords01.png",
+    suit: "Swords",
+    uprightMeaning: "Sword of sovereign truth, pristine mental clarity, piercing strike through all illusions.",
+    reversedMeaning: "Cruelty, chaotic intellect, destructive thought loops, severed logic.",
+    associatedPlanetOrSign: "Root of Air // Mercury",
+    glyph: "\u{1F701}"
+  },
+  {
+    id: "SWORDS_2",
+    name: "Two of Swords",
+    imagePath: "Swords02.png",
+    suit: "Swords",
+    uprightMeaning: "Crossed blades in equilibrium, blindfolded truce, still mind before difficult choice.",
+    reversedMeaning: "Paralysis by analysis, blind refusal to confront truth, broken truce.",
+    associatedPlanetOrSign: "Moon in Libra",
+    glyph: "\u264E"
+  },
+  {
+    id: "SWORDS_3",
+    name: "Three of Swords",
+    imagePath: "Swords03.png",
+    suit: "Swords",
+    uprightMeaning: "Pierced heart in storm, surgical emotional incision, necessary grief that purges poison.",
+    reversedMeaning: "Chronic sorrow, holding grudges, slow recovery from profound betrayal.",
+    associatedPlanetOrSign: "Saturn in Libra",
+    glyph: "\u264E"
+  },
+  {
+    id: "SWORDS_4",
+    name: "Four of Swords",
+    imagePath: "Swords04.png",
+    suit: "Swords",
+    uprightMeaning: "Truce of the knight, meditative tomb of sanctuary, deep physical recovery and mental quiet.",
+    reversedMeaning: "Sudden awakening to war, burnout from restless mind, interrupted healing.",
+    associatedPlanetOrSign: "Jupiter in Libra",
+    glyph: "\u264E"
+  },
+  {
+    id: "SWORDS_5",
+    name: "Five of Swords",
+    imagePath: "Swords05.png",
+    suit: "Swords",
+    uprightMeaning: "Ruthless victory, picking up discarded blades, pyrrhic conquest leaving resentment.",
+    reversedMeaning: "Desire to end conflict, putting down the blade, moving past spite.",
+    associatedPlanetOrSign: "Venus in Aquarius",
+    glyph: "\u2652"
+  },
+  {
+    id: "SWORDS_6",
+    name: "Six of Swords",
+    imagePath: "Swords06.png",
+    suit: "Swords",
+    uprightMeaning: "Ferry across troubled waters, quiet passage into calmer shores, transition of mind.",
+    reversedMeaning: "Carrying mental baggage onto new boat, rough passage, unable to escape turmoil.",
+    associatedPlanetOrSign: "Mercury in Aquarius",
+    glyph: "\u2652"
+  },
+  {
+    id: "SWORDS_7",
+    name: "Seven of Swords",
+    imagePath: "Swords07.png",
+    suit: "Swords",
+    uprightMeaning: "Tactical stealth, night raid on enemy camp, cunning strategy and unconventional tactics.",
+    reversedMeaning: "Confession, exposed deception, conscience catching up with the rogue.",
+    associatedPlanetOrSign: "Moon in Aquarius",
+    glyph: "\u2652"
+  },
+  {
+    id: "SWORDS_8",
+    name: "Eight of Swords",
+    imagePath: "Swords08.png",
+    suit: "Swords",
+    uprightMeaning: "Bound by loose cords in a ring of blades, mental imprisonment that is self-imposed.",
+    reversedMeaning: "Shedding blindfolds, stepping out of mental cage, recognizing freedom.",
+    associatedPlanetOrSign: "Jupiter in Gemini",
+    glyph: "\u264A"
+  },
+  {
+    id: "SWORDS_9",
+    name: "Nine of Swords",
+    imagePath: "Swords09.png",
+    suit: "Swords",
+    uprightMeaning: "Dark night of the mind, anguish at midnight, nightmare illusions magnifying dread.",
+    reversedMeaning: "Dawn breaking after night terrors, realizing shadows were just smoke.",
+    associatedPlanetOrSign: "Mars in Gemini",
+    glyph: "\u264A"
+  },
+  {
+    id: "SWORDS_10",
+    name: "Ten of Swords",
+    imagePath: "Swords10.png",
+    suit: "Swords",
+    uprightMeaning: "Absolute cathartic defeat, ten blades in the back, the definitive end of an agonizing ordeal.",
+    reversedMeaning: "Slow recovery from lowest point, the worst is over, resurrecting from ashes.",
+    associatedPlanetOrSign: "Sun in Gemini",
+    glyph: "\u264A"
+  },
+  {
+    id: "SWORDS_PAGE",
+    name: "Page of Swords",
+    imagePath: "Swords11.png",
+    suit: "Swords",
+    uprightMeaning: "The keen vigilant sentinel, sharp inquisitiveness, swift intelligence on windy crags.",
+    reversedMeaning: "Petty espionage, caustic words, defensive paranoia without substance.",
+    associatedPlanetOrSign: "Earth of Air",
+    glyph: "\u{1F701}"
+  },
+  {
+    id: "SWORDS_KNIGHT",
+    name: "Knight of Swords",
+    imagePath: "Swords12.png",
+    suit: "Swords",
+    uprightMeaning: "Relentless intellectual charge, windstorm attack, cutting through opposition at speed.",
+    reversedMeaning: "Tactless cruelty, rushing into battle blind, ideological fanaticism.",
+    associatedPlanetOrSign: "Fire of Air",
+    glyph: "\u{1F701}"
+  },
+  {
+    id: "SWORDS_QUEEN",
+    name: "Queen of Swords",
+    imagePath: "Swords13.png",
+    suit: "Swords",
+    uprightMeaning: "Sovereign discernment, sharp wit, clearing all illusions with cold impartial grace.",
+    reversedMeaning: "Bitter cynicism, icy spite, weaponized intellect without heart.",
+    associatedPlanetOrSign: "Water of Air",
+    glyph: "\u{1F701}"
+  },
+  {
+    id: "SWORDS_KING",
+    name: "King of Swords",
+    imagePath: "Swords14.png",
+    suit: "Swords",
+    uprightMeaning: "Supreme magistrate of truth, razor analytical mastery, commander of ethical law.",
+    reversedMeaning: "Tyrannical judgment, heartless authoritarian, twisted legalism.",
+    associatedPlanetOrSign: "Air of Air",
+    glyph: "\u{1F701}"
+  },
+  // ==========================================
+  // MINOR ARCANA: SUIT OF PENTACLES (14 Cards - Earth / 🜃)
+  // ==========================================
+  {
+    id: "PENTACLES_1",
+    name: "Ace of Pentacles",
+    imagePath: "Pentacles01.png",
+    suit: "Pentacles",
+    uprightMeaning: "Rooted physical manifestation, iron body bone density, tangible seed of great wealth.",
+    reversedMeaning: "Lost material opportunity, unstable footing, squandered physical resources.",
+    associatedPlanetOrSign: "Root of Earth // Saturn",
+    glyph: "\u{1F703}"
+  },
+  {
+    id: "PENTACLES_2",
+    name: "Two of Pentacles",
+    imagePath: "Pentacles02.png",
+    suit: "Pentacles",
+    uprightMeaning: "Dynamic equilibrium in movement, juggling cosmic forces along the infinity loop.",
+    reversedMeaning: "Dropped plates, overextended financial commitments, physical clumsiness.",
+    associatedPlanetOrSign: "Jupiter in Capricorn",
+    glyph: "\u2651"
+  },
+  {
+    id: "PENTACLES_3",
+    name: "Three of Pentacles",
+    imagePath: "Pentacles03.png",
+    suit: "Pentacles",
+    uprightMeaning: "Master stonemason, sacred geometry in physical works, harmonious guild collaboration.",
+    reversedMeaning: "Sloppy craftsmanship, inability to work with others, inferior materials.",
+    associatedPlanetOrSign: "Mars in Capricorn",
+    glyph: "\u2651"
+  },
+  {
+    id: "PENTACLES_4",
+    name: "Four of Pentacles",
+    imagePath: "Pentacles04.png",
+    suit: "Pentacles",
+    uprightMeaning: "Iron fortress of security, guarding boundaries and coin, solid rooted containment.",
+    reversedMeaning: "Greedy miserliness, fear of material loss, hoarding that blocks circulation.",
+    associatedPlanetOrSign: "Sun in Capricorn",
+    glyph: "\u2651"
+  },
+  {
+    id: "PENTACLES_5",
+    name: "Five of Pentacles",
+    imagePath: "Pentacles05.png",
+    suit: "Pentacles",
+    uprightMeaning: "Winter blizzard of poverty, physical hardship outside illuminated stained glass temple.",
+    reversedMeaning: "Finding shelter, end of material famine, recovery of vitality and refuge.",
+    associatedPlanetOrSign: "Mercury in Taurus",
+    glyph: "\u2649"
+  },
+  {
+    id: "PENTACLES_6",
+    name: "Six of Pentacles",
+    imagePath: "Pentacles06.png",
+    suit: "Pentacles",
+    uprightMeaning: "Generous redistribution of wealth, balanced scales of charity, reciprocal abundance.",
+    reversedMeaning: "Strings attached to gifts, extortion, debt traps and patronizing dominance.",
+    associatedPlanetOrSign: "Moon in Taurus",
+    glyph: "\u2649"
+  },
+  {
+    id: "PENTACLES_7",
+    name: "Seven of Pentacles",
+    imagePath: "Pentacles07.png",
+    suit: "Pentacles",
+    uprightMeaning: "Prudent pause to inspect harvest, patient cultivation of long-term crops and investments.",
+    reversedMeaning: "Impatience, abandoning harvest too early, wasted labor on barren soil.",
+    associatedPlanetOrSign: "Saturn in Taurus",
+    glyph: "\u2649"
+  },
+  {
+    id: "PENTACLES_8",
+    name: "Eight of Pentacles",
+    imagePath: "Pentacles08.png",
+    suit: "Pentacles",
+    uprightMeaning: "Dedicated apprentice mastering craft, relentless repetition and fine martial drilling.",
+    reversedMeaning: "Monotonous drudgery, lack of dedication, shortcut taking, unrefined form.",
+    associatedPlanetOrSign: "Sun in Virgo",
+    glyph: "\u264D"
+  },
+  {
+    id: "PENTACLES_9",
+    name: "Nine of Pentacles",
+    imagePath: "Pentacles09.png",
+    suit: "Pentacles",
+    uprightMeaning: "Solitary luxury, lush vineyard sanctuary, self-sufficient discipline and regal leisure.",
+    reversedMeaning: "Financial deceit, superficial luxury concealing debt, trapped in a golden cage.",
+    associatedPlanetOrSign: "Venus in Virgo",
+    glyph: "\u264D"
+  },
+  {
+    id: "PENTACLES_10",
+    name: "Ten of Pentacles",
+    imagePath: "Pentacles10.png",
+    suit: "Pentacles",
+    uprightMeaning: "Ancestral dynasty, multigenerational fortress, permanent legacy and profound wealth.",
+    reversedMeaning: "Disputed inheritance, crumbling estate, family disputes over legacy.",
+    associatedPlanetOrSign: "Mercury in Virgo",
+    glyph: "\u264D"
+  },
+  {
+    id: "PENTACLES_PAGE",
+    name: "Page of Pentacles",
+    imagePath: "Pentacles11.png",
+    suit: "Pentacles",
+    uprightMeaning: "The diligent scholar of earth, examining golden coins, grounded ambition and study.",
+    reversedMeaning: "Lazy lack of focus, wasted educational chances, neglecting physical body.",
+    associatedPlanetOrSign: "Earth of Earth",
+    glyph: "\u{1F703}"
+  },
+  {
+    id: "PENTACLES_KNIGHT",
+    name: "Knight of Pentacles",
+    imagePath: "Pentacles12.png",
+    suit: "Pentacles",
+    uprightMeaning: "Methodical heavy cavalry, unbreakable work ethic, unwavering loyalty and discipline.",
+    reversedMeaning: "Stubborn pig-headedness, stagnation, dull inertia refusing needed adaptation.",
+    associatedPlanetOrSign: "Fire of Earth",
+    glyph: "\u{1F703}"
+  },
+  {
+    id: "PENTACLES_QUEEN",
+    name: "Queen of Pentacles",
+    imagePath: "Pentacles13.png",
+    suit: "Pentacles",
+    uprightMeaning: "Earth mother sovereign, practical abundance, luxurious physical care and rooted warmth.",
+    reversedMeaning: "Financial anxiety, neglecting self-care, smothering over-protectiveness.",
+    associatedPlanetOrSign: "Water of Earth",
+    glyph: "\u{1F703}"
+  },
+  {
+    id: "PENTACLES_KING",
+    name: "King of Pentacles",
+    imagePath: "Pentacles14.png",
+    suit: "Pentacles",
+    uprightMeaning: "Master of material empire, indestructible financial footing, generous king in garden.",
+    reversedMeaning: "Corrupt corporate titan, obsession with status, ungrounded greed.",
+    associatedPlanetOrSign: "Air of Earth",
+    glyph: "\u{1F703}"
+  }
+];
+function getRandomTarotCards(count) {
+  const positions = count === 1 ? ["Core Cosmic Guidance"] : count === 3 ? ["Past Matrix // Root Origin", "Present Vector // Active Cross", "Future Horizon // Telos"] : ["Origin", "Obstacle", "Hidden Current", "Environment", "Ultimate Climax"];
+  const shuffled = [...TAROT_DECK].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map((card, idx) => ({
+    card,
+    isReversed: Math.random() < 0.35,
+    positionName: positions[idx] || `Vector ${idx + 1}`
+  }));
+}
+function synthesizeTarotGuidance(drawn) {
+  const orient = drawn.isReversed ? "REVERSED" : "UPRIGHT";
+  const meaning = drawn.isReversed ? drawn.card.reversedMeaning : drawn.card.uprightMeaning;
+  return `Archetype [${drawn.card.name.toUpperCase()} \u2022 ${orient}] resonates under cosmic current of ${drawn.card.associatedPlanetOrSign}. Key transmission: ${meaning}`;
+}

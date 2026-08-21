@@ -30,7 +30,12 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
   ];
 
   const filtered = activeCategory === 'ALL'
-    ? curatedTopics.filter((t) => t.title.toLowerCase().includes(searchTerm.toLowerCase()) || t.desc.toLowerCase().includes(searchTerm.toLowerCase()))
+    ? curatedTopics.filter((t) => {
+        const term = (searchTerm || '').toLowerCase();
+        const title = (t.title || '').toLowerCase();
+        const desc = (t.desc || '').toLowerCase();
+        return title.includes(term) || desc.includes(term);
+      })
     : curatedTopics.filter((t) => t.category === activeCategory);
 
   const handleSelectTopic = (topic: typeof curatedTopics[0]) => {

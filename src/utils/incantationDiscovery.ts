@@ -216,14 +216,17 @@ export const DISCOVERY_CATALOG: Omit<DiscoveredIncantation, 'id' | 'dateDiscover
 ];
 
 /** Synthesize a new discovery based on query keywords, planets, and user intentions */
-export function synthesizeDiscoveryFromQuery(query: string): DiscoveredIncantation {
-  const q = query.toLowerCase();
+export function synthesizeDiscoveryFromQuery(query: string = ''): DiscoveredIncantation {
+  const q = (query || '').toLowerCase();
 
-  const matched = DISCOVERY_CATALOG.find((item) =>
-    item.tags.some((t) => q.includes(t)) ||
-    q.includes(item.element.toLowerCase()) ||
-    q.includes(item.planet.toLowerCase().slice(0, 4))
-  );
+  const matched = DISCOVERY_CATALOG.find((item) => {
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+    const element = (item.element || '').toLowerCase();
+    const planet = (item.planet || '').toLowerCase();
+    return tags.some((t) => (t && q.includes(t.toLowerCase()))) ||
+      (element && q.includes(element)) ||
+      (planet && q.includes(planet.slice(0, 4)));
+  });
 
   const base = matched || DISCOVERY_CATALOG[Math.floor(Math.random() * DISCOVERY_CATALOG.length)];
   const id = `discovered_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -233,6 +236,6 @@ export function synthesizeDiscoveryFromQuery(query: string): DiscoveredIncantati
     ...base,
     id,
     dateDiscovered: dateStr,
-    notes: `Discovered during query: "${query}"`,
+    notes: query ? `Discovered during query: "${query}"` : 'Discovered via occult synthesis',
   };
 }
