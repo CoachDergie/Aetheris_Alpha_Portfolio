@@ -11,7 +11,7 @@ export default defineConfig(() => {
       emptyOutDir: true,
       assetsDir: 'assets',
       sourcemap: false,
-      minify: 'terser',
+      minify: 'terser' as const,
     },
     plugins: [react(), tailwindcss()],
     resolve: {

@@ -48,7 +48,7 @@ const DEFAULT_BARBELL_SESSION: QiGongBarbellSession = {
   barbellWeightKg: 20,
   barbellLengthFt: 6,
   durationMinutes: 25,
-  movementName: 'Six-Foot Barbell Horse Stance Press (Ma Bu Tui)',
+  movementName: 'Ma Bu Barbell Press',
   sets: 5,
   reps: 12,
   estimatedKcal: 198,
