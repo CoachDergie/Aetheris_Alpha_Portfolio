@@ -1,7 +1,13 @@
-import org.apache.tools.ant.taskdefs.condition.Os
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.node)
+}
+
+configure<com.github.gradle.node.NodeExtension> {
+    download.set(true)
+    version.set("22.12.0")
+    nodeProjectDir.set(project.rootDir)
 }
 
 android {
@@ -89,18 +95,12 @@ dependencies {
 }
 val webAppDir = project.rootDir 
 
-val buildReactApp = tasks.register<Exec>("buildReactApp") {
+val buildReactApp = tasks.register<com.github.gradle.node.npm.task.NpmTask>("buildReactApp") {
     group = "build"
     description = "Compiles React UI and injects output into Android assets."
     
-    workingDir = webAppDir
-    
-    // Cross-platform command resolution
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine("cmd", "/c", "npm run build")
-    } else {
-        commandLine("npm", "run", "build")
-    }
+    npmCommand.set(listOf("run", "build"))
+    dependsOn("npmInstall")
 }
 
 // Hook into the Android build lifecycle before resources are merged

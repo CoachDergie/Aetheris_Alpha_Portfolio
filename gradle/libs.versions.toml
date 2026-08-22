@@ -43,4 +43,5 @@ androidx-xr-compose-material3 = { group = "androidx.xr.compose.material3", name 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+node = { id = "com.github.node-gradle.node", version = "7.1.0" }
 
