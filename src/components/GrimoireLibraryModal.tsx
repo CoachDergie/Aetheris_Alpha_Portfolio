@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DiscoveredIncantation } from '../utils/incantationDiscovery';
+import { useTradition } from '../contexts/TraditionContext';
 import { soundEffects } from '../utils/telemetry';
 import {
   BookOpen,
@@ -37,6 +38,8 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
   setActiveDailyInvocation,
   onDiscoverNew,
 }) => {
+  const { t } = useTradition();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Fire' | 'Water' | 'Air' | 'Earth' | 'Aether / Void'>('All');
   const [selectedIncantation, setSelectedIncantation] = useState<DiscoveredIncantation>(activeDailyInvocation);
@@ -84,7 +87,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const textToSpeak = `${inc.barbarousFormula}. ${inc.invocationText}`;
+      const textToSpeak = `${inc.barbarousFormula}. ${t(inc.invocationText)}`;
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = 0.82;
       utterance.pitch = 0.7;
@@ -264,7 +267,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
                       </p>
 
                       <p className="text-[10px] text-gray-400 italic line-clamp-2 leading-tight mb-2">
-                        "{inc.invocationText}"
+                        "{t(inc.invocationText)}"
                       </p>
 
                       <div className="flex items-center justify-between text-[9px] text-gray-500 pt-1 border-t border-white/5">
@@ -405,7 +408,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] px-2.5 py-1 rounded bg-orange-950 border border-orange-700 text-orange-300 font-bold uppercase">
-                        {selectedIncantation.planet}
+                        {t(selectedIncantation.planet)}
                       </span>
                       <span className="text-[10px] px-2 py-1 rounded bg-white/5 border border-white/10 text-gray-300">
                         {selectedIncantation.element}
@@ -445,7 +448,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
                   </h3>
 
                   <p className="text-xs text-gray-300 italic leading-relaxed bg-black/50 p-3 rounded-xl border border-white/5">
-                    "{selectedIncantation.invocationText}"
+                    "{t(selectedIncantation.invocationText)}"
                   </p>
                 </div>
 
@@ -453,7 +456,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-black/40 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[9px] uppercase text-gray-400">Qliphotic Sphere & Daemon</span>
-                    <p className="text-xs font-bold text-purple-300">{selectedIncantation.focusQlipha}</p>
+                    <p className="text-xs font-bold text-purple-300">{t(selectedIncantation.focusQlipha)}</p>
                   </div>
                   <div className="p-3 bg-black/40 rounded-xl border border-white/5 space-y-1">
                     <span className="text-[9px] uppercase text-gray-400">Manuscript Origin & Source</span>
@@ -461,7 +464,7 @@ export const GrimoireLibraryModal: React.FC<GrimoireLibraryModalProps> = ({
                   </div>
                   <div className="p-3 bg-black/40 rounded-xl border border-white/5 space-y-1 col-span-2">
                     <span className="text-[9px] uppercase text-gray-400">Kung-Fu Qi-Gong & 6ft Zinc Barbell Integration</span>
-                    <p className="text-xs font-bold text-white">{selectedIncantation.martialCorrelation}</p>
+                    <p className="text-xs font-bold text-white">{t(selectedIncantation.martialCorrelation)}</p>
                   </div>
                 </div>
 

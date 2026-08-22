@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ViewTab } from '../types';
+import { useTradition } from '../contexts/TraditionContext';
 import { 
   LayoutGrid, 
   Sparkles, 
@@ -14,6 +15,8 @@ import {
   MapPin,
   Volume2,
   VolumeX,
+  Orbit,
+  Hexagon, Orbit, Sparkles as SparkleIcon,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -47,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onExportPdf,
 }) => {
+  const { tradition, setTradition, t } = useTradition();
   const tabs: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'HUD', icon: <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'natal', label: 'NATAL', icon: <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
@@ -168,6 +172,18 @@ export const Header: React.FC<HeaderProps> = ({
             <FileText className="w-3 h-3" />
             <span>PDF</span>
           </button>
+          
+          <button
+            onClick={() => setTradition(tradition === 'hermetic' ? 'qliphothic' : 'hermetic')}
+            className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 transition-colors flex items-center gap-1"
+            title={tradition === 'hermetic' ? 'Switch to Qliphothic (Nightside)' : 'Switch to Hermetic (Planetary)'}
+          >
+            {tradition === 'hermetic' ? <Orbit className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" /> : <Hexagon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500" />}
+            <span className="hidden sm:inline text-[9px] uppercase font-bold text-gray-400 ml-0.5">
+              {tradition === 'hermetic' ? 'HERMETIC' : 'QLIPHOTH'}
+            </span>
+          </button>
+
           {onToggleSound && (
             <button
               id="header-audio-btn"

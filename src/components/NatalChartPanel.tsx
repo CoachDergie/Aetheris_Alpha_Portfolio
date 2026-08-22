@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTradition } from '../contexts/TraditionContext';
 import { NatalData, CelestialBody, PlanetaryAspect, LunarPhaseInfo } from '../types';
 
 interface NatalChartPanelProps {
@@ -20,6 +21,8 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
   ascendant,
   midheaven,
 }) => {
+  const { t, tradition } = useTradition();
+
   return (
     <div className="flex flex-col gap-4 w-full p-2.5 sm:p-4 text-center">
       {/* Title */}
@@ -60,7 +63,7 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
             {/* Qliphotic Correlation */}
             {body.qliphoticSphere && (
               <div className="mt-1 px-2.5 py-0.5 rounded-md bg-[#122238] border border-cyan-400/40 text-[#00e5ff] text-[10px] font-mono font-bold">
-                ⚡ QLIPHA: {body.qliphoticSphere.toUpperCase()}
+                ⚡ {tradition === "hermetic" ? "SEPHIRA" : "QLIPHA"}: {t(body.qliphoticSphere).toUpperCase()}
               </div>
             )}
           </div>

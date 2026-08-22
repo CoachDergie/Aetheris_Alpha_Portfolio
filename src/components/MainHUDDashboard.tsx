@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTradition } from '../contexts/TraditionContext';
 import { NatalData, CelestialBody, PlanetaryAspect, LunarPhaseInfo, ViewTab } from '../types';
 import { DAILY_INVOCATIONS } from '../utils/astronomy';
 import { Sparkles, BookOpen, ChevronRight, Moon, MapPin } from 'lucide-react';
@@ -15,6 +16,7 @@ interface MainHUDDashboardProps {
 }
 
 export const MainHUDDashboard: React.FC<MainHUDDashboardProps> = ({
+
   natal,
   bodies,
   aspects,
@@ -24,6 +26,8 @@ export const MainHUDDashboard: React.FC<MainHUDDashboardProps> = ({
   setTab,
   onOpenCalibrate,
 }) => {
+  const { t } = useTradition();
+
   const dayIdx = new Date().getDay();
   const dailyInvocation = DAILY_INVOCATIONS[dayIdx] || DAILY_INVOCATIONS[0];
 

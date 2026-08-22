@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTradition } from '../contexts/TraditionContext';
 import { DiscoveredIncantation } from '../types';
 import { Sparkles, BookOpen, Volume2, Search, Plus, Compass } from 'lucide-react';
 import { soundEffects } from '../utils/telemetry';
@@ -18,6 +19,8 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
   setActiveDailyInvocation,
   onDiscoverNew,
 }) => {
+  const { t } = useTradition();
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [customPrompt, setCustomPrompt] = useState<string>('');
 
@@ -70,7 +73,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
         <div className="w-full bg-[#1E2638] border-2 border-cyan-500/50 rounded-2xl p-4 shadow-[0_4px_25px_rgba(0,0,0,0.4)] text-left space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#122238] border border-cyan-500/40 text-cyan-300 font-bold uppercase">
-              ACTIVE TRANSMISSION // {activeDailyInvocation.planet}
+              ACTIVE TRANSMISSION // {t(activeDailyInvocation.planet)}
             </span>
             <button
               onClick={() => handleVocalize(activeDailyInvocation.barbarousFormula)}
@@ -83,7 +86,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
 
           <div>
             <h3 className="text-sm font-black font-mono text-[#ffd700] uppercase tracking-wider">
-              {activeDailyInvocation.dayOfWeek ? `${activeDailyInvocation.dayOfWeek} • ${activeDailyInvocation.planet}` : (activeDailyInvocation as any).title || 'INVOCATION FORMULA'}
+              {activeDailyInvocation.dayOfWeek ? `${activeDailyInvocation.dayOfWeek} • ${t(activeDailyInvocation.planet)}` : (activeDailyInvocation as any).title || 'INVOCATION FORMULA'}
             </h3>
             <p className="text-sm font-mono font-black text-[#00e5ff] tracking-wide mt-1 leading-relaxed">
               "{activeDailyInvocation.barbarousFormula}"
@@ -95,7 +98,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
           </p>
 
           <div className="pt-2 border-t border-[#2A3650] flex items-center justify-between text-[10px] font-mono text-gray-400">
-            <span>SPHERE: {activeDailyInvocation.focusQlipha || (activeDailyInvocation as any).qliphoticSphere || 'NECHESHIRION'}</span>
+            <span>SPHERE: {t(activeDailyInvocation.focusQlipha) || (activeDailyInvocation as any).qliphoticSphere || 'NECHESHIRION'}</span>
             <span>MARTIAL: {activeDailyInvocation.martialCorrelation || 'Universal Centerline'}</span>
           </div>
         </div>
@@ -135,7 +138,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
               <span className="text-xs font-black font-mono text-white uppercase">
                 {inc.dayOfWeek ? `${inc.dayOfWeek} Transmission` : (inc as any).title || 'INVOCATION'}
               </span>
-              <span className="text-[10px] font-mono text-[#ffd700] font-bold">{inc.planet}</span>
+              <span className="text-[10px] font-mono text-[#ffd700] font-bold">{t(inc.planet)}</span>
             </div>
             <p className="text-xs font-mono text-cyan-300 font-bold mt-1">"{inc.barbarousFormula}"</p>
             <p className="text-[11px] text-gray-400 mt-1 font-sans line-clamp-2">

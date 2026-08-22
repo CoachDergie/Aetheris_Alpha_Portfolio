@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTradition } from '../contexts/TraditionContext';
 import { DiscoveredIncantation } from '../types';
 import { Search, X, BookOpen, Plus, Sparkles, Compass } from 'lucide-react';
 import { synthesizeDiscoveryFromQuery } from '../utils/incantationDiscovery';
@@ -15,6 +16,8 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
   onClose,
   onAddToGrimoire,
 }) => {
+  const { t, tradition } = useTradition();
+
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
@@ -76,7 +79,7 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
             {['ALL', 'INVOCATION', 'MARTIAL', 'QLIPHOTH', 'MEDITATION', 'LUNAR'].map((cat) => (
               <button
-                key={cat}
+                key={tradition === "hermetic" && cat === "QLIPHOTH" ? "SEPHIROTH" : cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
                   activeCategory === cat
@@ -84,7 +87,7 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
                     : 'bg-[#161B26] border border-[#2E3B57] text-gray-400 hover:text-white'
                 }`}
               >
-                {cat}
+                {tradition === "hermetic" && cat === "QLIPHOTH" ? "SEPHIROTH" : cat}
               </button>
             ))}
           </div>

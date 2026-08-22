@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { QiGongBarbellSession } from '../types';
 import { Dumbbell, Flame, Clock, RefreshCw, FileText, ChevronDown, Activity, Target } from 'lucide-react';
 import { MARTIAL_MOVEMENTS } from '../utils/exercises';
+import { useTradition } from '../contexts/TraditionContext';
 
 interface QiGongBarbellPanelProps {
   session: QiGongBarbellSession;
@@ -14,6 +15,8 @@ export const QiGongBarbellPanel: React.FC<QiGongBarbellPanelProps> = ({
   setSession,
   onExportPdf,
 }) => {
+  const { t } = useTradition();
+
 
   const handleExerciseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = MARTIAL_MOVEMENTS.find(m => m.name === e.target.value);
@@ -136,7 +139,7 @@ export const QiGongBarbellPanel: React.FC<QiGongBarbellPanelProps> = ({
             {currentExercise.type} KINETICS
           </span>
           <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded bg-[#122238] border border-cyan-500/40 text-cyan-300 font-bold shrink-0">
-            {session.associatedPlanetaryHour}
+            {t(session.associatedPlanetaryHour)}
           </span>
         </div>
         

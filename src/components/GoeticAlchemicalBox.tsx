@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTradition } from '../contexts/TraditionContext';
 import { CelestialBody, PlanetaryAspect } from '../types';
 import { soundEffects } from '../utils/telemetry';
 import { Sparkles, Shield, Eye, Flame, Compass, RefreshCw, Volume2, Info } from 'lucide-react';
