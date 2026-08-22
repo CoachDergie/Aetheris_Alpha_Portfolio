@@ -32,6 +32,7 @@ import { MeditationPanel } from './components/MeditationPanel';
 import { GrimoirePanel } from './components/GrimoirePanel';
 import { DiscordShareModal } from './components/DiscordShareModal';
 import { SearchReferenceModal } from './components/SearchReferenceModal';
+import { ContentWarningModal } from "./components/ContentWarningModal";
 import confetti from 'canvas-confetti';
 
 const DEFAULT_NATAL: NatalData = {
@@ -65,6 +66,20 @@ export default function App() {
   const [isCalibrateModalOpen, setIsCalibrateModalOpen] = useState<boolean>(false);
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [showWarning, setShowWarning] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("aetheris_warning_accepted") !== "true";
+    } catch (e) {
+      return true;
+    }
+  });
+
+  const handleAcceptWarning = () => {
+    try {
+      localStorage.setItem("aetheris_warning_accepted", "true");
+    } catch (e) {}
+    setShowWarning(false);
+  };
 
   // User Natal & Telemetry State
   const [natal, setNatal] = useState<NatalData>(DEFAULT_NATAL);
@@ -284,6 +299,7 @@ export default function App() {
         onClose={() => setIsSearchModalOpen(false)}
         onAddToGrimoire={handleAddDirectToGrimoire}
       />
+      <ContentWarningModal isOpen={showWarning} onAccept={handleAcceptWarning} />
     </MetaQuestEnvironment>
   );
 }
