@@ -39,7 +39,7 @@
             android:label="@string/app_name"
             android:exported="true"
             android:theme="@style/Theme.Aetheris"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="sensorPortrait"
             android:resizeableActivity="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:windowSoftInputMode="adjustResize">
@@ -48,8 +48,8 @@
             <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
             <layout
-                android:defaultWidth="1280dp"
-                android:defaultHeight="720dp"
+                android:defaultWidth="720dp"
+                android:defaultHeight="1280dp"
                 android:minWidth="640dp"
                 android:minHeight="480dp" />
 

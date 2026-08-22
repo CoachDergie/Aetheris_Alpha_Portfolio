@@ -84,7 +84,7 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
 
 @Composable
 fun GrimoireSpatialPanel(
-    modifier: SubspaceModifier = SubspaceModifier.width(1280.dp).height(720.dp),
+    modifier: SubspaceModifier = SubspaceModifier.width(720.dp).height(1280.dp),
     xrBridge: NativeXRBridge
 ) {
     SpatialPanel(modifier = modifier) {

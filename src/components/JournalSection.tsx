@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Save, Trash2, Quote, Clock, BookOpen } from 'lucide-react';
 import { soundEffects } from '../utils/telemetry';
+import { MARCUS_AURELIUS_TEXT, CHRISTINA_MAXIMS_TEXT } from '../utils/quotes';
 
 export interface JournalEntry {
   id: string;
@@ -27,18 +28,15 @@ export const JournalSection: React.FC = () => {
     }
   }, []);
 
-  // Fetch texts
+  // Process texts on mount
   useEffect(() => {
-    Promise.all([
-      fetch('./MarcusAurelius.txt').then((res) => res.text()),
-      fetch('./ChristinaMaxims.txt').then((res) => res.text())
-    ]).then(([aureliusText, christinaText]) => {
-      const parsedAurelius = aureliusText
+    try {
+      const parsedAurelius = MARCUS_AURELIUS_TEXT
         .split('\n\n')
         .map((p) => p.trim())
         .filter((p) => p.length > 20); // filter out empty or very short lines
-      
-      const parsedChristina = christinaText
+        
+      const parsedChristina = CHRISTINA_MAXIMS_TEXT
         .split('\n')
         .map((p) => p.trim())
         .filter((p) => p.length > 5);
@@ -50,7 +48,9 @@ export const JournalSection: React.FC = () => {
       if (!currentInput && (parsedAurelius.length > 0 || parsedChristina.length > 0)) {
         prefillRandomQuote(parsedAurelius, parsedChristina);
       }
-    }).catch((err) => console.error('Failed to load texts', err));
+    } catch (err) {
+      console.error('Failed to parse texts', err);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Intentionally only run once on mount
 

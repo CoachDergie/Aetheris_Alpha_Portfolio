@@ -1,4 +1,4 @@
-From my grandfather Verus I learned good morals and the government of my temper.
+export const MARCUS_AURELIUS_TEXT = `From my grandfather Verus I learned good morals and the government of my temper.
 
 From the reputation and remembrance of my father, modesty and a manly character.
 
@@ -121,3 +121,27 @@ If any god told thee that thou shalt die to-morrow, or certainly on the day afte
 Be like the promontory against which the waves continually break, but it stands firm and tames the fury of the water around it.
 
 Always run to the short way; and the short way is the natural: accordingly say and do everything in conformity with the soundest reason. For such a purpose frees a man from trouble, and warfare, and all artifice and ostentatious display.
+`;
+
+export const CHRISTINA_MAXIMS_TEXT = `It is a far greater happiness to obey no one than to rule the whole world.
+You should be more afraid of a stupid man than of an evil one.
+Ignorance is not innocence.
+I love men, not because they are men, but because they are not women.
+I was born, have lived, and will die free.
+Dignity is like a perfume; those who use it are scarcely conscious of it.
+Every man is his own worst enemy.
+We read for instruction, for correction, and for consolation.
+We grow old more through indolence, than through age.
+Life is too short to be able to love as one should.
+Great armies are nothing but a collection of weakness.
+There are few prisoners more closely guarded than princes.
+It is quite as ignominious to allow oneself to be deceived as to deceive.
+To some people everything is permitted.
+The soul has no gender.
+We triumph over our passions only when they are weak.
+All that has an end can be borne.
+When one examines one's heart one finds that nothing can fill it or console it but God alone.
+Fools are more to be feared than the wicked.
+Life becomes useless and insipid when we have no longer either friends or enemies.
+We should make use of men of letters as if they were living libraries, and as such we may esteem them and take counsel of them, never forgetting, however, that they are but poor advisers in affairs of the great world.
+`;
