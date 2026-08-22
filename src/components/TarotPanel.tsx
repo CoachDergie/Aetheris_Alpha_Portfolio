@@ -37,7 +37,7 @@ const TarotCardImage = ({ card, isReversed }: { card: TarotCard, isReversed?: bo
 
   return (
     <img
-      src={`/Tarot/${card.imagePath}`}
+      src={`./tarot/${card.imagePath}`}
       alt={card.name}
       onError={() => setImgError(true)}
       className={`w-full h-full object-contain rounded-lg transition-transform duration-500 ${isReversed ? 'rotate-180' : ''}`}
