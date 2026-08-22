@@ -209,7 +209,7 @@ export const CombatTelemetryPanel: React.FC<CombatTelemetryPanelProps> = ({
               <div className="text-base sm:text-2xl font-black font-mono text-[#ffd700] my-0.5 sm:my-1 drop-shadow-[0_0_8px_rgba(255,215,0,0.5)] truncate">
                 {lastPunch.impactForceJoules.toFixed(1)} <span className="text-[10px] sm:text-xs">J</span>
               </div>
-              <span className="text-[7.5px] sm:text-[8px] font-mono text-gray-400 uppercase truncate">CLIMAX</span>
+              <span className="text-[7.5px] sm:text-[8px] font-mono text-gray-400 uppercase truncate">Peak Joules</span>
             </div>
 
             {/* Recoil Return Gauge */}

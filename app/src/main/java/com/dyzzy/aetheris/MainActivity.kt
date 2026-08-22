@@ -57,6 +57,26 @@ import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.spatial.SpatialDialog
+import androidx.xr.compose.subspace.Volume
+import androidx.xr.scenecore.GltfModel
+import androidx.xr.compose.platform.LocalSession
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.xr.compose.subspace.layout.offset
+import androidx.compose.ui.unit.dp
 import androidx.xr.compose.subspace.SpatialPanel
 import androidx.xr.compose.subspace.layout.SubspaceModifier
 import androidx.xr.compose.subspace.layout.height
@@ -202,6 +222,32 @@ fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
     if (isSpatialEnabled) {
         Subspace {
             GrimoireSpatialPanel(xrBridge = xrBridge)
+
+            val xrSession = LocalSession.current
+            var solarSystemModel by remember { mutableStateOf<GltfModel?>(null) }
+            
+            LaunchedEffect(xrSession) {
+                if (xrSession != null) {
+                    try {
+                        solarSystemModel = GltfModel.create(xrSession, "models/solarsystem.glb").get()
+                    } catch (e: Exception) {
+                        android.util.Log.e("Aetheris", "Failed to load solar system GLB", e)
+                    }
+                }
+            }
+
+            // 3D Solar System View rendering in XR Volume
+            Volume(modifier = SubspaceModifier.width(600.dp).height(600.dp).offset(x = 800.dp, y = 0.dp)) {
+                solarSystemModel?.let { model ->
+                    // Since the exact GltfModel composable might differ in alpha revisions, 
+                    // this exposes the loaded scenecore GltfModel to the Spatial hierarchy.
+                    // If a GltfModel composable exists in androidx.xr.compose.spatial, it goes here.
+                    androidx.xr.compose.spatial.models.GltfModel(
+                        gltfModel = model,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
         }
     } else {
         Box(

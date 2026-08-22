@@ -38,9 +38,7 @@ export const DiscordShareModal: React.FC<DiscordShareModalProps> = ({
     md += `---------------------------------------------------\n\`\`\`\n\n`;
 
     if (includeNatal) {
-      md += `**🌌 INCEPTION ORIGIN & MANDALA**\n`;
-      md += `> **Origin**: \`${natal.birthCity.toUpperCase()} (${natal.birthDate} ${natal.birthTime} UTC)\`\n`;
-      md += `> **Coordinates**: \`${natal.latitude.toFixed(2)}°N, ${natal.longitude.toFixed(2)}°E\`\n`;
+      md += `**🌌 INCEPTION MANDALA**\n`;
       md += `> **Planetary Positions**:\n`;
       bodies.slice(0, 5).forEach((b) => {
         md += `> • **${b.symbol} ${b.name}**: \`${b.sign} ${b.degree}°${b.minute}'\` (${b.qliphoticSphere || 'Neutral'})\n`;
@@ -51,7 +49,7 @@ export const DiscordShareModal: React.FC<DiscordShareModalProps> = ({
     if (includeLunar) {
       md += `**🌙 LIVE LUNAR VECTOR**\n`;
       md += `> **Phase**: \`${lunar.phaseName}\` (${lunar.illumination}% Illumination)\n`;
-      md += `> **Zodiac**: \`${lunar.currentSign}\` | **Moon Age**: \`${lunar.moonAgeDays.toFixed(1)} Days\`\n`;
+      md += `> **Zodiac**: \`${lunar.currentSign}\` | **Moon Age**: \`${lunar.ageDays.toFixed(1)} Days\`\n`;
       md += `> **Void of Course**: \`${lunar.isVoidOfCourse ? 'ACTIVE' : 'INACTIVE'}\`\n\n`;
     }
 

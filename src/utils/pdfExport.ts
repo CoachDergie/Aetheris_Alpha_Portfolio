@@ -49,8 +49,6 @@ export function generateAstrologyPdfReport(
 
   doc.setFontSize(9);
   doc.setTextColor(210, 210, 220);
-  doc.text(`Origin City: ${natal.birthCity || 'Unknown'}, ${natal.birthCountry || ''}`, 15, 51);
-  doc.text(`Birth Timestamp: ${natal.birthDate || '1990-01-01'} ${natal.birthTime || '12:00'}`, 15, 57);
   doc.text(`Ascendant: ${ascendant.sign} ${ascendant.deg}°${ascendant.min}'`, 110, 51);
   doc.text(`Midheaven: ${midheaven.sign} ${midheaven.deg}°${midheaven.min}'`, 110, 57);
   doc.text(`Current Lunar Phase: ${lunar.phaseName} (${lunar.illumination}% illum) in ${lunar.currentSign}`, 15, 63);
@@ -132,5 +130,5 @@ export function generateAstrologyPdfReport(
   doc.setTextColor(120, 120, 140);
   doc.text('Aetheris OpenXR Telemetry Node • For Occult Research & Internal Martial Discipline', 15, 285);
 
-  doc.save(`AETHERIS_OCCULT_REPORT_${natal.birthCity || 'ALIGNMENT'}_${Date.now()}.pdf`);
+  doc.save(`AETHERIS_OCCULT_REPORT_ALIGNMENT_${Date.now()}.pdf`);
 }
