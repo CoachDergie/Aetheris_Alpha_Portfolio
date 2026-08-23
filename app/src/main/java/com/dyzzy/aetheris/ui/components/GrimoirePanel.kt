@@ -12,15 +12,9 @@ import android.util.Base64
 import java.io.File
 import java.io.FileOutputStream
 import android.widget.Toast
-
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-
-
-
-
-
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -45,7 +39,6 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
                     cacheMode = WebSettings.LOAD_NO_CACHE // Prevent stale UI caching during dev
                     mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 }
-
                 
                 setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
                     try {
@@ -69,7 +62,6 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
                 }
                 
                 // Register Native-to-JS Interface
-
                 addJavascriptInterface(xrBridge, "AndroidXR")
 
                 // Load compiled React entrypoint
@@ -80,14 +72,4 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
             // Live state updates pushed to JS execution context
         }
     )
-}
-
-@Composable
-fun GrimoireSpatialPanel(
-    modifier: SubspaceModifier = SubspaceModifier.width(720.dp).height(1280.dp),
-    xrBridge: NativeXRBridge
-) {
-    SpatialPanel(modifier = modifier) {
-        GrimoireWebView(xrBridge = xrBridge)
-    }
 }
