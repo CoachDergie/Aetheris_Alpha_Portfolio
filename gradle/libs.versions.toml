@@ -35,7 +35,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 meta-spatial = { group = "com.meta.spatial", name = "meta-spatial-sdk", version.ref = "metaSpatial" }
-meta-spatial-toolkit = { group = "com.meta.spatial", name = "meta-spatial-toolkit", version.ref = "metaSpatial" }
+meta-spatial-toolkit = { group = "com.meta.spatial", name = "meta-spatial-sdk-toolkit", version.ref = "metaSpatial" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
