@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.NativeXRBridge
 import com.dyzzy.aetheris.ui.components.GrimoireSpatialPanel
 import com.dyzzy.aetheris.ui.components.GrimoireWebView
@@ -57,36 +58,22 @@ import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.spatial.SpatialDialog
-import androidx.xr.compose.subspace.Volume
-import androidx.xr.scenecore.GltfModel
-import androidx.xr.compose.platform.LocalSession
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.xr.compose.subspace.layout.offset
-import androidx.compose.ui.unit.dp
 import androidx.xr.compose.subspace.SpatialPanel
+import androidx.xr.compose.subspace.SpatialGltfModel
+import androidx.xr.compose.subspace.rememberSpatialGltfModelState
+import androidx.xr.compose.subspace.SpatialGltfModelSource
+import androidx.xr.compose.subspace.ExperimentalSpatialGltfModelApi
 import androidx.xr.compose.subspace.layout.SubspaceModifier
 import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.width
 import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.resizable
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.unit.Constraints
+import androidx.xr.compose.subspace.layout.rotate
+import androidx.xr.runtime.math.Quaternion
+import androidx.xr.compose.subspace.layout.offset
+import androidx.xr.compose.subspace.layout.size
 import java.util.Locale
+import java.nio.file.Paths
 
 class MainActivity : ComponentActivity() {
 
@@ -223,29 +210,29 @@ fun AetherisHeadMountedHUD(viewModel: MainViewModel) {
         Subspace {
             GrimoireSpatialPanel(xrBridge = xrBridge)
 
-            val xrSession = LocalSession.current
-            var solarSystemModel by remember { mutableStateOf<GltfModel?>(null) }
-            
-            LaunchedEffect(xrSession) {
-                if (xrSession != null) {
-                    try {
-                        solarSystemModel = GltfModel.create(xrSession, "models/solarsystem.glb").get()
-                    } catch (e: Exception) {
-                        android.util.Log.e("Aetheris", "Failed to load solar system GLB", e)
-                    }
-                }
+            val daysSinceEpoch = remember { SolarSystemLogic.getDaysSinceJ2000() }
+            val systemCenterOffsetX = 800f 
+            val systemCenterOffsetY = 0f
+            val systemCenterOffsetZ = 0f
+            val systemScale = 100f // AU to XR units
+
+            val earthPos = remember(daysSinceEpoch) {
+                SolarSystemLogic.calculatePosition("earth", daysSinceEpoch, systemScale)
             }
 
-            // 3D Solar System View rendering in XR Volume
-            Volume(modifier = SubspaceModifier.width(600.dp).height(600.dp).offset(x = 800.dp, y = 0.dp)) {
-                solarSystemModel?.let { model ->
-                    // Since the exact GltfModel composable might differ in alpha revisions, 
-                    // this exposes the loaded scenecore GltfModel to the Spatial hierarchy.
-                    // If a GltfModel composable exists in androidx.xr.compose.spatial, it goes here.
-                    androidx.xr.compose.spatial.models.GltfModel(
-                        gltfModel = model,
-                        modifier = Modifier.fillMaxSize()
+            SolarSystemLogic.PLANET_DATA.keys.forEach { planetName ->
+                if (planetName == "earth_moon") {
+                    // Moon is relative to Earth
+                    PlanetModel(
+                        planetName = "earth_moon",
+                        daysSinceEpoch = daysSinceEpoch,
+                        systemScale = systemScale * 10f, // Scale up moon orbit for visibility
+                        offsetX = systemCenterOffsetX + earthPos.x,
+                        offsetY = systemCenterOffsetY + earthPos.y,
+                        offsetZ = systemCenterOffsetZ + earthPos.z
                     )
+                } else {
+                    PlanetModel(planetName, daysSinceEpoch, systemScale, systemCenterOffsetX, systemCenterOffsetY, systemCenterOffsetZ)
                 }
             }
         }
@@ -1430,4 +1417,39 @@ fun QiGongBarbellView(
             }
         }
     }
+}
+
+@OptIn(ExperimentalSpatialGltfModelApi::class)
+@Composable
+fun PlanetModel(
+    planetName: String,
+    daysSinceEpoch: Double,
+    systemScale: Float,
+    offsetX: Float,
+    offsetY: Float,
+    offsetZ: Float
+) {
+    val pos = remember(planetName, daysSinceEpoch, systemScale) {
+        SolarSystemLogic.calculatePosition(planetName, daysSinceEpoch, systemScale)
+    }
+
+    val modelState = rememberSpatialGltfModelState(
+        SpatialGltfModelSource.fromPath(Paths.get("models/$planetName.glb"))
+    )
+
+    SpatialGltfModel(
+        state = modelState,
+        modifier = SubspaceModifier
+            .size(when(planetName) {
+                "sun" -> 100.dp
+                "earth_moon" -> 15.dp
+                else -> 40.dp
+            })
+            .offset(
+                x = (pos.x + offsetX).dp,
+                y = (pos.y + offsetY).dp,
+                z = (pos.z + offsetZ).dp
+            )
+            .rotate(Quaternion.fromEulerAngles(0f, (daysSinceEpoch * 360).toFloat(), 0f))
+    )
 }

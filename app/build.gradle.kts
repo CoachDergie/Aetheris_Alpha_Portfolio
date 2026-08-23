@@ -103,7 +103,15 @@ val buildReactApp = tasks.register<com.github.gradle.node.npm.task.NpmTask>("bui
     dependsOn("npmInstall")
 }
 
+val copySolarSystemModels = tasks.register<Copy>("copySolarSystemModels") {
+    group = "build"
+    description = "Copies 3D planet models from public/solarsystem to assets."
+    from("${project.rootDir}/public/solarsystem")
+    into("src/main/assets/models")
+    include("*.glb")
+}
+
 // Hook into the Android build lifecycle before resources are merged
 project.afterEvaluate {
-    tasks.findByName("preBuild")?.dependsOn(buildReactApp)
+    tasks.findByName("preBuild")?.dependsOn(buildReactApp, copySolarSystemModels)
 }

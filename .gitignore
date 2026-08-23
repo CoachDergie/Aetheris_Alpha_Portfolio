@@ -13,6 +13,7 @@ local.properties
 *.ninja_deps
 *.ninja_log
 /public/tarot
+/public/solarsystem
 
 # Web / React
 node_modules/
