@@ -220,6 +220,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'IAO SABAO ARBATHIAO PHEKRO THERION',
     invocationText: 'I invoke the Black Sun within the solar plexus. Let iron will ignite the sinews and harden the bone core.',
     focusQlipha: 'Thagirion (Beauty of the Abyss)',
+    hermeticFormula: 'YHVH ELOAH V\'DAAT',
+    hermeticSphere: 'Tiphereth (Beauty)',
     martialCorrelation: 'Solar Iron Palm & Concentrated Centerline Strike'
   },
   {
@@ -228,6 +230,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'LILITH ABISHA NAAMAH GAMALIEL TULPHAT',
     invocationText: 'O Nocturnal Tide of the Silver Horn, wash over the nervous system. Transform instinctual perception into razor fluidity.',
     focusQlipha: 'Gamaliel (Astral Dream Weaver)',
+    hermeticFormula: 'SHADDAI EL CHAI',
+    hermeticSphere: 'Yesod (Foundation)',
     martialCorrelation: 'Fluid Evasion, Baguazhang Circle Walking & Rooting'
   },
   {
@@ -236,6 +240,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'ZAZAS ZAZAS NASATANADA ZAZAS GOLACHAB BARBARON',
     invocationText: 'Wrath of the Red Sphere, charge the 6-foot zinc bar with crushing explosive drive. No obstacle shall withstand this momentum.',
     focusQlipha: 'Golachab (Flaming Destruction)',
+    hermeticFormula: 'ELOHIM GIBOR',
+    hermeticSphere: 'Geburah (Severity)',
     martialCorrelation: 'Explosive Thrusts, Heavy Barbell Cleans & Penetrating Punches'
   },
   {
@@ -244,6 +250,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'TAPHATHARATH SAMAEL OROBAS THEUT BARUCH',
     invocationText: 'Mercurial venom and rapid neural fire, sharpen hand trajectory and accelerate recovery return speed.',
     focusQlipha: 'Samael (Poison of Cunning Insight)',
+    hermeticFormula: 'ELOHIM TZAQBAOTH',
+    hermeticSphere: 'Hod (Glory)',
     martialCorrelation: 'Lightning Chain Punches & Instant Telemetric Recoil'
   },
   {
@@ -252,6 +260,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'GHAAGSHEBLAH ASTAROTH BELIAL CHESED-TZADKIK',
     invocationText: 'Sovereign majesty and unstoppable mass, enlarge the structural kinetic envelope. My posture commands the cardinal quarters.',
     focusQlipha: 'Gha\'agsheblah (Devourer of Boundaries)',
+    hermeticFormula: 'EL',
+    hermeticSphere: 'Chesed (Mercy)',
     martialCorrelation: 'Heavy Horse Stance (Ma Bu) & Barbell Overhead Holds'
   },
   {
@@ -260,6 +270,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'ASTARTE BAAL-ZEPHON AARAB ZARAQ NEHESCH',
     invocationText: 'Primal harmony and serpentine sinew tension, weave the fascia into unbreakable organic armor.',
     focusQlipha: 'A\'arab Zaraq (Ravens of Dispersion)',
+    hermeticFormula: 'YHVH TZAQBAOTH',
+    hermeticSphere: 'Netzach (Victory)',
     martialCorrelation: 'Silk Reeling Qi-Gong (Chan Si Gong) & Joint Fortification'
   },
   {
@@ -268,6 +280,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
     barbarousFormula: 'AGIOS O KAPH SATARIEL CASSIEL MORTE ZODAC',
     invocationText: 'Ancient stone of the abyss and solemn threshold, temper the skeletal structure like carbonized titanium.',
     focusQlipha: 'Satariel (The Deep Concealer)',
+    hermeticFormula: 'YHVH ELOHIM',
+    hermeticSphere: 'Binah (Understanding)',
     martialCorrelation: 'Iron Shirt (Tie Bu Shan) & 6-ft Barbell Slow Isometric Lockouts'
   }
 ];

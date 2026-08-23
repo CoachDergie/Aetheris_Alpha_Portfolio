@@ -6,8 +6,14 @@ import org.json.JSONObject
 
 class NativeXRBridge(
     private val context: Context,
-    private val onAnchorToLoftRequested: () -> Unit
+    private val onAnchorToLoftRequested: () -> Unit,
+    private val onAnchorModeChanged: (String) -> Unit = {}
 ) {
+
+    @JavascriptInterface
+    fun setAnchorMode(mode: String) {
+        onAnchorModeChanged(mode)
+    }
 
     @JavascriptInterface
     fun requestLoftAnchor() {

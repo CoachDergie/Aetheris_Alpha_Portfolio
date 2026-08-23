@@ -16,7 +16,7 @@ import {
   Volume2,
   VolumeX,
   Orbit,
-  Hexagon, Orbit, Sparkles as SparkleIcon,
+  Hexagon, Sparkles as SparkleIcon,
 } from 'lucide-react';
 
 interface HeaderProps {

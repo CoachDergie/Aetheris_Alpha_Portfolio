@@ -19,7 +19,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
   setActiveDailyInvocation,
   onDiscoverNew,
 }) => {
-  const { t } = useTradition();
+  const { t, tradition } = useTradition();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [customPrompt, setCustomPrompt] = useState<string>('');
@@ -76,7 +76,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
               ACTIVE TRANSMISSION // {t(activeDailyInvocation.planet)}
             </span>
             <button
-              onClick={() => handleVocalize(activeDailyInvocation.barbarousFormula)}
+              onClick={() => handleVocalize(tradition === 'hermetic' ? (activeDailyInvocation.hermeticFormula || activeDailyInvocation.barbarousFormula) : activeDailyInvocation.barbarousFormula)}
               className="p-1.5 rounded-lg bg-[#161B26] border border-cyan-500/40 text-[#00e5ff] hover:text-white transition-colors"
               title="Vocalize Barbarous Vibration"
             >
@@ -89,7 +89,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
               {activeDailyInvocation.dayOfWeek ? `${activeDailyInvocation.dayOfWeek} • ${t(activeDailyInvocation.planet)}` : (activeDailyInvocation as any).title || 'INVOCATION FORMULA'}
             </h3>
             <p className="text-sm font-mono font-black text-[#00e5ff] tracking-wide mt-1 leading-relaxed">
-              "{activeDailyInvocation.barbarousFormula}"
+              "{tradition === 'hermetic' ? (activeDailyInvocation.hermeticFormula || activeDailyInvocation.barbarousFormula) : activeDailyInvocation.barbarousFormula}"
             </p>
           </div>
 
@@ -98,7 +98,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
           </p>
 
           <div className="pt-2 border-t border-[#2A3650] flex items-center justify-between text-[10px] font-mono text-gray-400">
-            <span>SPHERE: {t(activeDailyInvocation.focusQlipha) || (activeDailyInvocation as any).qliphoticSphere || 'NECHESHIRION'}</span>
+            <span>SPHERE: {tradition === 'hermetic' ? (activeDailyInvocation.hermeticSphere || t(activeDailyInvocation.focusQlipha)) : activeDailyInvocation.focusQlipha}</span>
             <span>MARTIAL: {activeDailyInvocation.martialCorrelation || 'Universal Centerline'}</span>
           </div>
         </div>
@@ -158,7 +158,7 @@ export const GrimoirePanel: React.FC<GrimoirePanelProps> = ({
               </span>
               <span className="text-[10px] font-mono text-[#ffd700] font-bold">{t(inc.planet)}</span>
             </div>
-            <p className="text-xs font-mono text-cyan-300 font-bold mt-1">"{inc.barbarousFormula}"</p>
+            <p className="text-xs font-mono text-cyan-300 font-bold mt-1">"{tradition === 'hermetic' ? (inc.hermeticFormula || inc.barbarousFormula) : inc.barbarousFormula}"</p>
             <p className="text-[11px] text-gray-400 mt-1 font-sans line-clamp-2">
               {inc.invocationText || (inc as any).intent || ''}
             </p>

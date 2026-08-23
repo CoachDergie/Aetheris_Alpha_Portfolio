@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { EnvironmentViewMode } from '../types';
+import { setNativeAnchorMode } from '../services/NativeXR';
 import { 
   Activity, 
   Layers, 
@@ -38,6 +39,11 @@ export const MetaQuestEnvironment: React.FC<MetaQuestEnvironmentProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          <div className="hidden sm:flex items-center gap-1 bg-[#1A2130] p-0.5 rounded border border-[#2E3B57]">
+             <button onClick={() => setNativeAnchorMode('room')} className="px-2 py-0.5 text-[9px] hover:bg-orange-500 hover:text-white rounded text-gray-400">ROOM</button>
+             <button onClick={() => setNativeAnchorMode('loft')} className="px-2 py-0.5 text-[9px] hover:bg-cyan-500 hover:text-white rounded text-gray-400">LOFT</button>
+             <button onClick={() => setNativeAnchorMode('celestial_zenith')} className="px-2 py-0.5 text-[9px] hover:bg-purple-500 hover:text-white rounded text-gray-400">ZENITH</button>
+          </div>
           <button
             id="toggle-telemetry-btn"
             onClick={() => setShowDevTelemetry(!showDevTelemetry)}

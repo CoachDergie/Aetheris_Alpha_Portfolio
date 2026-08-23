@@ -10,7 +10,7 @@ lifecycleViewmodelCompose = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.2.10"
 composeBom = "2026.06.01"
-extensionsXr = "1.3.0"
+metaSpatial = "0.13.2"
 compose = "1.0.0-alpha17"
 runtime = "1.0.0-beta02"
 scenecore = "1.0.0-beta02"
@@ -34,11 +34,8 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-extensions1-xr = { group = "com.android.extensions.xr", name = "extensions-xr", version.ref = "extensionsXr" }
-androidx-compose = { group = "androidx.xr.compose", name = "compose", version.ref = "compose" }
-androidx-runtime = { group = "androidx.xr.runtime", name = "runtime", version.ref = "runtime" }
-androidx-scenecore = { group = "androidx.xr.scenecore", name = "scenecore", version.ref = "scenecore" }
-androidx-xr-compose-material3 = { group = "androidx.xr.compose.material3", name = "material3", version.ref = "compose" }
+meta-spatial = { group = "com.meta.spatial", name = "meta-spatial-sdk", version.ref = "metaSpatial" }
+meta-spatial-toolkit = { group = "com.meta.spatial", name = "meta-spatial-toolkit", version.ref = "metaSpatial" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

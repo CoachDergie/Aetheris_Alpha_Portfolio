@@ -20,6 +20,22 @@ object SolarSystemLogic {
     )
 
     data class Vector3(val x: Float, val y: Float, val z: Float)
+    
+    enum class AspectType { CONJUNCTION, SEXTILE, SQUARE, TRINE, OPPOSITION }
+
+    data class AspectLine(
+        val planet1: String, 
+        val planet2: String, 
+        val type: AspectType, 
+        val p1: Vector3, 
+        val p2: Vector3
+    )
+
+    data class PlanetPosition(
+        val name: String,
+        val position: Vector3,
+        val eclipticLongitudeDeg: Double
+    )
 
     val PLANET_DATA = mapOf(
         "sun" to OrbitalElements(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
@@ -35,10 +51,6 @@ object SolarSystemLogic {
         "earth_moon" to OrbitalElements(0.00257, 0.0549, 5.145, 125.122, 318.15, 135.27, 13.176) // Relative to Earth
     )
 
-    /**
-     * Solve Kepler's Equation: M = E - e * sin(E)
-     * using Newton's method.
-     */
     private fun solveKepler(M: Double, e: Double): Double {
         var E = M
         val epsilon = 1e-6
@@ -51,32 +63,33 @@ object SolarSystemLogic {
     }
 
     /**
-     * Calculate 3D position of a planet at a given time.
-     * 
-     * @param planetName Name of the planet (lowercase)
-     * @param daysSinceEpoch Number of days since J2000 epoch
-     * @param scale Overall distance scale for rendering
+     * Compresses real AU distances so inner planets remain distinct,
+     * but gas giants fall within a 2-3 meter radius in VR.
      */
-    fun calculatePosition(planetName: String, daysSinceEpoch: Double, scale: Float = 100f): Vector3 {
-        val elements = PLANET_DATA[planetName] ?: return Vector3(0f, 0f, 0f)
-        if (planetName == "sun") return Vector3(0f, 0f, 0f)
+    private fun compressDistance(au: Double): Double {
+        return if (au <= 1.55) {
+            au // Leave inner planets up to Mars mostly linear
+        } else {
+            // Logarithmic compression for outer planets
+            // Math.log10(Jupiter's 5.2 - 1.55 + 1) * 1.5 = ~2.5 AU (scaled down)
+            1.55 + log10(au - 1.55 + 1.0) * 1.5
+        }
+    }
 
-        // 1. Mean Anomaly
+    fun calculatePositionInfo(planetName: String, daysSinceEpoch: Double, scale: Float = 1.0f): PlanetPosition {
+        val elements = PLANET_DATA[planetName] ?: return PlanetPosition(planetName, Vector3(0f, 0f, 0f), 0.0)
+        if (planetName == "sun") return PlanetPosition(planetName, Vector3(0f, 0f, 0f), 0.0)
+
         val M = Math.toRadians((elements.meanLongitudeDeg + elements.dailyMotionDeg * daysSinceEpoch) % 360)
-        
-        // 2. Eccentric Anomaly
         val E = solveKepler(M, elements.eccentricity)
         
-        // 3. Rectangular coordinates in the orbital plane
         val x_orb = elements.semiMajorAxisAU * (cos(E) - elements.eccentricity)
         val y_orb = elements.semiMajorAxisAU * sqrt(1 - elements.eccentricity * elements.eccentricity) * sin(E)
         
-        // 4. Rotate to ecliptic coordinates
         val i = Math.toRadians(elements.inclinationDeg)
         val Omega = Math.toRadians(elements.longitudeOfAscendingNodeDeg)
-        val omega = Math.toRadians(elements.argumentOfPerihelionDeg - elements.longitudeOfAscendingNodeDeg) // Arg of periapsis
+        val omega = Math.toRadians(elements.argumentOfPerihelionDeg - elements.longitudeOfAscendingNodeDeg)
 
-        // Rotations
         val cosOmega = cos(Omega)
         val sinOmega = sin(Omega)
         val cos_i = cos(i)
@@ -84,17 +97,63 @@ object SolarSystemLogic {
         val cos_omega = cos(omega)
         val sin_omega = sin(omega)
 
-        // 3D Rotation Matrix apply
         val x = (cosOmega * cos_omega - sinOmega * sin_omega * cos_i) * x_orb + (-cosOmega * sin_omega - sinOmega * cos_omega * cos_i) * y_orb
         val y = (sinOmega * cos_omega + cosOmega * sin_omega * cos_i) * x_orb + (-sinOmega * sin_omega + cosOmega * cos_omega * cos_i) * y_orb
         val z = (sin_omega * sin_i) * x_orb + (cos_omega * sin_i) * y_orb
 
-        return Vector3(x.toFloat() * scale, z.toFloat() * scale, y.toFloat() * scale) // Swap y/z for XR coordinate system (y up)
+        val eclipticLongitudeDeg = (Math.toDegrees(atan2(y, x)) + 360.0) % 360.0
+
+        // Apply spatial compression
+        val trueDistanceAU = sqrt(x * x + y * y + z * z)
+        val compressedDistance = compressDistance(trueDistanceAU)
+        val compressionRatio = if (trueDistanceAU > 0) compressedDistance / trueDistanceAU else 0.0
+        
+        val cx = x * compressionRatio * scale
+        val cy = y * compressionRatio * scale
+        val cz = z * compressionRatio * scale
+
+        // y/z swapped for Y-up XR rendering.
+        return PlanetPosition(planetName, Vector3(cx.toFloat(), cz.toFloat(), cy.toFloat()), eclipticLongitudeDeg)
+    }
+
+    fun calculatePosition(planetName: String, daysSinceEpoch: Double, scale: Float = 1.0f): Vector3 {
+        return calculatePositionInfo(planetName, daysSinceEpoch, scale).position
     }
 
     /**
-     * Get days since J2000 epoch (January 1.5, 2000)
+     * Determine aspect relationships between celestial bodies.
      */
+    fun calculateAspects(positions: List<PlanetPosition>): List<AspectLine> {
+        val aspectLines = mutableListOf<AspectLine>()
+        val tolerance = 8.0 // 8 degree orb
+        
+        val validPlanets = positions.filter { it.name != "earth_moon" && it.name != "sun" } // Exclude moon & sun for now
+
+        for (i in validPlanets.indices) {
+            for (j in i + 1 until validPlanets.size) {
+                val p1 = validPlanets[i]
+                val p2 = validPlanets[j]
+                
+                var diff = abs(p1.eclipticLongitudeDeg - p2.eclipticLongitudeDeg)
+                if (diff > 180) diff = 360 - diff
+
+                val type = when {
+                    abs(diff - 0) <= tolerance -> AspectType.CONJUNCTION
+                    abs(diff - 60) <= tolerance -> AspectType.SEXTILE
+                    abs(diff - 90) <= tolerance -> AspectType.SQUARE
+                    abs(diff - 120) <= tolerance -> AspectType.TRINE
+                    abs(diff - 180) <= tolerance -> AspectType.OPPOSITION
+                    else -> null
+                }
+                
+                if (type != null && type != AspectType.CONJUNCTION) {
+                    aspectLines.add(AspectLine(p1.name, p2.name, type, p1.position, p2.position))
+                }
+            }
+        }
+        return aspectLines
+    }
+
     fun getDaysSinceJ2000(): Double {
         val now = System.currentTimeMillis()
         val j2000 = 946728000000L // 2000-01-01 12:00:00 UTC

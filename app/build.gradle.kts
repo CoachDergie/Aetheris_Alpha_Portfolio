@@ -61,9 +61,6 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         freeCompilerArgs.add("-opt-in=androidx.compose.foundation.style.ExperimentalFoundationStyleApi")
-        freeCompilerArgs.add("-opt-in=androidx.xr.compose.material3.ExperimentalMaterial3XrApi")
-        freeCompilerArgs.add("-opt-in=androidx.xr.compose.spatial.ExperimentalSpatialApi")
-        freeCompilerArgs.add("-opt-in=androidx.xr.compose.subspace.layout.ExperimentalSubspaceLayoutApi")
     }
 }
 
@@ -73,6 +70,8 @@ dependencies {
     implementation(libs.androidx.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.meta.spatial)
+    implementation(libs.meta.spatial.toolkit)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -82,9 +81,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.runtime)
-    implementation(libs.androidx.scenecore)
-    implementation(libs.androidx.xr.compose.material3)
-    implementation(libs.extensions1.xr)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -1,6 +1,11 @@
 package com.dyzzy.aetheris.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlin.math.abs
+import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.logic.OccultEngine
 import com.dyzzy.aetheris.logic.TarotRepository
 import com.dyzzy.aetheris.models.*
@@ -66,6 +71,57 @@ class MainViewModel : ViewModel() {
         )
     )
     val barbellSession: StateFlow<QiGongBarbellSession> = _barbellSession.asStateFlow()
+
+    
+    private val _targetDaysSinceEpoch = MutableStateFlow(SolarSystemLogic.getDaysSinceJ2000())
+    
+    private val _currentDaysSinceEpoch = MutableStateFlow(SolarSystemLogic.getDaysSinceJ2000())
+    val currentDaysSinceEpoch: StateFlow<Double> = _currentDaysSinceEpoch.asStateFlow()
+
+    private val _planetPositions = MutableStateFlow(emptyMap<String, SolarSystemLogic.PlanetPosition>())
+    val planetPositions: StateFlow<Map<String, SolarSystemLogic.PlanetPosition>> = _planetPositions.asStateFlow()
+
+    private val _aspectLines = MutableStateFlow(emptyList<SolarSystemLogic.AspectLine>())
+    val aspectLines: StateFlow<List<SolarSystemLogic.AspectLine>> = _aspectLines.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            while(true) {
+                val target = _targetDaysSinceEpoch.value
+                var current = _currentDaysSinceEpoch.value
+                
+                val baseDrift = 0.016 // 1 simulated day per real second (at 60fps)
+                
+                if (abs(target - current) > 0.1) {
+                    // Ease towards target if big jump requested
+                    current += (target - current) * 0.05
+                } else {
+                    // Continuous time drift
+                    _targetDaysSinceEpoch.value = target + baseDrift
+                    current = _targetDaysSinceEpoch.value
+                }
+                
+                _currentDaysSinceEpoch.value = current
+                
+                val positions = SolarSystemLogic.PLANET_DATA.keys.map { planet ->
+                    val scale = if (planet == "earth_moon") 0.1f else 1.0f
+                    SolarSystemLogic.calculatePositionInfo(planet, current, scale)
+                }
+                
+                _planetPositions.value = positions.associateBy { it.name }
+                _aspectLines.value = SolarSystemLogic.calculateAspects(positions)
+                
+                delay(16L)
+            }
+        }
+    }
+
+    fun recalculateZenith(dateStr: String) {
+        // Dummy target logic for now to demonstrate drifting
+        // In real app, calculate days since J2000 from dateStr
+        _targetDaysSinceEpoch.value += 365.0 // Jump 1 year
+    }
+
 
     fun setTab(tab: ViewTab) {
         _currentTab.value = tab

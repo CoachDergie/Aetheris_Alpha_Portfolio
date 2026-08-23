@@ -39,6 +39,7 @@ export interface LunarPhaseInfo {
   nextNewMoon: string;
   currentSign: string;
   esotericAffinity: string;
+  isVoidOfCourse?: boolean;
 }
 
 export interface PunchTelemetry {
@@ -70,8 +71,10 @@ export interface DailyInvocation {
   dayOfWeek: string;
   planet: string;
   barbarousFormula: string;
+  hermeticFormula?: string;
   invocationText: string;
   focusQlipha: string;
+  hermeticSphere?: string;
   martialCorrelation: string;
 }
 
