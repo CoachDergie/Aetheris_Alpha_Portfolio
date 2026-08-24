@@ -1,6 +1,7 @@
 [versions]
 agp = "9.3.1"
 coreKtx = "1.19.0"
+composeactivity = "1.9.2"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
@@ -14,6 +15,7 @@ metaSpatial = "0.13.2"
 compose = "1.0.0-alpha17"
 runtime = "1.0.0-beta02"
 scenecore = "1.0.0-beta02"
+spatialsdk = "0.13.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,11 +36,30 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-meta-spatial = { group = "com.meta.spatial", name = "meta-spatial-sdk", version.ref = "metaSpatial" }
-meta-spatial-toolkit = { group = "com.meta.spatial", name = "meta-spatial-sdk-toolkit", version.ref = "metaSpatial" }
+
+
+# Meta Spatial SDK Libraries
+meta-spatial-sdk-base = { group = "com.meta.spatial", name = "meta-spatial-sdk", version.ref = "spatialsdk" }
+meta-spatial-sdk-vr = { group = "com.meta.spatial", name = "meta-spatial-sdk-vr", version.ref = "spatialsdk" }
+meta-spatial-sdk-animation = { group = "com.meta.spatial", name = "meta-spatial-sdk-animation", version.ref = "spatialsdk" }
+meta-spatial-sdk-compose = { group = "com.meta.spatial", name = "meta-spatial-sdk-compose", version.ref = "spatialsdk" }
+meta-spatial-sdk-ovrmetrics = { group = "com.meta.spatial", name = "meta-spatial-sdk-ovrmetrics", version.ref = "spatialsdk" }
+meta-spatial-sdk-physics = { group = "com.meta.spatial", name = "meta-spatial-sdk-physics", version.ref = "spatialsdk" }
+meta-spatial-sdk-toolkit = { group = "com.meta.spatial", name = "meta-spatial-sdk-toolkit", version.ref = "spatialsdk" }
+meta-spatial-sdk-mruk = { group = "com.meta.spatial", name = "meta-spatial-sdk-mruk", version.ref = "spatialsdk" }
+meta-spatial-sdk-castinputforward = { group = "com.meta.spatial", name = "meta-spatial-sdk-castinputforward", version.ref = "spatialsdk" }
+meta-spatial-sdk-hotreload = { group = "com.meta.spatial", name = "meta-spatial-sdk-hotreload", version.ref = "spatialsdk" }
+meta-spatial-sdk-datamodelinspector = { group = "com.meta.spatial", name = "meta-spatial-sdk-datamodelinspector", version.ref = "spatialsdk" }
+meta-spatial-sdk-isdk = { group = "com.meta.spatial", name = "meta-spatial-sdk-isdk", version.ref = "spatialsdk" }
+meta-spatial-sdk-spatialaudio = { group = "com.meta.spatial", name = "meta-spatial-sdk-spatialaudio", version.ref = "spatialsdk" }
+meta-spatial-sdk-uiset = { group = "com.meta.spatial", name = "meta-spatial-sdk-uiset", version.ref = "spatialsdk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 node = { id = "com.github.node-gradle.node", version = "7.1.0" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin"}
+meta-spatial-plugin = { id = "com.meta.spatial.plugin", version.ref = "spatialsdk" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 

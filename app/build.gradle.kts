@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.meta.spatial.plugin)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.node)
 }
 
@@ -12,9 +14,7 @@ configure<com.github.gradle.node.NodeExtension> {
 
 android {
     namespace = "com.dyzzy.aetheris"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.dyzzy.aetheris"
@@ -42,9 +42,7 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -69,8 +67,10 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
-    implementation(libs.meta.spatial)
-    implementation(libs.meta.spatial.toolkit)
+    implementation(libs.meta.spatial.sdk.base)
+    implementation(libs.meta.spatial.sdk.toolkit)
+    implementation(libs.meta.spatial.sdk.compose)
+    implementation(libs.meta.spatial.sdk.vr)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)

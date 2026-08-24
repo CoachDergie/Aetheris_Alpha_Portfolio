@@ -2,34 +2,40 @@ package com.dyzzy.aetheris
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.dyzzy.aetheris.ui.components.NativeXRBridge
 import com.dyzzy.aetheris.ui.components.GrimoireWebView
+import com.meta.spatial.core.Pose
+import com.meta.spatial.core.Vector3
+import com.meta.spatial.core.Entity
+import com.meta.spatial.core.SpatialFeature
+import com.meta.spatial.runtime.ReferenceSpace
+import com.meta.spatial.toolkit.AppSystemActivity
+import com.meta.spatial.toolkit.Mesh
+import com.meta.spatial.toolkit.Sphere
+import com.meta.spatial.toolkit.Transform
+import com.meta.spatial.toolkit.PanelRegistration
+import com.meta.spatial.toolkit.UIPanelSettings
+import com.meta.spatial.compose.ComposeViewPanelRegistration
+import com.meta.spatial.compose.ComposeFeature
 
 /**
  * Primary entry point.
- * We have pivoted from Jetpack XR to the Meta Spatial SDK (or baseline 2D panel as a fallback).
+ * We have pivoted from Jetpack XR to the Meta Spatial SDK.
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : AppSystemActivity() {
     private lateinit var xrBridge: NativeXRBridge
-
-    // Request necessary permissions including location for Zenith math.
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            permissions.entries.forEach {
-                Log.d("Aetheris", "${it.key} granted: ${it.value}")
-            }
-        }
+    private val PERMISSION_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,41 +46,45 @@ class MainActivity : ComponentActivity() {
             context = this,
             onAnchorToLoftRequested = {
                 Log.d("Aetheris", "Spatial Anchor Requested via Meta SDK")
-                // Phase 3 TODO: Call Meta's Passthrough/Anchor APIs here
             },
             onAnchorModeChanged = { mode ->
                 Log.d("Aetheris", "Changing Meta Anchor Mode to: $mode")
                 when (mode) {
-                    "room" -> {
-                        // Phase 3 TODO: Enable Meta Passthrough Utility
-                        Log.d("Aetheris", "Enabling physical room passthrough via Meta SDK")
-                    }
-                    "loft" -> {
-                        // Phase 3 TODO: Disable Passthrough, load standard Meta Home environment
-                        Log.d("Aetheris", "Reverting to default Meta environment")
-                    }
-                    "celestial_zenith" -> {
-                        // Phase 3 TODO: Spawn 3D Skybox / Space Environment using Scene APIs
-                        Log.d("Aetheris", "Loading 3D space skybox environment")
-                    }
+                    "room" -> Log.d("Aetheris", "Enabling physical room passthrough via Meta SDK")
+                    "loft" -> Log.d("Aetheris", "Reverting to default Meta environment")
+                    "celestial_zenith" -> Log.d("Aetheris", "Loading 3D space skybox environment")
                 }
             }
         )
+    }
 
-        setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF070913))
-            ) {
-                // The main 2D UI Panel.
-                // In a full Meta Spatial SDK setup, this is registered as a Panel and spawned in 3D space.
-                GrimoireWebView(
-                    xrBridge = xrBridge,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+    override fun registerFeatures(): List<SpatialFeature> {
+        return listOf(ComposeFeature())
+    }
+
+    override fun registerPanels(): List<PanelRegistration> {
+        return listOf(
+            ComposeViewPanelRegistration(
+                registrationId = 1,
+                composeViewCreator = { _, context ->
+                    ComposeView(context).apply {
+                        setContent {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color(0xFF070913))
+                            ) {
+                                GrimoireWebView(
+                                    xrBridge = xrBridge,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    }
+                },
+                settingsCreator = { UIPanelSettings() }
+            )
+        )
     }
 
     private fun requestPermissions() {
@@ -89,7 +99,29 @@ class MainActivity : ComponentActivity() {
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toTypedArray(), PERMISSION_REQUEST_CODE)
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            permissions.forEachIndexed { index, permission ->
+                val granted = grantResults[index] == PackageManager.PERMISSION_GRANTED
+                Log.d("Aetheris", "$permission granted: $granted")
+            }
+        }
+    }
+
+    override fun onSceneReady() {
+        super.onSceneReady() // must be called first
+        scene.setReferenceSpace(ReferenceSpace.LOCAL_FLOOR)
+        Entity.create(
+            listOf(
+                Transform(Pose(Vector3(0f, 1.2f, -1.5f))),
+                Mesh(Uri.parse("mesh://sphere")),
+                Sphere(0.2f)
+            )
+        )
     }
 }
