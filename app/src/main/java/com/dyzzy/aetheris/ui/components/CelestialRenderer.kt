@@ -22,10 +22,11 @@ import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
+import kotlin.math.*
 
 /**
  * Filament-based 3D renderer for the solar system "Window into space".
- * Optimized for Meta Quest 2D panel mode (Loft environment).
+ * Optimized for Meta Quest 2D panel mode (Loft environment) with Analytic Depth.
  */
 class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.Callback, SensorEventListener {
 
@@ -108,23 +109,24 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         val engine = engine ?: return
         val scene = scene ?: return
 
-        // Space Skybox - Dark Navy
+        // Space Skybox - Dark Cosmic Navy
         val skybox = Skybox.Builder()
-            .color(0.01f, 0.01f, 0.05f, 1.0f)
+            .color(0.001f, 0.001f, 0.005f, 1.0f)
             .build(engine)
         scene.skybox = skybox
 
         // Lighting
-        val light = engine.entityManager.create()
+        val light1 = engine.entityManager.create()
         LightManager.Builder(LightManager.Type.DIRECTIONAL)
             .color(1.0f, 1.0f, 1.0f)
             .intensity(250000.0f)
-            .direction(0.0f, 0.0f, -1.0f)
-            .build(engine, light)
-        scene.addEntity(light)
+            .direction(0.5f, -0.5f, -1.0f)
+            .castShadows(true)
+            .build(engine, light1)
+        scene.addEntity(light1)
 
         val ibl = IndirectLight.Builder()
-            .intensity(50000.0f)
+            .intensity(40000.0f)
             .build(engine)
         scene.indirectLight = ibl
 
@@ -138,58 +140,32 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 val names = SolarSystemLogic.PLANET_DATA.keys.toList()
                 for (name in names) {
                     if (isDestroyed) break
-                    
                     val path = "models/$name.glb"
-                    Log.d("Aetheris", "CelestialRenderer: Attempting to load $path")
-                    
-                    val bytes = try {
-                        context.assets.open(path).use { it.readBytes() }
-                    } catch (e: Exception) {
-                        Log.e("Aetheris", "CelestialRenderer: Failed to read $path", e)
-                        null
-                    }
-                    
-                    if (bytes == null || bytes.isEmpty()) continue
-                    
-                    val buffer = ByteBuffer.allocateDirect(bytes.size)
-                    buffer.put(bytes)
-                    buffer.flip()
-
+                    val bytes = try { context.assets.open(path).use { it.readBytes() } } catch (e: Exception) { null }
+                    if (bytes == null) continue
+                    val buffer = ByteBuffer.allocateDirect(bytes.size).put(bytes).flip() as ByteBuffer
                     mainHandler.post {
                         filamentLock.lock()
                         try {
-                            if (!isDestroyed && engine != null && assetLoader != null) {
-                                val asset = assetLoader!!.createAsset(buffer)
+                            if (!isDestroyed && engine != null) {
+                                val asset = assetLoader?.createAsset(buffer)
                                 if (asset != null) {
                                     resourceLoader?.loadResources(asset)
                                     scene?.addEntities(asset.entities)
-                                    if (name == "sun") sunAsset = asset
-                                    else planetAssets[name] = asset
-                                    
-                                    Log.d("Aetheris", "CelestialRenderer: Successfully added $name to scene")
-                                    
-                                    // SUCCESS FLASH
-                                    scene?.skybox = Skybox.Builder().color(0.0f, 0.2f, 0.0f, 1.0f).build(engine!!)
-                                    mainHandler.postDelayed({
-                                        if (!isDestroyed) scene?.skybox = Skybox.Builder().color(0.01f, 0.01f, 0.05f, 1.0f).build(engine!!)
-                                    }, 300)
+                                    if (name == "sun") sunAsset = asset else planetAssets[name] = asset
+                                    Log.d("Aetheris", "CelestialRenderer: Added $name")
                                 }
                             }
-                        } finally {
-                            filamentLock.unlock()
-                        }
+                        } finally { filamentLock.unlock() }
                     }
-                    Thread.sleep(300) 
+                    Thread.sleep(300)
                 }
-            } catch (e: Exception) {
-                Log.e("Aetheris", "CelestialRenderer: Load thread crash", e)
-            }
+            } catch (e: Exception) {}
         }
     }
 
     private fun render(frameTimeNanos: Long) {
         if (!filamentLock.tryLock()) return 
-        
         try {
             val engine = engine ?: return
             val renderer = renderer ?: return
@@ -200,8 +176,13 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             updateCamera(headOffsetX, headOffsetY)
 
             val daysLocal = days
-            val orbitalScale = 4.0f 
-            val meshScale = 3.0f
+            val orbitalScale = 18.0f 
+            val baseMeshScale = 0.003f 
+            val sunScale = 0.10f     
+            
+            val leanAngle = Math.toRadians(-45.0)
+            val cosL = cos(leanAngle).toFloat()
+            val sinL = sin(leanAngle).toFloat()
 
             sunAsset?.let { asset ->
                 val tm = engine.transformManager
@@ -210,24 +191,45 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                     tm.setTransform(instance, FloatArray(16).apply { 
                         android.opengl.Matrix.setIdentityM(this, 0)
                         android.opengl.Matrix.translateM(this, 0, 0f, 1.5f, 0f)
-                        android.opengl.Matrix.scaleM(this, 0, 4.0f, 4.0f, 4.0f)
+                        android.opengl.Matrix.scaleM(this, 0, sunScale, sunScale, sunScale)
                     })
                 }
             }
 
+            val earthPosRaw = SolarSystemLogic.calculatePosition("earth", daysLocal, orbitalScale)
+            
             planetAssets.forEach { (name, asset) ->
-                val earthPos = SolarSystemLogic.calculatePosition("earth", daysLocal, orbitalScale)
-                var pos = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
-                if (name == "earth_moon") {
-                    pos = SolarSystemLogic.Vector3(pos.x + earthPos.x, pos.y + earthPos.y, pos.z + earthPos.z)
+                var posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
+                
+                // Anti-Occlusion logic
+                var finalMeshScale = baseMeshScale
+                when(name) {
+                    "earth" -> finalMeshScale = baseMeshScale * 4.0f
+                    "jupiter", "saturn" -> finalMeshScale = baseMeshScale * 1.5f
+                    "mercury", "venus", "mars" -> finalMeshScale = baseMeshScale * 3.0f
+                    else -> finalMeshScale = baseMeshScale
                 }
+
+                if (name == "earth_moon") {
+                    val rawX = posRaw.x
+                    val rawY = posRaw.y
+                    val rawZ = posRaw.z
+                    val dist = sqrt(rawX * rawX + rawY * rawY + rawZ * rawZ)
+                    val minMoonDist = 0.4f 
+                    val mult = if (dist > 0) max(1.0f, minMoonDist / dist) else 1.0f
+                    posRaw = SolarSystemLogic.Vector3(earthPosRaw.x + rawX * mult, earthPosRaw.y + rawY * mult, earthPosRaw.z + rawZ * mult)
+                }
+
+                val tiltedY = posRaw.y * cosL - posRaw.z * sinL
+                val tiltedZ = posRaw.y * sinL + posRaw.z * cosL
+
                 val tm = engine.transformManager
                 val instance = tm.getInstance(asset.root)
                 if (instance != 0) {
                     tm.setTransform(instance, FloatArray(16).apply {
                         android.opengl.Matrix.setIdentityM(this, 0)
-                        android.opengl.Matrix.translateM(this, 0, pos.x, 1.5f + pos.y, pos.z)
-                        android.opengl.Matrix.scaleM(this, 0, meshScale, meshScale, meshScale)
+                        android.opengl.Matrix.translateM(this, 0, posRaw.x, 1.5f + tiltedY, tiltedZ)
+                        android.opengl.Matrix.scaleM(this, 0, finalMeshScale, finalMeshScale, finalMeshScale)
                     })
                 }
             }
@@ -236,42 +238,31 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 renderer.render(view)
                 renderer.endFrame()
             }
-        } finally {
-            filamentLock.unlock()
-        }
+        } finally { filamentLock.unlock() }
     }
 
     private fun updateCamera(headOffsetX: Float, headOffsetY: Float) {
         val cam = camera ?: return
-        val eyeX = headOffsetX * 3.0f
-        val eyeY = 1.5f + headOffsetY * 3.0f
-        val eyeZ = 25.0f
+        val eyeX = headOffsetX * 15.0f
+        val eyeY = 40.0f + headOffsetY * 10.0f
+        val eyeZ = 80.0f
         
-        cam.lookAt(eyeX.toDouble(), eyeY.toDouble(), eyeZ.toDouble(), 
-                   0.0, 1.5, 0.0, 
-                   0.0, 1.0, 0.0)
-        
+        cam.lookAt(eyeX.toDouble(), eyeY.toDouble(), eyeZ.toDouble(), 0.0, 1.5, 0.0, 0.0, 1.0, 0.0)
         val aspect = if (width > 0 && height > 0) width.toDouble() / height.toDouble() else 1.0
-        cam.setProjection(90.0, aspect, 0.1, 10000.0, Camera.Fov.VERTICAL)
+        cam.setProjection(70.0, aspect, 0.1, 30000.0, Camera.Fov.VERTICAL)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         filamentLock.lock()
-        try {
-            view?.viewport = Viewport(0, 0, width, height)
-        } finally {
-            filamentLock.unlock()
-        }
+        try { view?.viewport = Viewport(0, 0, width, height) } finally { filamentLock.unlock() }
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        Log.d("Aetheris", "CelestialRenderer: Surface destroyed")
         filamentLock.lock()
         try {
             isDestroyed = true
             android.view.Choreographer.getInstance().removeFrameCallback(frameCallback)
             sensorManager.unregisterListener(this)
-            
             val engine = engine ?: return
             assetLoader?.destroy()
             resourceLoader?.destroy()
@@ -285,10 +276,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             renderer?.let { engine.destroyRenderer(it) }
             swapChain?.let { engine.destroySwapChain(it) }
             engine.destroy()
-            this.engine = null
-        } finally {
-            filamentLock.unlock()
-        }
+        } finally { filamentLock.unlock() }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
