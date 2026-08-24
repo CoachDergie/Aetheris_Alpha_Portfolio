@@ -19,6 +19,7 @@ import com.google.android.filament.gltfio.ResourceLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.*
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
@@ -27,6 +28,7 @@ import kotlin.math.*
 /**
  * Filament-based 3D renderer for the solar system "Window into space".
  * Optimized for Meta Quest 2D panel mode (Loft environment) with Analytic Depth.
+ * Current State: Stability Rollback (Planets Only) for scale verification.
  */
 class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.Callback, SensorEventListener {
 
@@ -47,7 +49,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
     private var renderer: Renderer? = null
     private var scene: Scene? = null
     private var view: View? = null
-    private var camera: Camera? = null
+    private var filamentCamera: Camera? = null
     private var assetLoader: AssetLoader? = null
     private var resourceLoader: ResourceLoader? = null
     
@@ -82,10 +84,10 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             renderer = engine.createRenderer()
             scene = engine.createScene()
             view = engine.createView()
-            camera = engine.createCamera(engine.entityManager.create())
+            filamentCamera = engine.createCamera(engine.entityManager.create())
             
             view!!.scene = scene
-            view!!.camera = camera
+            view!!.camera = filamentCamera
             
             assetLoader = AssetLoader(engine, UbershaderProvider(engine), engine.entityManager)
             resourceLoader = ResourceLoader(engine)
@@ -110,9 +112,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         val scene = scene ?: return
 
         // Space Skybox - Dark Cosmic Navy
-        val skybox = Skybox.Builder()
-            .color(0.001f, 0.001f, 0.005f, 1.0f)
-            .build(engine)
+        val skybox = Skybox.Builder().color(0.001f, 0.001f, 0.005f, 1.0f).build(engine)
         scene.skybox = skybox
 
         // Lighting
@@ -125,9 +125,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             .build(engine, light1)
         scene.addEntity(light1)
 
-        val ibl = IndirectLight.Builder()
-            .intensity(40000.0f)
-            .build(engine)
+        val ibl = IndirectLight.Builder().intensity(40000.0f).build(engine)
         scene.indirectLight = ibl
 
         startBackgroundAssetLoad()
@@ -147,8 +145,8 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                     mainHandler.post {
                         filamentLock.lock()
                         try {
-                            if (!isDestroyed && engine != null) {
-                                val asset = assetLoader?.createAsset(buffer)
+                            if (!isDestroyed && engine != null && assetLoader != null) {
+                                val asset = assetLoader!!.createAsset(buffer)
                                 if (asset != null) {
                                     resourceLoader?.loadResources(asset)
                                     scene?.addEntities(asset.entities)
@@ -171,64 +169,56 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val renderer = renderer ?: return
             val swapChain = swapChain ?: return
             val view = view ?: return
-            val camera = camera ?: return
+            val camera = filamentCamera ?: return
 
             updateCamera(headOffsetX, headOffsetY)
 
             val daysLocal = days
             val orbitalScale = 18.0f 
-            val baseMeshScale = 0.003f 
-            val sunScale = 0.10f     
+            val baseMeshScale = 0.002f 
+            val sunScale = 0.015f // Sharp solar disc     
             
-            val leanAngle = Math.toRadians(-45.0)
-            val cosL = cos(leanAngle).toFloat()
-            val sinL = sin(leanAngle).toFloat()
+            val tm = engine.transformManager
 
+            // Lean the entire system (Planets)
+            val systemTransform = FloatArray(16).apply {
+                android.opengl.Matrix.setIdentityM(this, 0)
+                android.opengl.Matrix.translateM(this, 0, 0f, 1.5f, 0f)
+                android.opengl.Matrix.rotateM(this, 0, -45f, 1f, 0f, 0f)
+            }
+
+            // Update Sun
             sunAsset?.let { asset ->
-                val tm = engine.transformManager
                 val instance = tm.getInstance(asset.root)
                 if (instance != 0) {
                     tm.setTransform(instance, FloatArray(16).apply { 
-                        android.opengl.Matrix.setIdentityM(this, 0)
-                        android.opengl.Matrix.translateM(this, 0, 0f, 1.5f, 0f)
+                        System.arraycopy(systemTransform, 0, this, 0, 16)
                         android.opengl.Matrix.scaleM(this, 0, sunScale, sunScale, sunScale)
                     })
                 }
             }
 
-            val earthPosRaw = SolarSystemLogic.calculatePosition("earth", daysLocal, orbitalScale)
-            
+            // Update Planets
             planetAssets.forEach { (name, asset) ->
-                var posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
-                
-                // Anti-Occlusion logic
+                val posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
                 var finalMeshScale = baseMeshScale
+                var yOffset = 0f
+                
                 when(name) {
-                    "earth" -> finalMeshScale = baseMeshScale * 4.0f
+                    "earth" -> {
+                        finalMeshScale = baseMeshScale * 6.0f 
+                        yOffset = 4.0f // Elevated significantly for visibility
+                    }
                     "jupiter", "saturn" -> finalMeshScale = baseMeshScale * 1.5f
-                    "mercury", "venus", "mars" -> finalMeshScale = baseMeshScale * 3.0f
-                    else -> finalMeshScale = baseMeshScale
+                    else -> finalMeshScale = baseMeshScale * 3.0f
                 }
 
-                if (name == "earth_moon") {
-                    val rawX = posRaw.x
-                    val rawY = posRaw.y
-                    val rawZ = posRaw.z
-                    val dist = sqrt(rawX * rawX + rawY * rawY + rawZ * rawZ)
-                    val minMoonDist = 0.4f 
-                    val mult = if (dist > 0) max(1.0f, minMoonDist / dist) else 1.0f
-                    posRaw = SolarSystemLogic.Vector3(earthPosRaw.x + rawX * mult, earthPosRaw.y + rawY * mult, earthPosRaw.z + rawZ * mult)
-                }
-
-                val tiltedY = posRaw.y * cosL - posRaw.z * sinL
-                val tiltedZ = posRaw.y * sinL + posRaw.z * cosL
-
-                val tm = engine.transformManager
                 val instance = tm.getInstance(asset.root)
                 if (instance != 0) {
                     tm.setTransform(instance, FloatArray(16).apply {
                         android.opengl.Matrix.setIdentityM(this, 0)
-                        android.opengl.Matrix.translateM(this, 0, posRaw.x, 1.5f + tiltedY, tiltedZ)
+                        System.arraycopy(systemTransform, 0, this, 0, 16)
+                        android.opengl.Matrix.translateM(this, 0, posRaw.x, posRaw.y + yOffset, posRaw.z)
                         android.opengl.Matrix.scaleM(this, 0, finalMeshScale, finalMeshScale, finalMeshScale)
                     })
                 }
@@ -242,14 +232,15 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
     }
 
     private fun updateCamera(headOffsetX: Float, headOffsetY: Float) {
-        val cam = camera ?: return
+        val cam = filamentCamera ?: return
+        // Baseline eye distance at 20 meters for strong parallax
         val eyeX = headOffsetX * 15.0f
-        val eyeY = 40.0f + headOffsetY * 10.0f
-        val eyeZ = 80.0f
+        val eyeY = 25.0f + headOffsetY * 10.0f
+        val eyeZ = 20.0f
         
         cam.lookAt(eyeX.toDouble(), eyeY.toDouble(), eyeZ.toDouble(), 0.0, 1.5, 0.0, 0.0, 1.0, 0.0)
         val aspect = if (width > 0 && height > 0) width.toDouble() / height.toDouble() else 1.0
-        cam.setProjection(70.0, aspect, 0.1, 30000.0, Camera.Fov.VERTICAL)
+        cam.setProjection(65.0, aspect, 0.1, 10000.0, Camera.Fov.VERTICAL)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -266,7 +257,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val engine = engine ?: return
             assetLoader?.destroy()
             resourceLoader?.destroy()
-            camera?.let { engine.destroyEntity(it.entity) }
+            filamentCamera?.let { engine.destroyEntity(it.entity) }
             view?.let { engine.destroyView(it) }
             scene?.let {
                 it.skybox?.let { sky -> engine.destroySkybox(sky) }
