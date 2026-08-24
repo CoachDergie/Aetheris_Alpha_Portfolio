@@ -3,6 +3,20 @@
 _Draft. This captures the system as it currently exists in code, plus known gaps, so it can serve
 as a starting point for scoping and for handing context to tools like Google AI Studio._
 
+## Reference materials — check every implementation pass
+
+Before any Spatial SDK work, agents should check these directly rather than relying on training
+data alone, since this SDK ships updates faster than any model's training cutoff:
+
+- **Meta's official AI-readable doc index:** https://developers.meta.com/horizon/llmstxt/documentation/spatial-sdk/llms.txt/
+- **Official sample code:** https://github.com/meta-quest/Meta-Spatial-SDK-Samples
+
+Meta's own doc index additionally states a preference for its own agent tooling over general-purpose
+coding assistants for VR-specific work: the **Meta VR CLI** (`npx metavr --help`) for docs, device,
+debugging, performance, and MCP workflows, and task-specific **Meta-provided VR agent skills** at
+https://github.com/meta-quest/agentic-tools. Meta's guidance is to ask before installing or
+configuring these — worth evaluating alongside whichever general coding agent is doing the pass.
+
 ## What this app is
 
 This is a portfolio piece designed for users inside their virtual loft environment. The application
@@ -42,6 +56,31 @@ Jetpack XR equivalents.
 is being kept for a secondary Android XR build target, or should be removed/replaced outright once the
 Meta-native implementation lands. This changes how much of the existing `MainActivity.kt` is salvage
 vs. rewrite.
+
+## Loft environment — 3D spawn limitation & "window into space" panel
+
+**Finding:** arbitrary 3D entities (`Entity.create` with a `Mesh` component) cannot be spawned
+directly into Meta Horizon Home ("Loft," per our own definition below). Home only supports placing 2D
+panels and Home-specific integrations — not free 3D geometry. A full 3D scene requires the user to be
+inside the app's own immersive session (a launched immersive/OpenXR activity), not the shared system
+Home space.
+
+**Planned workaround: a "window into space" panel.** Since the solar system can't be placed as free 3D
+geometry directly into Home, render it as a 2D panel using a stereographic/parallax-rendered view of
+the 3D scene — a "window" surface the user can lean their head toward to look into, without requiring
+them to leave Home for a full immersive session.
+
+Relevant doc pages to confirm the exact current API/technique against before implementing — do not
+assume "stereographic window" matches Meta's own terminology until checked against these:
+- **Layer and mesh rendering modes** (layers vs. mesh rendering, blend modes, feathering)
+- **Compositor layers**
+- **Hybrid apps overview** (2D panel + immersive OpenXR activity split — this window panel and the
+  full immersive solar system are likely two different activity types working together, per the
+  Platform target section above)
+- **Passthrough** (only relevant if the window should reveal real passthrough rather than a rendered
+  scene)
+
+This is planned, not yet implemented — see Known Gaps below.
 
 ## Runtime layers
 
@@ -112,6 +151,7 @@ Tracked here so scope/priority discussions have a concrete list instead of "it's
 |---|---|---|
 | **Native XR layer targets the wrong SDK for the platform** | **Blocking — needs team decision** | See "Platform target" section above. Jetpack XR SDK code cannot run on Meta OS/Quest as-is. |
 | `anchorMode` should use Meta's native environment/passthrough concepts | Needs Meta SDK research | Current `'loft'/'room'/'celestial_zenith'` enum is app-defined, not backed by any platform API yet |
+| "Window into space" panel for the solar system in Home/Loft | Planned, not started | 3D entities can't spawn directly in Home; needs a panel-based rendered-view technique — see "Loft environment — 3D spawn limitation" section above before implementing |
 | Zenith requires geolocation | Planned, not started | Derives readings from lat/long ("potentially based on the router; relative accuracy is OK"). `XRPermissionGuard` currently only requests `HAND_TRACKING` / `RECORD_AUDIO` — no `ACCESS_COARSE_LOCATION` / `ACCESS_FINE_LOCATION` requested anywhere yet |
 | Aspect lines (square/trine/opposition) as 3D primitives | Planned, not started | Currently only exist as 2D SVG lines in `CelestialOrbitalMandala.tsx`; per Relationships below, these should be spawned as primitives in the 3D scene, matching the astrology chart math |
 | Linear AU distance scale (`systemScale = 100f`) unusable at room scale | Found, needs design decision | Neptune ends up meters away; needs a compressed/non-linear display scale, not true AU ratios |
@@ -122,7 +162,9 @@ Tracked here so scope/priority discussions have a concrete list instead of "it's
 
 ## Definitions
 
-1. **Loft**: the virtual environment given as a default by the platform OS.
+1. **Loft**: the virtual environment given as a default by the platform OS. Note: Meta's platform does
+   not allow arbitrary 3D object spawning directly into this system Home space — see "Loft
+   environment — 3D spawn limitation" section above.
 2. **Physical AR**: the immersive/augmentation quality of the application — drawing sigils in the air,
    punching to record telemetry — i.e. augmentation of physical reality itself.
 3. **Zenith**: the point in the sky directly above the user; a longitude/latitude coordinate that
@@ -138,4 +180,5 @@ Tracked here so scope/priority discussions have a concrete list instead of "it's
 
 ## Scope
 
-1. Tarot/meditation tabs are long-term part of the application and are never intended to be split out into separate releases.
+1. Tarot/meditation tabs are long-term part of the application and are never intended to be split out
+   into separate releases.

@@ -2,40 +2,55 @@ package com.dyzzy.aetheris
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
-import androidx.core.app.ActivityCompat
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.NativeXRBridge
 import com.dyzzy.aetheris.ui.components.GrimoireWebView
-import com.meta.spatial.core.Pose
-import com.meta.spatial.core.Vector3
-import com.meta.spatial.core.Entity
-import com.meta.spatial.core.SpatialFeature
-import com.meta.spatial.runtime.ReferenceSpace
-import com.meta.spatial.toolkit.AppSystemActivity
-import com.meta.spatial.toolkit.Mesh
-import com.meta.spatial.toolkit.Sphere
-import com.meta.spatial.toolkit.Transform
-import com.meta.spatial.toolkit.PanelRegistration
-import com.meta.spatial.toolkit.UIPanelSettings
-import com.meta.spatial.compose.ComposeViewPanelRegistration
-import com.meta.spatial.compose.ComposeFeature
 
 /**
  * Primary entry point.
- * We have pivoted from Jetpack XR to the Meta Spatial SDK.
+ * Reverted to ComponentActivity to ensure visibility within the Meta Horizon Home "Loft" environment.
+ * The app now renders as a neat dual-panel window (HUD + Space Window).
  */
-class MainActivity : AppSystemActivity() {
+class MainActivity : ComponentActivity() {
     private lateinit var xrBridge: NativeXRBridge
-    private val PERMISSION_REQUEST_CODE = 1001
+
+    // Modern Activity Result API for permissions
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach {
+                Log.d("Aetheris", "${it.key} granted: ${it.value}")
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,45 +60,133 @@ class MainActivity : AppSystemActivity() {
         xrBridge = NativeXRBridge(
             context = this,
             onAnchorToLoftRequested = {
-                Log.d("Aetheris", "Spatial Anchor Requested via Meta SDK")
+                Log.d("Aetheris", "Spatial Anchor Requested in Panel Mode")
             },
             onAnchorModeChanged = { mode ->
-                Log.d("Aetheris", "Changing Meta Anchor Mode to: $mode")
-                when (mode) {
-                    "room" -> Log.d("Aetheris", "Enabling physical room passthrough via Meta SDK")
-                    "loft" -> Log.d("Aetheris", "Reverting to default Meta environment")
-                    "celestial_zenith" -> Log.d("Aetheris", "Loading 3D space skybox environment")
-                }
+                Log.d("Aetheris", "Anchor Mode Changed to: $mode")
             }
         )
+
+        setContent {
+            AetherisTheme {
+                MainHUD(xrBridge)
+            }
+        }
     }
 
-    override fun registerFeatures(): List<SpatialFeature> {
-        return listOf(ComposeFeature())
+    @Composable
+    fun MainHUD(xrBridge: NativeXRBridge) {
+        val daysSinceEpoch = remember { mutableStateOf(SolarSystemLogic.getDaysSinceJ2000()) }
+        
+        LaunchedEffect(Unit) {
+            while (true) {
+                withFrameNanos {
+                    // Slow drift: Real-time update
+                    daysSinceEpoch.value = SolarSystemLogic.getDaysSinceJ2000()
+                }
+            }
+        }
+
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFF070913).copy(alpha = 0.95f),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                // LEFT PANEL: The Grimoire HUD (WebView)
+                Box(
+                    modifier = Modifier
+                        .weight(1.5f)
+                        .fillMaxHeight()
+                ) {
+                    GrimoireWebView(
+                        xrBridge = xrBridge,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                // RIGHT PANEL: The "Space Window" (Portal into the void)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Black)
+                ) {
+                    CelestialPortal(daysSinceEpoch.value)
+                }
+            }
+        }
     }
 
-    override fun registerPanels(): List<PanelRegistration> {
-        return listOf(
-            ComposeViewPanelRegistration(
-                registrationId = 1,
-                composeViewCreator = { _, context ->
-                    ComposeView(context).apply {
-                        setContent {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color(0xFF070913))
-                            ) {
-                                GrimoireWebView(
-                                    xrBridge = xrBridge,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    }
-                },
-                settingsCreator = { UIPanelSettings() }
+    @Composable
+    fun CelestialPortal(days: Double) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val center = Offset(size.width / 2, size.height / 2)
+                
+                // systemScale: Compressed AU scale for the window
+                // 1 AU = ~80 pixels in a 720p height window
+                val systemScale = size.minDimension / 8f 
+                
+                // Draw Orbits
+                SolarSystemLogic.PLANET_DATA.keys.forEach { name ->
+                    if (name == "sun" || name == "earth_moon") return@forEach
+                    val elements = SolarSystemLogic.PLANET_DATA[name] ?: return@forEach
+                    
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.15f),
+                        radius = (elements.semiMajorAxisAU * systemScale).toFloat(),
+                        center = center,
+                        style = Stroke(width = 1f)
+                    )
+                }
+
+                // Draw Sun
+                drawCircle(
+                    color = Color(0xFFFFCC33),
+                    radius = 12f,
+                    center = center
+                )
+
+                // Draw Planets using Kepler Math
+                SolarSystemLogic.PLANET_DATA.keys.forEach { name ->
+                    if (name == "sun" || name == "earth_moon") return@forEach
+                    
+                    val pos = SolarSystemLogic.calculatePosition(name, days, systemScale.toFloat())
+                    
+                    // We map pos.x and pos.z to our 2D portal coordinates (Top-down view)
+                    drawCircle(
+                        color = Color.White,
+                        radius = 4f,
+                        center = Offset(center.x + pos.x, center.y + pos.z)
+                    )
+                    
+                    // Optional: Label
+                    // (Draw logic for text in Canvas is omitted for brevity, 
+                    // but we can add small dot markers)
+                }
+            }
+            
+            Text(
+                text = "WINDOW INTO SPACE",
+                color = Color.White.copy(alpha = 0.3f),
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 10.sp,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp)
             )
+        }
+    }
+
+    @Composable
+    fun AetherisTheme(content: @Composable () -> Unit) {
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme.copy(
+                background = Color(0xFF070913),
+                surface = Color(0xFF10121D)
+            ),
+            content = content
         )
     }
 
@@ -99,29 +202,7 @@ class MainActivity : AppSystemActivity() {
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsToRequest.toTypedArray(), PERMISSION_REQUEST_CODE)
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            permissions.forEachIndexed { index, permission ->
-                val granted = grantResults[index] == PackageManager.PERMISSION_GRANTED
-                Log.d("Aetheris", "$permission granted: $granted")
-            }
-        }
-    }
-
-    override fun onSceneReady() {
-        super.onSceneReady() // must be called first
-        scene.setReferenceSpace(ReferenceSpace.LOCAL_FLOOR)
-        Entity.create(
-            listOf(
-                Transform(Pose(Vector3(0f, 1.2f, -1.5f))),
-                Mesh(Uri.parse("mesh://sphere")),
-                Sphere(0.2f)
-            )
-        )
     }
 }
