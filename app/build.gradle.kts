@@ -104,7 +104,7 @@ val buildReactApp = tasks.register<com.github.gradle.node.npm.task.NpmTask>("bui
 val copySolarSystemModels = tasks.register<Copy>("copySolarSystemModels") {
     group = "build"
     description = "Copies 3D planet models from public/solarsystem to assets."
-    from("${project.rootDir}/public/solarsystem")
+    from("${project.rootDir}/public/solarsystem/models") // Direct path to models
     into("src/main/assets/models")
     include("*.glb")
 }
