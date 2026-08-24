@@ -38,6 +38,8 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
                     databaseEnabled = true
                     cacheMode = WebSettings.LOAD_NO_CACHE // Prevent stale UI caching during dev
                     mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
                 }
                 
                 setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->

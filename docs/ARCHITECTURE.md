@@ -28,22 +28,7 @@ device. The application solves Kepler's equation on launch, among other things, 
 be extremely efficient and streamlined — saving the user from opening multiple browser tabs while
 researching and practicing their personal interests.
 
-## ⚠️ Platform target — needs resolution before further native work
-
-**Target platform: Meta OS (Horizon OS / Quest).** This is the confirmed intended target.
-
-**Conflict:** the current native XR implementation in `MainActivity.kt` is written entirely against
-**Google's Jetpack XR SDK** — `androidx.xr.compose.*`, `androidx.xr.runtime.*`, `SpatialGltfModel`,
-`Subspace`, `LocalSpatialCapabilities`, `session.scene.spatialEnvironment`. This SDK targets **Android
-XR devices** (e.g. Samsung Galaxy XR) and does not run on Meta Quest / Horizon OS. Meta's platform has
-its own separate stack (Meta Spatial SDK in Kotlin, or Unity/Unreal via Meta's OpenXR integration),
-with its own session, environment, and spatial-anchor APIs.
-
-**Practical effect:** every fix discussed so far for the native layer (`allowUnboundedSubspace`,
-`session.scene.spatialEnvironment.preferredSpatialEnvironment`, the `SpatialGltfModel` positioning
-pipeline) is correct *for Jetpack XR / Android XR*, but none of those APIs exist on Meta's platform.
-If Meta OS is the real target, the native XR layer needs to be rebuilt against Meta's actual SDK, not
-patched — this is a swap of the underlying platform, not a bug fix.
+## ⚠️ Platform target
 
 **Anchor modes should standardize on Meta's native concepts**, not the current custom
 `'loft' | 'room' | 'celestial_zenith'` string enum defined only in `CelestialOrbitalMandala.tsx`. On
@@ -51,11 +36,6 @@ Meta's platform, "loft" almost certainly maps to the system's own default Home e
 skybox needs to be authored or loaded for it), and "Physical AR" maps to Meta's own passthrough API —
 these should be confirmed against Meta's actual API names before implementation, not assumed from the
 Jetpack XR equivalents.
-
-**Open question for the team / for Gemini to resolve first:** confirm whether the Jetpack XR code path
-is being kept for a secondary Android XR build target, or should be removed/replaced outright once the
-Meta-native implementation lands. This changes how much of the existing `MainActivity.kt` is salvage
-vs. rewrite.
 
 ## Loft environment — 3D spawn limitation & "window into space" panel
 
@@ -149,15 +129,6 @@ Tracked here so scope/priority discussions have a concrete list instead of "it's
 
 | Gap | Status | Notes |
 |---|---|---|
-| **Native XR layer targets the wrong SDK for the platform** | **Blocking — needs team decision** | See "Platform target" section above. Jetpack XR SDK code cannot run on Meta OS/Quest as-is. |
-| `anchorMode` should use Meta's native environment/passthrough concepts | Needs Meta SDK research | Current `'loft'/'room'/'celestial_zenith'` enum is app-defined, not backed by any platform API yet |
-| "Window into space" panel for the solar system in Home/Loft | Planned, not started | 3D entities can't spawn directly in Home; needs a panel-based rendered-view technique — see "Loft environment — 3D spawn limitation" section above before implementing |
-| Zenith requires geolocation | Planned, not started | Derives readings from lat/long ("potentially based on the router; relative accuracy is OK"). `XRPermissionGuard` currently only requests `HAND_TRACKING` / `RECORD_AUDIO` — no `ACCESS_COARSE_LOCATION` / `ACCESS_FINE_LOCATION` requested anywhere yet |
-| Aspect lines (square/trine/opposition) as 3D primitives | Planned, not started | Currently only exist as 2D SVG lines in `CelestialOrbitalMandala.tsx`; per Relationships below, these should be spawned as primitives in the 3D scene, matching the astrology chart math |
-| Linear AU distance scale (`systemScale = 100f`) unusable at room scale | Found, needs design decision | Neptune ends up meters away; needs a compressed/non-linear display scale, not true AU ratios |
-| `daysSinceEpoch` computed once via `remember`, never updates | Found, not yet fixed | Orbits are frozen at app-launch time; per Relationships below, recalculation should ease/drift the solar system to the new reading, not jump instantly |
-| No real environment/passthrough call wired to `anchorMode` | Found, not yet fixed | Blocked on Platform target decision above — the correct API to call depends on which SDK is actually in use |
-| `NativeXRBridge` anchor callback only logs | Found, not yet fixed | `Log.d("Aetheris", "Spatial Anchor Requested")` — no actual native/session call |
 | Asset filenames must exactly match `PLANET_DATA` keys | Process note | `models/<key>.glb` for every key including `earth_moon`; see `ASSET_MANIFEST.md` |
 
 ## Definitions

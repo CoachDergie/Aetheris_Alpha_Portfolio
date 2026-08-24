@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -20,31 +19,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.NativeXRBridge
 import com.dyzzy.aetheris.ui.components.GrimoireWebView
+import com.dyzzy.aetheris.ui.components.CelestialRenderer
+import com.google.android.filament.utils.Utils
 
 /**
  * Primary entry point.
  * Reverted to ComponentActivity to ensure visibility within the Meta Horizon Home "Loft" environment.
- * The app now renders as a neat dual-panel window (HUD + Space Window).
  */
 class MainActivity : ComponentActivity() {
     private lateinit var xrBridge: NativeXRBridge
 
-    // Modern Activity Result API for permissions
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.entries.forEach {
@@ -55,6 +53,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize Filament once
+        Utils.init()
+        
         requestPermissions()
 
         xrBridge = NativeXRBridge(
@@ -76,20 +77,19 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainHUD(xrBridge: NativeXRBridge) {
-        val daysSinceEpoch = remember { mutableStateOf(SolarSystemLogic.getDaysSinceJ2000()) }
+        val daysSinceEpoch = remember { mutableDoubleStateOf(SolarSystemLogic.getDaysSinceJ2000()) }
         
         LaunchedEffect(Unit) {
             while (true) {
                 withFrameNanos {
-                    // Slow drift: Real-time update
-                    daysSinceEpoch.value = SolarSystemLogic.getDaysSinceJ2000()
+                    daysSinceEpoch.doubleValue = SolarSystemLogic.getDaysSinceJ2000()
                 }
             }
         }
 
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF070913).copy(alpha = 0.95f),
+            color = Color(0xFF070913),
             shape = RoundedCornerShape(16.dp)
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
@@ -98,6 +98,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .weight(1.5f)
                         .fillMaxHeight()
+                        .background(Color(0xFF0A0D18))
                 ) {
                     GrimoireWebView(
                         xrBridge = xrBridge,
@@ -112,9 +113,9 @@ class MainActivity : ComponentActivity() {
                         .fillMaxHeight()
                         .padding(16.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Black)
+                        .background(Color.Transparent) // Make background transparent to show the SurfaceView
                 ) {
-                    CelestialPortal(daysSinceEpoch.value)
+                    CelestialPortal(daysSinceEpoch.doubleValue)
                 }
             }
         }
@@ -123,55 +124,19 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun CelestialPortal(days: Double) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val center = Offset(size.width / 2, size.height / 2)
-                
-                // systemScale: Compressed AU scale for the window
-                // 1 AU = ~80 pixels in a 720p height window
-                val systemScale = size.minDimension / 8f 
-                
-                // Draw Orbits
-                SolarSystemLogic.PLANET_DATA.keys.forEach { name ->
-                    if (name == "sun" || name == "earth_moon") return@forEach
-                    val elements = SolarSystemLogic.PLANET_DATA[name] ?: return@forEach
-                    
-                    drawCircle(
-                        color = Color.White.copy(alpha = 0.15f),
-                        radius = (elements.semiMajorAxisAU * systemScale).toFloat(),
-                        center = center,
-                        style = Stroke(width = 1f)
-                    )
-                }
-
-                // Draw Sun
-                drawCircle(
-                    color = Color(0xFFFFCC33),
-                    radius = 12f,
-                    center = center
-                )
-
-                // Draw Planets using Kepler Math
-                SolarSystemLogic.PLANET_DATA.keys.forEach { name ->
-                    if (name == "sun" || name == "earth_moon") return@forEach
-                    
-                    val pos = SolarSystemLogic.calculatePosition(name, days, systemScale.toFloat())
-                    
-                    // We map pos.x and pos.z to our 2D portal coordinates (Top-down view)
-                    drawCircle(
-                        color = Color.White,
-                        radius = 4f,
-                        center = Offset(center.x + pos.x, center.y + pos.z)
-                    )
-                    
-                    // Optional: Label
-                    // (Draw logic for text in Canvas is omitted for brevity, 
-                    // but we can add small dot markers)
-                }
-            }
+            AndroidView(
+                factory = { ctx ->
+                    CelestialRenderer(ctx)
+                },
+                update = { view ->
+                    view.days = days
+                },
+                modifier = Modifier.fillMaxSize()
+            )
             
             Text(
                 text = "WINDOW INTO SPACE",
-                color = Color.White.copy(alpha = 0.3f),
+                color = Color.White.copy(alpha = 0.4f),
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 10.sp,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp)
