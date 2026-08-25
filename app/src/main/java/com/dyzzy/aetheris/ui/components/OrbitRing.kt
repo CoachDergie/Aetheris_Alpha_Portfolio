@@ -52,16 +52,14 @@ class OrbitRing(engine: Engine, planetName: String, orbitalScale: Float) {
             .build(engine)
         indexBuffer.setBuffer(engine, indexData)
 
-        val materialInstance = OrbitLineMaterial.getMaterialInstance()
+        val materialInstance = OrbitLineMaterial.getMaterialInstance(engine)
         
-        if (materialInstance != null) {
-            RenderableManager.Builder(1)
-                .boundingBox(Box(0f, 0f, 0f, 1000f, 1000f, 1000f))
-                .geometry(0, RenderableManager.PrimitiveType.LINE_STRIP, vertexBuffer, indexBuffer)
-                .material(0, materialInstance)
-                .culling(false)
-                .build(engine, entity)
-        }
+        RenderableManager.Builder(1)
+            .boundingBox(Box(0f, 0f, 0f, 1000f, 1000f, 1000f))
+            .geometry(0, RenderableManager.PrimitiveType.LINE_STRIP, vertexBuffer, indexBuffer)
+            .material(0, materialInstance)
+            .culling(false)
+            .build(engine, entity)
     }
 
     fun destroy(engine: Engine) {

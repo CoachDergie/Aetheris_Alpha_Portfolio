@@ -16,7 +16,7 @@ import com.google.android.filament.*
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.FilamentAsset
 import com.google.android.filament.gltfio.ResourceLoader
-import com.google.android.filament.gltfio.UbershaderProvider
+import com.google.android.filament.gltfio.MaterialProvider
 import com.google.android.filament.utils.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -89,7 +89,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             view!!.scene = scene
             view!!.camera = filamentCamera
             
-            assetLoader = AssetLoader(engine, UbershaderProvider(engine), engine.entityManager)
+            assetLoader = AssetLoader(engine, MaterialProvider(engine), engine.entityManager)
             resourceLoader = ResourceLoader(engine)
 
             swapChain = engine.createSwapChain(holder.surface)
@@ -98,7 +98,6 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
             }
             
-            OrbitLineMaterial.load(context, engine)
             setupInitialScene()
             android.view.Choreographer.getInstance().postFrameCallback(frameCallback)
         } catch (e: Exception) {
@@ -265,7 +264,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         filamentLock.lock()
         try {
             isDestroyed = true
-            android.view.Choreographer.getInstance().postFrameCallback(frameCallback)
+            android.view.Choreographer.getInstance().removeFrameCallback(frameCallback)
             sensorManager.unregisterListener(this)
             val engine = engine ?: return
             assetLoader?.destroy()
