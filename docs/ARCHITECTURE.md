@@ -50,29 +50,9 @@ Jetpack XR equivalents.
 
 ## Loft environment & "Window into Space" Orrery
 
-**Finding:** arbitrary 3D entities (`Entity.create` with a `Mesh` component) cannot be spawned
-directly into Meta Horizon Home ("Loft," per our own definition below). Home only supports placing 2D
-panels and Home-specific integrations — not free 3D geometry. A full 3D scene requires the user to be
-inside the app's own immersive session (a launched immersive/OpenXR activity), not the shared system
-Home space.
+Use:
 
-**Planned workaround: a "window into space" panel.** Since the solar system can't be placed as free 3D
-geometry directly into Home, render it as a 2D panel using a standalone Filament 3D renderer view.
-We are using an **Orrery Approach** for rendering. True 1:1 scale (linear AU distance and true planetary radius)
-renders most planets as invisible sub-pixels or pushes them meters away, ruining readability. 
-Instead, the Orrery scaling compresses distance non-linearly (logarithmic or fixed tiers) and scales planetary meshes purely for readability and visual balance (a "gaze-able view"), ensuring the solar system operates as a comprehensible, legible instrument rather than an empty void.
-
-Relevant doc pages to confirm the exact current API/technique against before implementing — do not
-assume "stereographic window" matches Meta's own terminology until checked against these:
-- **Layer and mesh rendering modes** (layers vs. mesh rendering, blend modes, feathering)
-- **Compositor layers**
-- **Hybrid apps overview** (2D panel + immersive OpenXR activity split — this window panel and the
-  full immersive solar system are likely two different activity types working together, per the
-  Platform target section above)
-- **Passthrough** (only relevant if the window should reveal real passthrough rather than a rendered
-  scene)
-
-This is planned, not yet implemented — see Known Gaps below.
+@docs/AETHERIS_ORRERY_DESIGN_DOC.md
 
 ## Runtime layers
 
