@@ -6,17 +6,50 @@ export const ZODIAC_SIGNS = [
   'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
+const PLANET_THEMES: Record<string, string> = {
+  Sun: "core vitality and self-expression",
+  Moon: "emotional needs and intuition",
+  Mars: "drive, action, and boundaries",
+  Mercury: "communication and mental clarity",
+  Jupiter: "growth, optimism, and abundance",
+  Venus: "relationships, harmony, and self-worth",
+  Saturn: "discipline, structure, and responsibility",
+  Uranus: "innovation, authenticity, and change",
+  Neptune: "empathy, spirituality, and compassion",
+  Pluto: "deep transformation and psychological power",
+};
+
+export function generateAspectGuidance(p1: string, p2: string, aspectType: string): string {
+  const t1 = PLANET_THEMES[p1] || p1;
+  const t2 = PLANET_THEMES[p2] || p2;
+
+  switch (aspectType) {
+    case 'Conjunction':
+      return `Alignment of ${p1} and ${p2}. This fusion intensely concentrates your ${t1} alongside your ${t2}, requiring active focus to channel productively.`;
+    case 'Sextile':
+      return `${p1} Sextile ${p2}. An opportunity emerges connecting your ${t1} and ${t2}. This is favorable, but active work is required to make progress.`;
+    case 'Square':
+      return `Tension between ${p1} and ${p2}. This creates noticeable friction between your ${t1} and ${t2}. Use this discomfort as a catalyst for active personal growth.`;
+    case 'Trine':
+      return `${p1} Trine ${p2}. A natural alignment smoothly bridging your ${t1} with your ${t2}. This typically represents an automatic blessing and harmony.`;
+    case 'Opposition':
+      return `${p1} opposes ${p2}. You are pulled between ${t1} and ${t2}. This polarity requires deep discipline to balance. It is a good time to be guarded mentally.`;
+    default:
+      return `Interaction between ${p1} and ${p2}.`;
+  }
+}
+
 export const QLIPHOTIC_SPHERES: Record<string, { sphere: string; ruler: string; signature: string; element: string }> = {
-  Sun: { sphere: 'Thagirion (The Disputers)', ruler: 'Belphegor', signature: 'Black Sun / Solar Will', element: 'Fire' },
-  Moon: { sphere: 'Gamaliel (The Obscene Ones)', ruler: 'Lilith', signature: 'Lunar Abyss & Astral Tide', element: 'Water' },
-  Mars: { sphere: 'Golachab (The Burning Ones)', ruler: 'Asmodeus', signature: 'Martial Fury & Iron Might', element: 'Fire' },
-  Mercury: { sphere: 'Samael (The Poison of God)', ruler: 'Adrammelech', signature: 'Venomous Intellect & Cunning', element: 'Air' },
-  Jupiter: { sphere: 'Gha\'agsheblah (The Smiters)', ruler: 'Astaroth', signature: 'Devouring Expansion & Tyranny', element: 'Water' },
-  Venus: { sphere: 'A\'arab Zaraq (The Ravens of Dispersion)', ruler: 'Baal', signature: 'Carnal Passion & Strife', element: 'Earth' },
-  Saturn: { sphere: 'Satariel (The Concealers)', ruler: 'Lucifuge Rofocale', signature: 'Cosmic Entropy & Deep Silence', element: 'Earth' },
-  Uranus: { sphere: 'Ghagiel (The Hinderers)', ruler: 'Beelzebub', signature: 'Chaotic Lightning & Disruption', element: 'Air' },
-  Neptune: { sphere: 'Thaumiel (The Twin Gods)', ruler: 'Satan & Moloch', signature: 'Primordial Dual Void', element: 'Water' },
-  Pluto: { sphere: 'Daath / The Abyss (Choronzon)', ruler: 'Choronzon', signature: 'Trans-dimensional Metamorphosis', element: 'Ether' },
+  Sun: { sphere: 'Physical Wellness', ruler: 'Vitality', signature: 'Energy & Radiant Health', element: 'Fire' },
+  Moon: { sphere: 'Emotional Wellness', ruler: 'Intuition', signature: 'Emotional Balance & Flow', element: 'Water' },
+  Mars: { sphere: 'Occupational Wellness', ruler: 'Action', signature: 'Motivation & Drive', element: 'Fire' },
+  Mercury: { sphere: 'Intellectual Wellness', ruler: 'Communication', signature: 'Clarity & Sharpness', element: 'Air' },
+  Jupiter: { sphere: 'Spiritual Wellness', ruler: 'Growth', signature: 'Expansion & Abundance', element: 'Water' },
+  Venus: { sphere: 'Social Wellness', ruler: 'Harmony', signature: 'Connection & Relationships', element: 'Earth' },
+  Saturn: { sphere: 'Physical Wellness', ruler: 'Discipline', signature: 'Structure & Endurance', element: 'Earth' },
+  Uranus: { sphere: 'Mental Wellness', ruler: 'Innovation', signature: 'Creativity & Change', element: 'Air' },
+  Neptune: { sphere: 'Environmental Wellness', ruler: 'Empathy', signature: 'Connection to Nature', element: 'Water' },
+  Pluto: { sphere: 'Mental Wellness', ruler: 'Transformation', signature: 'Deep Personal Growth', element: 'Ether' },
 };
 
 /** Calculate moon phase accurately based on reference epoch */
@@ -30,32 +63,32 @@ export function calculateLunarPhase(date: Date = new Date()): LunarPhaseInfo {
   const illumination = Math.round((0.5 * (1 - Math.cos(2 * Math.PI * phaseDecimal))) * 100);
 
   let phaseName = 'New Moon';
-  let esotericAffinity = 'Void Inception / Shadow Manifestation';
+  let esotericAffinity = 'New Beginnings & Goal Setting';
 
   if (phaseDecimal < 0.03 || phaseDecimal > 0.97) {
     phaseName = 'New Moon (Dark Moon)';
-    esotericAffinity = 'Hecate / Lilith Gateways & Deep Subconscious Channeling';
+    esotericAffinity = 'Deep Rest & Introspection';
   } else if (phaseDecimal < 0.22) {
     phaseName = 'Waxing Crescent';
-    esotericAffinity = 'Initiation of Dark Will & Barbell Iron Imbuing';
+    esotericAffinity = 'Building Habits & Gentle Momentum';
   } else if (phaseDecimal < 0.28) {
     phaseName = 'First Quarter';
-    esotericAffinity = 'Breakthrough Force & Strike Velocity Conditioning';
+    esotericAffinity = 'Overcoming Challenges & Action';
   } else if (phaseDecimal < 0.47) {
     phaseName = 'Waxing Gibbous';
-    esotericAffinity = 'Amplified Qi Cultivation & Muscle Hyper-density';
+    esotericAffinity = 'Refining Processes & Growth';
   } else if (phaseDecimal < 0.53) {
     phaseName = 'Full Moon';
-    esotericAffinity = 'Peak Astral Surge & Absolute Martial Climax';
+    esotericAffinity = 'Peak Energy & Celebration of Results';
   } else if (phaseDecimal < 0.72) {
     phaseName = 'Waning Gibbous (Disseminating)';
-    esotericAffinity = 'Transmutation of Residual Fatigue to Spirit Power';
+    esotericAffinity = 'Gratitude & Sharing Knowledge';
   } else if (phaseDecimal < 0.78) {
     phaseName = 'Last Quarter';
-    esotericAffinity = 'Decisive Severing of Weakness & Skeletal Alignment';
+    esotericAffinity = 'Releasing What No Longer Serves';
   } else {
     phaseName = 'Waning Crescent (Balsamic)';
-    esotericAffinity = 'Balsamic Dissolution into Primordial Qi Void';
+    esotericAffinity = 'Restoration & Healing';
   }
 
   // Next full and new moon approximations
@@ -97,16 +130,16 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
   const seed = (year * 365.25 + month * 30.6 + day + hour / 24 + lat * 0.05 + lon * 0.02);
 
   const planetConfigs = [
-    { name: 'Sun', symbol: '☉', speed: 0.9856, offset: 280, archetype: 'Radiant Solar Center / Inner Daemon' },
-    { name: 'Moon', symbol: '☽', speed: 13.176, offset: 40, archetype: 'Subconscious Abyss / Nocturnal Currents' },
-    { name: 'Mars', symbol: '♂', speed: 0.524, offset: 120, archetype: 'Martial Strike Vector / Raw Kinetic Drive' },
-    { name: 'Mercury', symbol: '☿', speed: 1.6, offset: 200, archetype: 'Cunning Intelligence / Neural Transmission' },
-    { name: 'Jupiter', symbol: '♃', speed: 0.083, offset: 310, archetype: 'Devouring Expansion / Astral Dominance' },
-    { name: 'Venus', symbol: '♀', speed: 1.2, offset: 15, archetype: 'Sensual Magnetism / Alchemical Binding' },
-    { name: 'Saturn', symbol: '♄', speed: 0.033, offset: 180, archetype: 'Iron Discipline / Heavy Skeletal Boundary' },
-    { name: 'Uranus', symbol: '♅', speed: 0.011, offset: 45, archetype: 'Lightning Blast / Sudden Biomechanical Shift' },
-    { name: 'Neptune', symbol: '♆', speed: 0.006, offset: 290, archetype: 'Dissolving Mist / Limitless Astral Tide' },
-    { name: 'Pluto', symbol: '♇', speed: 0.004, offset: 215, archetype: 'Chthonic Transmutation / Kundalini Undercurrent' },
+    { name: 'Sun', symbol: '☉', speed: 0.9856, offset: 280, archetype: 'Radiant Vitality & Core Strength' },
+    { name: 'Moon', symbol: '☽', speed: 13.176, offset: 40, archetype: 'Emotional Flow & Intuition' },
+    { name: 'Mars', symbol: '♂', speed: 0.524, offset: 120, archetype: 'Decisive Action & Motivation' },
+    { name: 'Mercury', symbol: '☿', speed: 1.6, offset: 200, archetype: 'Clear Communication & Learning' },
+    { name: 'Jupiter', symbol: '♃', speed: 0.083, offset: 310, archetype: 'Abundance & Spiritual Growth' },
+    { name: 'Venus', symbol: '♀', speed: 1.2, offset: 15, archetype: 'Social Harmony & Connection' },
+    { name: 'Saturn', symbol: '♄', speed: 0.033, offset: 180, archetype: 'Discipline & Enduring Structure' },
+    { name: 'Uranus', symbol: '♅', speed: 0.011, offset: 45, archetype: 'Innovation & Creative Change' },
+    { name: 'Neptune', symbol: '♆', speed: 0.006, offset: 290, archetype: 'Empathy & Environmental Awareness' },
+    { name: 'Pluto', symbol: '♇', speed: 0.004, offset: 215, archetype: 'Profound Transformation & Depth' },
   ];
 
   const bodies: CelestialBody[] = planetConfigs.map((p, idx) => {
@@ -125,8 +158,8 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
       minute,
       house,
       archetype: p.archetype,
-      qliphoticSphere: qlData?.sphere || 'Qliphotic Void',
-      darkSignature: qlData?.signature || 'Cosmic Resonance',
+      qliphoticSphere: qlData?.sphere || 'Wellness Dimension',
+      darkSignature: qlData?.signature || 'Positive Resonance',
       isRetrograde: (idx % 3 === 0 && p.name !== 'Sun' && p.name !== 'Moon')
     };
   });
@@ -168,7 +201,7 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
           aspectType: 'Conjunction',
           orb: Math.round(Math.abs(diff - 0) * 10) / 10,
           intensity: 'Extreme',
-          esotericMeaning: `${b1.name} fused with ${b2.name}: Concentrated occult kinetic vortex.`
+          esotericMeaning: generateAspectGuidance(b1.name, b2.name, 'Conjunction')
         });
       } else if (Math.abs(diff - 90) <= 7) {
         aspects.push({
@@ -177,7 +210,7 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
           aspectType: 'Square',
           orb: Math.round(Math.abs(diff - 90) * 10) / 10,
           intensity: 'High',
-          esotericMeaning: `${b1.name} Square ${b2.name}: High tension frictional friction powering raw martial strike leverage.`
+          esotericMeaning: generateAspectGuidance(b1.name, b2.name, 'Square')
         });
       } else if (Math.abs(diff - 180) <= 8) {
         aspects.push({
@@ -186,7 +219,7 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
           aspectType: 'Opposition',
           orb: Math.round(Math.abs(diff - 180) * 10) / 10,
           intensity: 'High',
-          esotericMeaning: `${b1.name} Opposing ${b2.name}: Polarized dual current demanding iron discipline to balance.`
+          esotericMeaning: generateAspectGuidance(b1.name, b2.name, 'Opposition')
         });
       } else if (Math.abs(diff - 120) <= 6) {
         aspects.push({
@@ -195,7 +228,7 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
           aspectType: 'Trine',
           orb: Math.round(Math.abs(diff - 120) * 10) / 10,
           intensity: 'Moderate',
-          esotericMeaning: `${b1.name} Trine ${b2.name}: Unhindered flow of internal Qi and instinctual timing.`
+          esotericMeaning: generateAspectGuidance(b1.name, b2.name, 'Trine')
         });
       } else if (Math.abs(diff - 60) <= 4) {
         aspects.push({
@@ -204,7 +237,7 @@ export function calculateNatalChart(birthDateStr: string, birthTimeStr: string, 
           aspectType: 'Sextile',
           orb: Math.round(Math.abs(diff - 60) * 10) / 10,
           intensity: 'Subtle',
-          esotericMeaning: `${b1.name} Sextile ${b2.name}: Tactical opportunity and neuromuscular synchronization.`
+          esotericMeaning: generateAspectGuidance(b1.name, b2.name, 'Sextile')
         });
       }
     }
@@ -217,8 +250,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Sunday',
     planet: 'Sun / Sorath / Belphegor',
-    barbarousFormula: 'IAO SABAO ARBATHIAO PHEKRO THERION',
-    invocationText: 'I invoke the Black Sun within the solar plexus. Let iron will ignite the sinews and harden the bone core.',
+    barbarousFormula: 'I am overflowing with boundless energy and radiant health.',
+    invocationText: 'I welcome the light of a new week. My body is strong, my mind is clear, and my spirit is bright.',
     focusQlipha: 'Thagirion (Beauty of the Abyss)',
     hermeticFormula: 'YHVH ELOAH V\'DAAT',
     hermeticSphere: 'Tiphereth (Beauty)',
@@ -227,8 +260,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Monday',
     planet: 'Moon / Lilith / Gamaliel',
-    barbarousFormula: 'LILITH ABISHA NAAMAH GAMALIEL TULPHAT',
-    invocationText: 'O Nocturnal Tide of the Silver Horn, wash over the nervous system. Transform instinctual perception into razor fluidity.',
+    barbarousFormula: 'I move with the fluid grace of the tides, trusting my inner wisdom.',
+    invocationText: 'I embrace the changing currents of life. I am adaptable, intuitive, and deeply connected to my true self.',
     focusQlipha: 'Gamaliel (Astral Dream Weaver)',
     hermeticFormula: 'SHADDAI EL CHAI',
     hermeticSphere: 'Yesod (Foundation)',
@@ -237,8 +270,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Tuesday',
     planet: 'Mars / Asmodeus / Golachab',
-    barbarousFormula: 'ZAZAS ZAZAS NASATANADA ZAZAS GOLACHAB BARBARON',
-    invocationText: 'Wrath of the Red Sphere, charge the 6-foot zinc bar with crushing explosive drive. No obstacle shall withstand this momentum.',
+    barbarousFormula: 'I am fearless, focused, and take decisive action towards my goals.',
+    invocationText: 'I channel my inner fire into productive momentum. Obstacles are merely stepping stones on my path to victory.',
     focusQlipha: 'Golachab (Flaming Destruction)',
     hermeticFormula: 'ELOHIM GIBOR',
     hermeticSphere: 'Geburah (Severity)',
@@ -247,8 +280,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Wednesday',
     planet: 'Mercury / Samael / Adrammelech',
-    barbarousFormula: 'TAPHATHARATH SAMAEL OROBAS THEUT BARUCH',
-    invocationText: 'Mercurial venom and rapid neural fire, sharpen hand trajectory and accelerate recovery return speed.',
+    barbarousFormula: 'My mind is sharp, my words are true, and my communication is clear.',
+    invocationText: 'I process information with lightning speed. I am present, perceptive, and articulate in all my interactions.',
     focusQlipha: 'Samael (Poison of Cunning Insight)',
     hermeticFormula: 'ELOHIM TZAQBAOTH',
     hermeticSphere: 'Hod (Glory)',
@@ -257,7 +290,7 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Thursday',
     planet: 'Jupiter / Astaroth / Gha\'agsheblah',
-    barbarousFormula: 'GHAAGSHEBLAH ASTAROTH BELIAL CHESED-TZADKIK',
+    barbarousFormula: 'I am abundant, successful, and open to limitless possibilities.',
     invocationText: 'Sovereign majesty and unstoppable mass, enlarge the structural kinetic envelope. My posture commands the cardinal quarters.',
     focusQlipha: 'Gha\'agsheblah (Devourer of Boundaries)',
     hermeticFormula: 'EL',
@@ -267,7 +300,7 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Friday',
     planet: 'Venus / Baal / A\'arab Zaraq',
-    barbarousFormula: 'ASTARTE BAAL-ZEPHON AARAB ZARAQ NEHESCH',
+    barbarousFormula: 'I am surrounded by love, beauty, and perfect balance.',
     invocationText: 'Primal harmony and serpentine sinew tension, weave the fascia into unbreakable organic armor.',
     focusQlipha: 'A\'arab Zaraq (Ravens of Dispersion)',
     hermeticFormula: 'YHVH TZAQBAOTH',
@@ -277,8 +310,8 @@ export const DAILY_INVOCATIONS: DailyInvocation[] = [
   {
     dayOfWeek: 'Saturday',
     planet: 'Saturn / Lucifuge / Satariel',
-    barbarousFormula: 'AGIOS O KAPH SATARIEL CASSIEL MORTE ZODAC',
-    invocationText: 'Ancient stone of the abyss and solemn threshold, temper the skeletal structure like carbonized titanium.',
+    barbarousFormula: 'I am grounded, patient, and committed to my long-term mastery.',
+    invocationText: 'I build my life on a foundation of unshakeable discipline. Through consistent effort, I achieve enduring strength.',
     focusQlipha: 'Satariel (The Deep Concealer)',
     hermeticFormula: 'YHVH ELOHIM',
     hermeticSphere: 'Binah (Understanding)',

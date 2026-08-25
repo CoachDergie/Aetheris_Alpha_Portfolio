@@ -39,7 +39,7 @@ export const NatalCalibrateModal: React.FC<NatalCalibrateModalProps> = ({
       birthDate: '1996-10-31',
       birthTime: '03:33',
       birthCity: 'Alexandria',
-      birthCountry: 'Occult Coordinates',
+      birthCountry: 'Esoteric Coordinates',
       latitude: 31.2001,
       longitude: 29.9187,
     });
@@ -167,7 +167,7 @@ export const NatalCalibrateModal: React.FC<NatalCalibrateModalProps> = ({
               onClick={handleSetAlexandriaPreset}
               className="text-[10px] sm:text-xs text-cyan-400 hover:text-cyan-300 underline font-mono"
             >
-              Reset to Occult Default (Alexandria)
+              Reset to Esoteric Default (Alexandria)
             </button>
           </div>
 

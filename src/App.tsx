@@ -16,7 +16,7 @@ import {
   EnvironmentViewMode,
 } from './types';
 import { calculateNatalChart, calculateLunarPhase } from './utils/astronomy';
-import { INITIAL_GRIMOIRE_LIBRARY, synthesizeDiscoveryFromQuery } from './utils/incantationDiscovery';
+import { INITIAL_JOURNAL_ENTRIES, synthesizeDiscoveryFromQuery } from './utils/incantationDiscovery';
 import { generatePunchTelemetry, soundEffects } from './utils/telemetry';
 import { saveToEncryptedVault, loadFromEncryptedVault } from './utils/crypto';
 import { generateAstrologyPdfReport } from './utils/pdfExport';
@@ -29,7 +29,7 @@ import { CombatTelemetryPanel } from './components/CombatTelemetryPanel';
 import { QiGongBarbellPanel } from './components/QiGongBarbellPanel';
 import { TarotPanel } from './components/TarotPanel';
 import { MeditationPanel } from './components/MeditationPanel';
-import { GrimoirePanel } from './components/GrimoirePanel';
+import { JournalPanel } from './components/JournalPanel';
 import { DiscordShareModal } from './components/DiscordShareModal';
 import { SearchReferenceModal } from './components/SearchReferenceModal';
 import { ContentWarningModal } from "./components/ContentWarningModal";
@@ -39,7 +39,7 @@ const DEFAULT_NATAL: NatalData = {
   birthDate: '1996-10-31',
   birthTime: '03:33',
   birthCity: 'Alexandria',
-  birthCountry: 'Occult Coordinates',
+  birthCountry: 'Esoteric Coordinates',
   latitude: 31.2001,
   longitude: 29.9187,
 };
@@ -84,8 +84,7 @@ export default function App() {
   // User Natal & Telemetry State
   const [natal, setNatal] = useState<NatalData>(DEFAULT_NATAL);
   const [session, setSession] = useState<QiGongBarbellSession>(DEFAULT_BARBELL_SESSION);
-  const [grimoire, setGrimoire] = useState<DiscoveredIncantation[]>(INITIAL_GRIMOIRE_LIBRARY);
-  const [activeDailyInvocation, setActiveDailyInvocation] = useState<DiscoveredIncantation>(INITIAL_GRIMOIRE_LIBRARY[0]);
+  const [journal, setJournal] = useState<DiscoveredIncantation[]>(INITIAL_JOURNAL_ENTRIES);
   const [punches, setPunches] = useState<PunchTelemetry[]>([
     {
       id: 'p_init_1',
@@ -117,15 +116,13 @@ export default function App() {
       natal: NatalData;
       session: QiGongBarbellSession;
       punches: PunchTelemetry[];
-      grimoire: DiscoveredIncantation[];
-      activeDailyInvocation: DiscoveredIncantation;
+      journal: DiscoveredIncantation[];
     }>().then((vaultData) => {
       if (vaultData) {
         if (vaultData.natal) setNatal(vaultData.natal);
         if (vaultData.session) setSession(vaultData.session);
         if (vaultData.punches && vaultData.punches.length > 0) setPunches(vaultData.punches);
-        if (vaultData.grimoire && vaultData.grimoire.length > 0) setGrimoire(vaultData.grimoire);
-        if (vaultData.activeDailyInvocation) setActiveDailyInvocation(vaultData.activeDailyInvocation);
+        if (vaultData.journal && vaultData.journal.length > 0) setJournal(vaultData.journal);
       }
     });
   }, []);
@@ -133,10 +130,10 @@ export default function App() {
   // Save to encrypted vault on state update
   useEffect(() => {
     const timer = setTimeout(() => {
-      saveToEncryptedVault({ natal, session, punches, grimoire, activeDailyInvocation });
+      saveToEncryptedVault({ natal, session, punches, journal });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [natal, session, punches, grimoire, activeDailyInvocation]);
+  }, [natal, session, punches, journal]);
 
   // Calculate live astronomy, lunar vectors, and transits
   const lunar = useMemo(() => calculateLunarPhase(new Date()), []);
@@ -157,7 +154,7 @@ export default function App() {
       midheaven,
       punches,
       session,
-      activeDailyInvocation
+      journal.length > 0 ? journal[0] : null // provide first entry if exists as fallback
     );
 
     confetti({
@@ -166,22 +163,25 @@ export default function App() {
       origin: { y: 0.8 },
       colors: ['#00e5ff', '#ffd700', '#ffffff', '#34d399'],
     });
-  }, [natal, bodies, aspects, lunar, ascendant, midheaven, punches, session, activeDailyInvocation]);
+  }, [natal, bodies, aspects, lunar, ascendant, midheaven, punches, session, journal]);
 
   const handleDiscoverNewIncantation = useCallback((promptQuery?: string) => {
     const queryToUse = promptQuery || `${bodies[0]?.name || 'Sun'} in ${bodies[0]?.sign || 'Scorpio'} ${aspects[0]?.aspectType || 'Square'}`;
     const newInc = synthesizeDiscoveryFromQuery(queryToUse);
-    setGrimoire((prev) => [newInc, ...prev]);
-    setActiveDailyInvocation(newInc);
+    setJournal((prev) => [newInc, ...prev]);
     soundEffects.playHolographicChime(963);
   }, [bodies, aspects]);
 
-  const handleAddDirectToGrimoire = useCallback((newInc: DiscoveredIncantation) => {
-    setGrimoire((prev) => {
+  const handleAddDirectToJournal = useCallback((newInc: DiscoveredIncantation) => {
+    setJournal((prev) => {
       if (prev.some((item) => item.id === newInc.id)) return prev;
       return [newInc, ...prev];
     });
-    setActiveDailyInvocation(newInc);
+  }, []);
+
+  const handleDeleteEntry = useCallback((id: string) => {
+    setJournal((prev) => prev.filter((entry) => entry.id !== id));
+    soundEffects.playHolographicChime(852);
   }, []);
 
   return (
@@ -263,12 +263,11 @@ export default function App() {
         )}
 
         {currentTab === 'occult' && (
-          <GrimoirePanel
-            grimoire={grimoire}
-            setGrimoire={setGrimoire}
-            activeDailyInvocation={activeDailyInvocation}
-            setActiveDailyInvocation={setActiveDailyInvocation}
+          <JournalPanel
+            journal={journal}
+            setJournal={setJournal}
             onDiscoverNew={handleDiscoverNewIncantation}
+            onDeleteEntry={handleDeleteEntry}
           />
         )}
       </main>
@@ -293,11 +292,11 @@ export default function App() {
         session={session}
       />
 
-      {/* 5. Occult & Martial Search Reference Modal */}
+      {/* 5. Esoteric & Martial Search Reference Modal */}
       <SearchReferenceModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        onAddToGrimoire={handleAddDirectToGrimoire}
+        onAddToJournal={handleAddDirectToJournal}
       />
       <ContentWarningModal isOpen={showWarning} onAccept={handleAcceptWarning} />
     </MetaQuestEnvironment>

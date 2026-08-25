@@ -102,7 +102,7 @@ export const PassthroughBackground: React.FC<PassthroughBackgroundProps> = ({
                 'radial-gradient(circle at 20% 30%, rgba(255, 69, 0, 0.15) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.25) 0%, transparent 45%)',
             }}
           />
-          {/* Subtle occult sacred geometry watermark */}
+          {/* Subtle esoteric sacred geometry watermark */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
         </>
       )}

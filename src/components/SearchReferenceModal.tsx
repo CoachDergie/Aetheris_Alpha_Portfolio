@@ -8,13 +8,13 @@ import { soundEffects } from '../utils/telemetry';
 interface SearchReferenceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddToGrimoire: (incantation: DiscoveredIncantation) => void;
+  onAddToJournal: (incantation: DiscoveredIncantation) => void;
 }
 
 export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
   isOpen,
   onClose,
-  onAddToGrimoire,
+  onAddToJournal,
 }) => {
   const { t, tradition } = useTradition();
 
@@ -43,7 +43,7 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
 
   const handleSelectTopic = (topic: typeof curatedTopics[0]) => {
     const synthesized = synthesizeDiscoveryFromQuery(`${topic.title} ${topic.planet}`);
-    onAddToGrimoire(synthesized);
+    onAddToJournal(synthesized);
     soundEffects.playHolographicChime(963);
     onClose();
   };
@@ -55,7 +55,7 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
           <div className="flex items-center gap-2">
             <Compass className="w-4 h-4 text-cyan-400" />
             <h3 className="text-sm font-black text-white uppercase tracking-wider">
-              OCCULT & MARTIAL CODEX
+              ESOTERIC & MARTIAL CODEX
             </h3>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white p-1 rounded-lg">
@@ -69,7 +69,7 @@ export const SearchReferenceModal: React.FC<SearchReferenceModalProps> = ({
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search esoteric systems, barbarous names, martial forms..."
+              placeholder="Search esoteric systems, affirmations, martial forms..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-[#161B26] border border-[#2E3B57] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder-gray-500"

@@ -118,7 +118,7 @@ export const JournalSection: React.FC = () => {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-black font-mono text-[#ffd700] uppercase tracking-wider flex items-center gap-2">
           <BookOpen className="w-4 h-4" />
-          PERSONAL GRIMOIRE / JOURNAL
+          PERSONAL JOURNAL
         </h3>
       </div>
 

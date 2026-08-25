@@ -606,7 +606,7 @@ export const MeditationPanel: React.FC = () => {
       <div className="space-y-1 min-w-0">
         <div className="flex items-center justify-center gap-2">
           <h2 className="text-base sm:text-lg font-black font-mono tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] truncate">
-            🧘 OCCULT RESPIRATION PACER
+            🧘 ESOTERIC RESPIRATION PACER
           </h2>
         </div>
         <p className="text-[10px] sm:text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider truncate">

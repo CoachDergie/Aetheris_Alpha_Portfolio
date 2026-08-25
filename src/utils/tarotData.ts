@@ -59,7 +59,7 @@ export const TAROT_DECK: TarotCard[] = [
     name: 'The Hierophant',
     imagePath: '05-TheHierophant.png',
     suit: 'Major',
-    uprightMeaning: 'Esoteric lineage transmission, traditional occult discipline, keys of the mysteries.',
+    uprightMeaning: 'Esoteric lineage transmission, traditional esoteric discipline, keys of the mysteries.',
     reversedMeaning: 'Dogma, blind orthodoxy, spiritual rebellion, obsolete rituals.',
     associatedPlanetOrSign: 'Taurus',
     glyph: '♉',

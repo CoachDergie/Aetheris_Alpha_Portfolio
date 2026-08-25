@@ -35,7 +35,7 @@ export const MetaQuestEnvironment: React.FC<MetaQuestEnvironmentProps> = ({
       <div className="w-full bg-[#131722] border-b border-[#263148] flex items-center justify-between px-2 sm:px-3 py-1 text-[9px] sm:text-[10px] font-mono select-none shrink-0 min-w-0">
         <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 truncate">
           <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00e5ff] shadow-[0_0_8px_#00e5ff] shrink-0"></span>
-          <span className="font-bold text-[#00e5ff] tracking-wider truncate">HORIZON OS // OCCULT HUD</span>
+          <span className="font-bold text-[#00e5ff] tracking-wider truncate">HORIZON OS // AETHERIS HUD</span>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">

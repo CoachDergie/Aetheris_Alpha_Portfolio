@@ -126,7 +126,7 @@ export const VoiceCommandController: React.FC<VoiceCommandControllerProps> = ({
       matched = true;
     } else if (text.includes('chant') || text.includes('invocation') || text.includes('true name') || text.includes('formula')) {
       onCommand('chant_invocation');
-      setCommandFeedback('Voice recognized: Reciting Daily Barbarous Formula.');
+      setCommandFeedback('Voice recognized: Reciting Daily Affirmation.');
       matched = true;
     } else if (text.includes('reset') || text.includes('recalibrate') || text.includes('zero')) {
       onCommand('recalibrate');

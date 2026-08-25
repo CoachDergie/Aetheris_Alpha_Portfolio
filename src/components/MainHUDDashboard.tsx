@@ -167,7 +167,7 @@ export const MainHUDDashboard: React.FC<MainHUDDashboardProps> = ({
             onClick={() => setTab('occult')}
             className="text-[9px] sm:text-[10px] font-mono text-cyan-400 hover:text-white uppercase flex items-center gap-0.5 font-bold shrink-0"
           >
-            <span>Grimoire</span>
+            <span>Journal</span>
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
