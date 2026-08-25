@@ -105,11 +105,6 @@
             <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
             <meta-data android:name="com.oculus.vrshell.supports_free_resizing" android:value="true" />
 
-            <layout
-                android:defaultWidth="800dp"
-                android:defaultHeight="720dp"
-                android:minWidth="640dp"
-                android:minHeight="480dp" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -131,11 +126,6 @@
             <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
             <meta-data android:name="com.oculus.vrshell.supports_free_resizing" android:value="true" />
 
-            <layout
-                android:defaultWidth="600dp"
-                android:defaultHeight="720dp"
-                android:minWidth="400dp"
-                android:minHeight="400dp" />
 
             <intent-filter>
                 <category android:name="com.oculus.intent.category.2D" />

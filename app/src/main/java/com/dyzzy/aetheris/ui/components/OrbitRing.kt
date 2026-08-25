@@ -52,7 +52,7 @@ class OrbitRing(engine: Engine, planetName: String, orbitalScale: Float) {
             .build(engine)
         indexBuffer.setBuffer(engine, indexData)
 
-        val materialInstance = OrbitLineMaterial.getMaterialInstance(engine)
+        val materialInstance = OrbitLineMaterial.getMaterialInstance()
         
         RenderableManager.Builder(1)
             .boundingBox(Box(0f, 0f, 0f, 1000f, 1000f, 1000f))

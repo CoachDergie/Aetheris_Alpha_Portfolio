@@ -1,7 +1,7 @@
 package com.dyzzy.aetheris.ui.components
 
 import android.content.Context
-import android.graphics.PixelFormat
+import android.graphics.SurfaceTexture
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -9,8 +9,8 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.SurfaceHolder
-import android.view.SurfaceView
+import android.view.Surface
+import android.view.TextureView
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.google.android.filament.*
 import com.google.android.filament.gltfio.AssetLoader
@@ -26,10 +26,10 @@ import kotlin.concurrent.thread
 import kotlin.math.*
 
 /**
- * Filament-based 3D renderer for the solar system "Window into space".
- * Optimized for Meta Quest 2D panel mode (Loft environment) with Analytic Rings.
+ * Filament-based 3D renderer for the solar system.
+ * Refactored to TextureView to ensure clean buffer resizing in Meta Quest Panel mode.
  */
-class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.Callback, SensorEventListener {
+class CelestialRenderer(context: Context) : TextureView(context), TextureView.SurfaceTextureListener, SensorEventListener {
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -68,17 +68,17 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
     }
 
     init {
-        holder.addCallback(this)
-        setZOrderMediaOverlay(true)
-        holder.setFormat(PixelFormat.TRANSLUCENT)
+        surfaceTextureListener = this
+        isOpaque = true
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d("Aetheris", "CelestialRenderer: Surface created")
+    override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
+        Log.d("Aetheris", "CelestialRenderer: Surface texture available ($width x $height)")
         filamentLock.lock()
         try {
             isDestroyed = false
-            val engine = Engine.create(Engine.Backend.VULKAN)
+            // Explicit OpenGL backend for maximum Adreno stability
+            val engine = Engine.create(Engine.Backend.OPENGL)
             this.engine = engine
             
             renderer = engine.createRenderer()
@@ -88,17 +88,26 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             
             view!!.scene = scene
             view!!.camera = filamentCamera
+            view!!.viewport = Viewport(0, 0, width, height)
+            
+            // Disable heavy features for mobile driver stability
+            view!!.setShadowingEnabled(false)
+            view!!.setPostProcessingEnabled(false)
             
             assetLoader = AssetLoader(engine, UbershaderProvider(engine), engine.entityManager)
             resourceLoader = ResourceLoader(engine)
 
-            swapChain = engine.createSwapChain(holder.surface)
+            surfaceTexture.setDefaultBufferSize(width, height)
+            swapChain = engine.createSwapChain(Surface(surfaceTexture))
             
             rotationSensor?.let {
                 sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
             }
             
+            OrbitLineMaterial.init(context, engine)
             setupInitialScene()
+            updateCamera(width, height, 0f, 0f)
+            
             android.view.Choreographer.getInstance().postFrameCallback(frameCallback)
         } catch (e: Exception) {
             Log.e("Aetheris", "CelestialRenderer: Initialization failed", e)
@@ -107,29 +116,79 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         }
     }
 
+    override fun onSurfaceTextureSizeChanged(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
+        filamentLock.lock()
+        try {
+            val e = engine ?: return
+            
+            // Resolution 1: EGL Surface sync
+            surfaceTexture.setDefaultBufferSize(width, height)
+            
+            // Resolution 2: Explicit Viewport sync
+            view?.viewport = Viewport(0, 0, width, height)
+            
+            // Recreate SwapChain to match new buffer dimensions
+            swapChain?.let { e.destroySwapChain(it) }
+            swapChain = e.createSwapChain(Surface(surfaceTexture))
+            
+            // Immediately update camera projection
+            updateCamera(width, height, headOffsetX, headOffsetY)
+            
+            Log.d("Aetheris", "CelestialRenderer: Resized to $width x $height")
+        } finally {
+            filamentLock.unlock()
+        }
+    }
+
+    override fun onSurfaceTextureDestroyed(surfaceTexture: SurfaceTexture): Boolean {
+        filamentLock.lock()
+        try {
+            isDestroyed = true
+            android.view.Choreographer.getInstance().removeFrameCallback(frameCallback)
+            sensorManager.unregisterListener(this)
+            
+            val e = engine ?: return true
+            assetLoader?.destroy()
+            resourceLoader?.destroy()
+            filamentCamera?.let { e.destroyEntity(it.entity) }
+            view?.let { e.destroyView(it) }
+            orbitRings.values.forEach { it.destroy(e) }
+            orbitRings.clear()
+            
+            scene?.let {
+                it.skybox?.let { sky -> e.destroySkybox(sky) }
+                it.indirectLight?.let { ibl -> e.destroyIndirectLight(ibl) }
+                e.destroyScene(it)
+            }
+            
+            renderer?.let { e.destroyRenderer(it) }
+            swapChain?.let { e.destroySwapChain(it) }
+            e.destroy()
+            
+            engine = null
+            renderer = null
+            scene = null
+            view = null
+            filamentCamera = null
+        } finally {
+            filamentLock.unlock()
+        }
+        return true
+    }
+
+    override fun onSurfaceTextureUpdated(surfaceTexture: SurfaceTexture) {}
+
     private fun setupInitialScene() {
         val engine = engine ?: return
         val scene = scene ?: return
 
-        // Space Skybox - Dark Cosmic Navy
         val skybox = Skybox.Builder().color(0.001f, 0.001f, 0.005f, 1.0f).build(engine)
         scene.skybox = skybox
 
-        // Lighting
-        val light1 = engine.entityManager.create()
-        LightManager.Builder(LightManager.Type.DIRECTIONAL)
-            .color(1.0f, 1.0f, 1.0f)
-            .intensity(250000.0f)
-            .direction(0.5f, -0.5f, -1.0f)
-            .castShadows(true)
-            .build(engine, light1)
-        scene.addEntity(light1)
-
-        val ibl = IndirectLight.Builder().intensity(40000.0f).build(engine)
+        val ibl = IndirectLight.Builder().intensity(50000.0f).build(engine)
         scene.indirectLight = ibl
 
         startBackgroundAssetLoad()
-        updateCamera(0f, 0f)
     }
 
     private fun startBackgroundAssetLoad() {
@@ -150,16 +209,19 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                                 val asset = assetLoader!!.createAsset(buffer)
                                 if (asset != null) {
                                     resourceLoader?.loadResources(asset)
-                                    scene?.addEntities(asset.entities)
+                                    scene?.addEntities(asset.renderableEntities)
                                     if (name == "sun") {
                                         sunAsset = asset
                                     } else {
                                         planetAssets[name] = asset
-                                        val ring = OrbitRing(e, name, 18.0f)
-                                        orbitRings[name] = ring
-                                        scene?.addEntity(ring.entity)
+                                        try {
+                                            val ring = OrbitRing(e, name, 18.0f)
+                                            orbitRings[name] = ring
+                                            scene?.addEntity(ring.entity)
+                                        } catch (err: Exception) {
+                                            Log.w("Aetheris", "Could not create ring for $name", err)
+                                        }
                                     }
-                                    Log.d("Aetheris", "CelestialRenderer: Added $name")
                                 }
                             }
                         } finally { filamentLock.unlock() }
@@ -177,9 +239,8 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val renderer = renderer ?: return
             val swapChain = swapChain ?: return
             val view = view ?: return
-            val camera = filamentCamera ?: return
 
-            updateCamera(headOffsetX, headOffsetY)
+            updateCamera(width, height, headOffsetX, headOffsetY)
 
             val daysLocal = days
             val orbitalScale = 18.0f 
@@ -187,14 +248,12 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val sunScale = 0.02f     
             
             val tm = engine.transformManager
-
             val systemTransform = FloatArray(16).apply {
                 android.opengl.Matrix.setIdentityM(this, 0)
                 android.opengl.Matrix.translateM(this, 0, 0f, 1.5f, 0f)
                 android.opengl.Matrix.rotateM(this, 0, -45f, 1f, 0f, 0f)
             }
 
-            // Update Sun
             sunAsset?.let { asset ->
                 val instance = tm.getInstance(asset.root)
                 if (instance != 0) {
@@ -205,13 +264,11 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 }
             }
 
-            // Update Orbits
-            orbitRings.forEach { (name, ring) ->
+            orbitRings.forEach { (_, ring) ->
                 val instance = tm.getInstance(ring.entity)
                 if (instance != 0) tm.setTransform(instance, systemTransform)
             }
 
-            // Update Planets
             planetAssets.forEach { (name, asset) ->
                 val posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
                 var finalMeshScale = baseMeshScale
@@ -220,7 +277,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 when(name) {
                     "earth" -> {
                         finalMeshScale = baseMeshScale * 8.0f 
-                        yOffset = 3.0f // Elevated Earth
+                        yOffset = 3.0f
                     }
                     "jupiter", "saturn" -> finalMeshScale = baseMeshScale * 1.5f
                     else -> finalMeshScale = baseMeshScale * 3.0f
@@ -244,44 +301,15 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         } finally { filamentLock.unlock() }
     }
 
-    private fun updateCamera(headOffsetX: Float, headOffsetY: Float) {
+    private fun updateCamera(w: Int, h: Int, headOffsetX: Float, headOffsetY: Float) {
         val cam = filamentCamera ?: return
         val eyeX = headOffsetX * 15.0f
         val eyeY = 25.0f + headOffsetY * 10.0f
         val eyeZ = 20.0f
         
         cam.lookAt(eyeX.toDouble(), eyeY.toDouble(), eyeZ.toDouble(), 0.0, 1.5, 0.0, 0.0, 1.0, 0.0)
-        val aspect = if (width > 0 && height > 0) width.toDouble() / height.toDouble() else 1.0
+        val aspect = if (w > 0 && h > 0) w.toDouble() / h.toDouble() else 1.0
         cam.setProjection(65.0, aspect, 0.1, 10000.0, Camera.Fov.VERTICAL)
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        filamentLock.lock()
-        try { view?.viewport = Viewport(0, 0, width, height) } finally { filamentLock.unlock() }
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        filamentLock.lock()
-        try {
-            isDestroyed = true
-            android.view.Choreographer.getInstance().removeFrameCallback(frameCallback)
-            sensorManager.unregisterListener(this)
-            val engine = engine ?: return
-            assetLoader?.destroy()
-            resourceLoader?.destroy()
-            filamentCamera?.let { engine.destroyEntity(it.entity) }
-            view?.let { engine.destroyView(it) }
-            orbitRings.values.forEach { it.destroy(engine) }
-            orbitRings.clear()
-            scene?.let {
-                it.skybox?.let { sky -> engine.destroySkybox(sky) }
-                it.indirectLight?.let { ibl -> engine.destroyIndirectLight(ibl) }
-                engine.destroyScene(it)
-            }
-            renderer?.let { engine.destroyRenderer(it) }
-            swapChain?.let { engine.destroySwapChain(it) }
-            engine.destroy()
-        } finally { filamentLock.unlock() }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {

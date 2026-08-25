@@ -2,12 +2,13 @@ package com.dyzzy.aetheris
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.CelestialRenderer
 import com.google.android.filament.utils.Utils
@@ -27,7 +29,9 @@ import com.google.android.filament.utils.Utils
 class CelestialActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         Utils.init()
         setContent {
             AetherisTheme {
@@ -48,29 +52,31 @@ class CelestialActivity : ComponentActivity() {
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF070913)),
-            contentAlignment = Alignment.Center
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFF070913)
         ) {
-            AndroidView(
-                factory = { ctx ->
-                    CelestialRenderer(ctx)
-                },
-                update = { view ->
-                    view.days = daysSinceEpoch.doubleValue
-                },
+            Box(
                 modifier = Modifier.fillMaxSize()
-            )
-            
-            Text(
-                text = "WINDOW INTO SPACE",
-                color = Color.White.copy(alpha = 0.4f),
-                style = MaterialTheme.typography.labelSmall,
-                fontSize = 10.sp,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp)
-            )
+            ) {
+                AndroidView(
+                    factory = { ctx ->
+                        CelestialRenderer(ctx)
+                    },
+                    update = { view ->
+                        view.days = daysSinceEpoch.doubleValue
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+                
+                Text(
+                    text = "WINDOW INTO SPACE",
+                    color = Color.White.copy(alpha = 0.4f),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp)
+                )
+            }
         }
     }
 

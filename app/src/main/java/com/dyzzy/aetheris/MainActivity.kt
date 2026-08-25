@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
 import androidx.core.content.ContextCompat
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.NativeXRBridge
@@ -51,7 +53,9 @@ class MainActivity : ComponentActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // Initialize Filament once
         Utils.init()
@@ -85,8 +89,7 @@ class MainActivity : ComponentActivity() {
     fun MainHUD(xrBridge: NativeXRBridge) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF070913),
-            shape = RoundedCornerShape(16.dp)
+            color = Color(0xFF070913)
         ) {
             // LEFT PANEL ONLY: The Grimoire HUD (WebView)
             Box(

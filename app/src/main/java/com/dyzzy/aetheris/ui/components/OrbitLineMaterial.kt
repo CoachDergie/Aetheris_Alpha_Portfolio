@@ -1,26 +1,32 @@
 package com.dyzzy.aetheris.ui.components
 
+import android.content.Context
 import com.google.android.filament.Engine
 import com.google.android.filament.Material
 import com.google.android.filament.MaterialInstance
-import com.google.android.filament.filamat.MaterialBuilder
 import java.nio.ByteBuffer
 
 object OrbitLineMaterial {
     private var material: Material? = null
 
-    fun getMaterialInstance(engine: Engine): MaterialInstance {
-        if (material == null) {
-            val materialBuilder = MaterialBuilder()
-            materialBuilder.name("OrbitLineMaterial")
-            materialBuilder.material("void material(inout MaterialInputs material) { prepareMaterial(material); material.baseColor.rgb = float3(0.5, 0.5, 0.6); material.baseColor.a = 0.3; }")
-            materialBuilder.shading(MaterialBuilder.Shading.UNLIT)
-            materialBuilder.blending(MaterialBuilder.BlendMode.TRANSPARENT)
-            val buffer = materialBuilder.build()
-            val byteBuffer = ByteBuffer.allocateDirect(buffer.size).put(buffer)
+    /**
+     * Loads the pre-compiled 'orbit.filamat' from assets.
+     * This avoids native MaterialBuilder compilation issues during build.
+     */
+    fun init(context: Context, engine: Engine) {
+        if (material != null) return
+        try {
+            val bytes = context.assets.open("materials/orbit.filamat").use { it.readBytes() }
+            val byteBuffer = ByteBuffer.allocateDirect(bytes.size).put(bytes)
             byteBuffer.flip()
-            material = Material.Builder().payload(byteBuffer, byteBuffer.limit()).build(engine)
+            material = Material.Builder().payload(byteBuffer, bytes.size).build(engine)
+        } catch (e: Exception) {
+            android.util.Log.e("Aetheris", "OrbitLineMaterial: Failed to load material", e)
         }
-        return material!!.createInstance()
+    }
+
+    fun getMaterialInstance(): MaterialInstance {
+        // Safe check in case init was skipped
+        return material?.createInstance() ?: throw IllegalStateException("OrbitLineMaterial not initialized")
     }
 }

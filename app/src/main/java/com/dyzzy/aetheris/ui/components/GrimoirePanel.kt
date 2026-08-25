@@ -23,6 +23,8 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
         modifier = modifier,
         factory = { context ->
             WebView(context).apply {
+                setBackgroundColor(0) // Transparent background
+                
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT

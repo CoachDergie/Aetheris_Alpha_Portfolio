@@ -142,6 +142,10 @@ Tracked here so scope/priority discussions have a concrete list instead of "it's
 | Gap | Status | Notes |
 |---|---|---|
 | Asset filenames must exactly match `PLANET_DATA` keys | Process note | `models/<key>.glb` for every key including `earth_moon`; see `ASSET_MANIFEST.md` |
+| 
+| 
+| Important
+To prevent future "Redundant Fixes," avoid using !! (not-null assertions) on the Engine or Scene handles. Always use safe calls (?.) or local immutable copies (val e = engine ?: return) inside the render loop to prevent asynchronous teardown crashes.
 
 ## Definitions
 

@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Aetheris" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
+    <!--
+      Primary theme for Aetheris.
+      Using Theme.Material3.Dark.NoActionBar as base for best Quest compatibility.
+      Force background to Cosmic Navy (#070913) to match our design.
+    -->
+    <style name="Theme.Aetheris" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#070913</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">false</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:navigationBarColor">#00000000</item>
     </style>
 </resources>
