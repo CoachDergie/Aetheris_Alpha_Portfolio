@@ -1,35 +1,65 @@
 package com.dyzzy.aetheris.ui.components
 
-import com.google.android.filament.Engine
-import com.google.android.filament.IndexBuffer
-import com.google.android.filament.RenderableManager
-import com.google.android.filament.VertexBuffer
-import com.google.android.filament.Box
+import com.google.android.filament.*
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.*
 
+/**
+ * Renders an orbital path as a true Keplerian ellipse with inclination.
+ * Uses adaptive segment counts for smoothness on outer/eccentric orbits.
+ */
 class OrbitRing(engine: Engine, planetName: String, orbitalScale: Float) {
     val entity: Int = engine.entityManager.create()
     private val vertexBuffer: VertexBuffer
     private val indexBuffer: IndexBuffer
-    private val segments = 128
 
     init {
+        val data = SolarSystemLogic.PLANET_DATA[planetName] ?: throw IllegalArgumentException("Unknown planet: $planetName")
+        
+        // Adaptive segment count based on orbital scale and eccentricity
+        val baseSegments = 128
+        val sizeMultiplier = (1.0 + data.semiMajorAxisAU * 0.5).coerceAtMost(3.0)
+        val eccentricityMultiplier = (1.0 + data.eccentricity * 4.0)
+        val segments = (baseSegments * sizeMultiplier * eccentricityMultiplier).toInt().coerceIn(64, 512)
+        
         val vertices = FloatArray((segments + 1) * 3)
         val indices = ShortArray(segments + 1)
         
-        val data = SolarSystemLogic.PLANET_DATA[planetName]
-        val dailyMotion = data?.dailyMotionDeg ?: 1.0
-        val period = 360.0 / dailyMotion
-        
         for (i in 0..segments) {
-            val fraction = i.toDouble() / segments.toDouble()
-            val day = fraction * period
-            val pos = SolarSystemLogic.calculatePosition(planetName, day, orbitalScale)
-            vertices[i * 3] = pos.x
-            vertices[i * 3 + 1] = pos.y
-            vertices[i * 3 + 2] = pos.z
+            val theta = 2.0 * PI * i / segments
+            
+            // Polar form of ellipse: r = a(1-e^2) / (1 + e*cos(theta))
+            val r = (data.semiMajorAxisAU * (1.0 - data.eccentricity * data.eccentricity)) / (1.0 + data.eccentricity * cos(theta))
+            
+            // Spatial compression applied to r to match planet positions
+            val compressedR = SolarSystemLogic.orbitalDistanceScale(r)
+            
+            // Orientation in orbital plane
+            val x_orb = compressedR * cos(theta)
+            val y_orb = compressedR * sin(theta)
+            
+            // Apply Inclination, LAN, and Argument of Perihelion
+            val inc = Math.toRadians(data.inclinationDeg)
+            val lan = Math.toRadians(data.longitudeOfAscendingNodeDeg)
+            val arg = Math.toRadians(data.argumentOfPerihelionDeg - data.longitudeOfAscendingNodeDeg)
+
+            val cosLAN = cos(lan)
+            val sinLAN = sin(lan)
+            val cosI = cos(inc)
+            val sinI = sin(inc)
+            val cosArg = cos(arg)
+            val sinArg = sin(arg)
+
+            val x = (cosLAN * cosArg - sinLAN * sinArg * cosI) * x_orb + (-cosLAN * sinArg - sinLAN * cosArg * cosI) * y_orb
+            val y = (sinLAN * cosArg + cosLAN * sinArg * cosI) * x_orb + (-sinLAN * sinArg + cosLAN * cosArg * cosI) * y_orb
+            val z = (sinArg * sinI) * x_orb + (cosArg * sinI) * y_orb
+
+            // Swapped Y/Z for Y-up XR rendering
+            vertices[i * 3] = (x * orbitalScale).toFloat()
+            vertices[i * 3 + 1] = (z * orbitalScale).toFloat()
+            vertices[i * 3 + 2] = (y * orbitalScale).toFloat()
             indices[i] = i.toShort()
         }
 

@@ -47,7 +47,8 @@ Jetpack XR equivalents.
 
 3. **What is your exact fallback protocol when the headset's webview isolated storage drops state during an out of memory event?**
    The WebView acts merely as a stateless UI presentation layer. The authoritative source of truth for the journal, telemetry, and active state is held in the native Android layer (e.g., via Room Database or native shared preferences). If the WebView is killed or drops its `localStorage` state during an OOM event, it re-initializes upon reload by requesting a complete state hydration payload from the NativeXRBridge. No user data is lost because the WebView's local storage is treated as a transient cache, not durable storage.
-
+   
+4. Always enforce modern EdgeToEdge parameters for any whole window to ensure that each window attempts to consume every available pixel on resize. This is usually a minor bug but often creates errors when windows attempt to draw a specific scale and standard android fallback is often a grey box artifact.
 ## Loft environment & "Window into Space" Orrery
 
 Use:

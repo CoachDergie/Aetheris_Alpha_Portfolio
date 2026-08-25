@@ -4,8 +4,7 @@ import kotlin.math.*
 
 /**
  * Logic for calculating planet positions using Keplerian orbital elements.
- * 
- * Orbital elements are approximated for J2000.
+ * Updated to include rotation data and compressed distance scaling for VR legibility.
  */
 object SolarSystemLogic {
 
@@ -16,7 +15,9 @@ object SolarSystemLogic {
         val longitudeOfAscendingNodeDeg: Double,
         val argumentOfPerihelionDeg: Double,
         val meanLongitudeDeg: Double,
-        val dailyMotionDeg: Double // Approximate degrees moved per day
+        val dailyMotionDeg: Double,
+        val axialTiltDeg: Float = 0f,
+        val rotationPeriodHours: Float = 24f // sidereal; negative for retrograde
     )
 
     data class Vector3(val x: Float, val y: Float, val z: Float)
@@ -38,17 +39,17 @@ object SolarSystemLogic {
     )
 
     val PLANET_DATA = mapOf(
-        "sun" to OrbitalElements(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-        "mercury" to OrbitalElements(0.3871, 0.2056, 7.005, 48.331, 77.456, 252.25, 4.092),
-        "venus" to OrbitalElements(0.7233, 0.0068, 3.3947, 76.680, 131.53, 181.98, 1.602),
-        "earth" to OrbitalElements(1.0000, 0.0167, 0.000, 0.0, 102.947, 100.46, 0.9856),
-        "mars" to OrbitalElements(1.5237, 0.0934, 1.850, 49.558, 336.04, 355.45, 0.524),
-        "jupiter" to OrbitalElements(5.2028, 0.0484, 1.303, 100.464, 14.753, 34.40, 0.0831),
-        "saturn" to OrbitalElements(9.5388, 0.0541, 2.489, 113.665, 92.431, 49.94, 0.0335),
-        "uranus" to OrbitalElements(19.1819, 0.0472, 0.773, 74.006, 170.96, 313.23, 0.0117),
-        "neptune" to OrbitalElements(30.0589, 0.0086, 1.770, 131.784, 44.971, 304.88, 0.0060),
-        "pluto" to OrbitalElements(39.482, 0.2488, 17.141, 110.303, 224.06, 238.93, 0.0040),
-        "earth_moon" to OrbitalElements(0.00257, 0.0549, 5.145, 125.122, 318.15, 135.27, 13.176) // Relative to Earth
+        "sun" to OrbitalElements(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 7.25f, 609.6f),
+        "mercury" to OrbitalElements(0.3871, 0.2056, 7.005, 48.331, 77.456, 252.25, 4.092, 0.034f, 1407.6f),
+        "venus" to OrbitalElements(0.7233, 0.0068, 3.3947, 76.680, 131.53, 181.98, 1.602, 177.3f, -5832.5f),
+        "earth" to OrbitalElements(1.0000, 0.0167, 0.000, 0.0, 102.947, 100.46, 0.9856, 23.44f, 23.934f),
+        "mars" to OrbitalElements(1.5237, 0.0934, 1.850, 49.558, 336.04, 355.45, 0.524, 25.19f, 24.623f),
+        "jupiter" to OrbitalElements(5.2028, 0.0484, 1.303, 100.464, 14.753, 34.40, 0.0831, 3.13f, 9.925f),
+        "saturn" to OrbitalElements(9.5388, 0.0541, 2.489, 113.665, 92.431, 49.94, 0.0335, 26.73f, 10.656f),
+        "uranus" to OrbitalElements(19.1819, 0.0472, 0.773, 74.006, 170.96, 313.23, 0.0117, 97.77f, -17.24f),
+        "neptune" to OrbitalElements(30.0589, 0.0086, 1.770, 131.784, 44.971, 304.88, 0.0060, 28.32f, 16.11f),
+        "pluto" to OrbitalElements(39.482, 0.2488, 17.141, 110.303, 224.06, 238.93, 0.0040, 122.5f, -153.3f),
+        "earth_moon" to OrbitalElements(0.00257, 0.0549, 5.145, 125.122, 318.15, 135.27, 13.176, 6.68f, 655.7f)
     )
 
     private fun solveKepler(M: Double, e: Double): Double {
@@ -63,20 +64,30 @@ object SolarSystemLogic {
     }
 
     /**
-     * Compresses real AU distances so inner planets remain distinct,
-     * but gas giants fall within a 2-3 meter radius in VR.
+     * Sqrt-compressed distance scale for VR legibility.
+     * Prevents inner planets from collapsing and outer planets from running off-panel.
      */
-    private fun compressDistance(au: Double): Double {
-        return if (au <= 1.55) {
-            au // Leave inner planets up to Mars mostly linear
-        } else {
-            // Logarithmic compression for outer planets
-            // Math.log10(Jupiter's 5.2 - 1.55 + 1) * 1.5 = ~2.5 AU (scaled down)
-            1.55 + log10(au - 1.55 + 1.0) * 1.5
+    fun orbitalDistanceScale(au: Double): Double {
+        return if (au <= 1.0) au else 1.0 + sqrt(au - 1.0) * 1.5
+    }
+
+    /**
+     * Size scale chosen for visual legibility in a 1-meter panel.
+     */
+    fun planetRadiusScale(planetName: String): Float {
+        return when (planetName) {
+            "sun" -> 0.12f
+            "jupiter" -> 0.055f
+            "saturn" -> 0.048f
+            "earth", "venus" -> 0.024f
+            "mars" -> 0.018f
+            "mercury", "pluto" -> 0.012f
+            "earth_moon" -> 0.008f
+            else -> 0.02f
         }
     }
 
-    fun calculatePositionInfo(planetName: String, daysSinceEpoch: Double, scale: Float = 1.0f): PlanetPosition {
+    fun calculatePositionInfo(planetName: String, daysSinceEpoch: Double, baseScale: Float = 1.0f): PlanetPosition {
         val elements = PLANET_DATA[planetName] ?: return PlanetPosition(planetName, Vector3(0f, 0f, 0f), 0.0)
         if (planetName == "sun") return PlanetPosition(planetName, Vector3(0f, 0f, 0f), 0.0)
 
@@ -105,12 +116,12 @@ object SolarSystemLogic {
 
         // Apply spatial compression
         val trueDistanceAU = sqrt(x * x + y * y + z * z)
-        val compressedDistance = compressDistance(trueDistanceAU)
+        val compressedDistance = orbitalDistanceScale(trueDistanceAU)
         val compressionRatio = if (trueDistanceAU > 0) compressedDistance / trueDistanceAU else 0.0
         
-        val cx = x * compressionRatio * scale
-        val cy = y * compressionRatio * scale
-        val cz = z * compressionRatio * scale
+        val cx = x * compressionRatio * baseScale
+        val cy = y * compressionRatio * baseScale
+        val cz = z * compressionRatio * baseScale
 
         // y/z swapped for Y-up XR rendering.
         return PlanetPosition(planetName, Vector3(cx.toFloat(), cz.toFloat(), cy.toFloat()), eclipticLongitudeDeg)
