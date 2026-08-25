@@ -16,7 +16,7 @@ import com.google.android.filament.*
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.FilamentAsset
 import com.google.android.filament.gltfio.ResourceLoader
-import com.google.android.filament.gltfio.MaterialProvider
+import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -78,7 +78,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         filamentLock.lock()
         try {
             isDestroyed = false
-            val engine = Engine.create()
+            val engine = Engine.create(Engine.Backend.VULKAN)
             this.engine = engine
             
             renderer = engine.createRenderer()
@@ -89,7 +89,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             view!!.scene = scene
             view!!.camera = filamentCamera
             
-            assetLoader = AssetLoader(engine, MaterialProvider(engine), engine.entityManager)
+            assetLoader = AssetLoader(engine, UbershaderProvider(engine), engine.entityManager)
             resourceLoader = ResourceLoader(engine)
 
             swapChain = engine.createSwapChain(holder.surface)

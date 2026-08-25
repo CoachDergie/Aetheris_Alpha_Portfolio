@@ -3,7 +3,7 @@ package com.dyzzy.aetheris.ui.components
 import com.google.android.filament.Engine
 import com.google.android.filament.Material
 import com.google.android.filament.MaterialInstance
-import com.google.android.filamat.MaterialBuilder
+import com.google.android.filament.filamat.MaterialBuilder
 import java.nio.ByteBuffer
 
 object OrbitLineMaterial {
@@ -16,7 +16,7 @@ object OrbitLineMaterial {
             materialBuilder.material("void material(inout MaterialInputs material) { prepareMaterial(material); material.baseColor.rgb = float3(0.5, 0.5, 0.6); material.baseColor.a = 0.3; }")
             materialBuilder.shading(MaterialBuilder.Shading.UNLIT)
             materialBuilder.blending(MaterialBuilder.BlendMode.TRANSPARENT)
-            val buffer = materialBuilder.build(engine.jobSystem)
+            val buffer = materialBuilder.build()
             val byteBuffer = ByteBuffer.allocateDirect(buffer.size).put(buffer)
             byteBuffer.flip()
             material = Material.Builder().payload(byteBuffer, byteBuffer.limit()).build(engine)
