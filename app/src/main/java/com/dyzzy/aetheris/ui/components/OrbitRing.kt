@@ -18,7 +18,10 @@ class OrbitRing(engine: Engine, planetName: String, orbitalScale: Float) {
     init {
         val vertices = FloatArray((segments + 1) * 3)
         val indices = ShortArray(segments + 1)
-        val period = SolarSystemLogic.PLANET_DATA[planetName]?.orbitalPeriod ?: 365.25
+        
+        val data = SolarSystemLogic.PLANET_DATA[planetName]
+        val dailyMotion = data?.dailyMotionDeg ?: 1.0
+        val period = 360.0 / dailyMotion
         
         for (i in 0..segments) {
             val fraction = i.toDouble() / segments.toDouble()
@@ -49,14 +52,16 @@ class OrbitRing(engine: Engine, planetName: String, orbitalScale: Float) {
             .build(engine)
         indexBuffer.setBuffer(engine, indexData)
 
-        val materialInstance = OrbitLineMaterial.getMaterialInstance(engine)
+        val materialInstance = OrbitLineMaterial.getMaterialInstance()
         
-        RenderableManager.Builder(1)
-            .boundingBox(Box(0f, 0f, 0f, 1000f, 1000f, 1000f))
-            .geometry(0, RenderableManager.PrimitiveType.LINE_STRIP, vertexBuffer, indexBuffer)
-            .material(0, materialInstance)
-            .culling(false)
-            .build(engine, entity)
+        if (materialInstance != null) {
+            RenderableManager.Builder(1)
+                .boundingBox(Box(0f, 0f, 0f, 1000f, 1000f, 1000f))
+                .geometry(0, RenderableManager.PrimitiveType.LINE_STRIP, vertexBuffer, indexBuffer)
+                .material(0, materialInstance)
+                .culling(false)
+                .build(engine, entity)
+        }
     }
 
     fun destroy(engine: Engine) {

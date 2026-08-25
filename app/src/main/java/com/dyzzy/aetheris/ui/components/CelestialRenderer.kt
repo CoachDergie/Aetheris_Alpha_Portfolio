@@ -27,8 +27,7 @@ import kotlin.math.*
 
 /**
  * Filament-based 3D renderer for the solar system "Window into space".
- * Optimized for Meta Quest 2D panel mode (Loft environment) with Analytic Depth.
- * Current State: Stability Rollback (Planets Only) for scale verification.
+ * Optimized for Meta Quest 2D panel mode (Loft environment) with Analytic Rings.
  */
 class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.Callback, SensorEventListener {
 
@@ -99,6 +98,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
             }
             
+            OrbitLineMaterial.load(context, engine)
             setupInitialScene()
             android.view.Choreographer.getInstance().postFrameCallback(frameCallback)
         } catch (e: Exception) {
@@ -146,7 +146,8 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                     mainHandler.post {
                         filamentLock.lock()
                         try {
-                            if (!isDestroyed && engine != null && assetLoader != null) {
+                            val e = engine
+                            if (!isDestroyed && e != null && assetLoader != null) {
                                 val asset = assetLoader!!.createAsset(buffer)
                                 if (asset != null) {
                                     resourceLoader?.loadResources(asset)
@@ -155,7 +156,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                                         sunAsset = asset
                                     } else {
                                         planetAssets[name] = asset
-                                        val ring = OrbitRing(engine, name, 18.0f)
+                                        val ring = OrbitRing(e, name, 18.0f)
                                         orbitRings[name] = ring
                                         scene?.addEntity(ring.entity)
                                     }
@@ -184,11 +185,10 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val daysLocal = days
             val orbitalScale = 18.0f 
             val baseMeshScale = 0.002f 
-            val sunScale = 0.015f // Sharp solar disc     
+            val sunScale = 0.02f     
             
             val tm = engine.transformManager
 
-            // Lean the entire system (Planets)
             val systemTransform = FloatArray(16).apply {
                 android.opengl.Matrix.setIdentityM(this, 0)
                 android.opengl.Matrix.translateM(this, 0, 0f, 1.5f, 0f)
@@ -206,7 +206,13 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 }
             }
 
-            // Update Planets and Rings
+            // Update Orbits
+            orbitRings.forEach { (name, ring) ->
+                val instance = tm.getInstance(ring.entity)
+                if (instance != 0) tm.setTransform(instance, systemTransform)
+            }
+
+            // Update Planets
             planetAssets.forEach { (name, asset) ->
                 val posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
                 var finalMeshScale = baseMeshScale
@@ -214,8 +220,8 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 
                 when(name) {
                     "earth" -> {
-                        finalMeshScale = baseMeshScale * 6.0f 
-                        yOffset = 4.0f // Elevated significantly for visibility
+                        finalMeshScale = baseMeshScale * 8.0f 
+                        yOffset = 3.0f // Elevated Earth
                     }
                     "jupiter", "saturn" -> finalMeshScale = baseMeshScale * 1.5f
                     else -> finalMeshScale = baseMeshScale * 3.0f
@@ -230,13 +236,6 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                         android.opengl.Matrix.scaleM(this, 0, finalMeshScale, finalMeshScale, finalMeshScale)
                     })
                 }
-
-                orbitRings[name]?.let { ring ->
-                    val ringInstance = tm.getInstance(ring.entity)
-                    if (ringInstance != 0) {
-                        tm.setTransform(ringInstance, systemTransform)
-                    }
-                }
             }
 
             if (renderer.beginFrame(swapChain, frameTimeNanos)) {
@@ -248,7 +247,6 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
 
     private fun updateCamera(headOffsetX: Float, headOffsetY: Float) {
         val cam = filamentCamera ?: return
-        // Baseline eye distance at 20 meters for strong parallax
         val eyeX = headOffsetX * 15.0f
         val eyeY = 25.0f + headOffsetY * 10.0f
         val eyeZ = 20.0f
@@ -267,15 +265,15 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
         filamentLock.lock()
         try {
             isDestroyed = true
-            android.view.Choreographer.getInstance().removeFrameCallback(frameCallback)
+            android.view.Choreographer.getInstance().postFrameCallback(frameCallback)
             sensorManager.unregisterListener(this)
             val engine = engine ?: return
             assetLoader?.destroy()
             resourceLoader?.destroy()
-            orbitRings.values.forEach { it.destroy(engine) }
-            orbitRings.clear()
             filamentCamera?.let { engine.destroyEntity(it.entity) }
             view?.let { engine.destroyView(it) }
+            orbitRings.values.forEach { it.destroy(engine) }
+            orbitRings.clear()
             scene?.let {
                 it.skybox?.let { sky -> engine.destroySkybox(sky) }
                 it.indirectLight?.let { ibl -> engine.destroyIndirectLight(ibl) }
