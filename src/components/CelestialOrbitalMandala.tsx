@@ -230,7 +230,7 @@ export const CelestialOrbitalMandala: React.FC<CelestialOrbitalMandalaProps> = (
         </div>
       </div>
 
-      {/* Selected Planet Occult Details & Quick Gesture Bar */}
+      {/* Selected Planet Esoteric Details & Quick Gesture Bar */}
       <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-md mt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
         {selectedPlanet ? (
           <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ export const CelestialOrbitalMandala: React.FC<CelestialOrbitalMandalaProps> = (
             </div>
           </div>
         ) : (
-          <p className="text-xs text-gray-400 font-mono">Click or air-tap any planetary node to inspect occult vectors</p>
+          <p className="text-xs text-gray-400 font-mono">Click or air-tap any planetary node to inspect esoteric vectors</p>
         )}
 
         {/* Hologram Controls */}

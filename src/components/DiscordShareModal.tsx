@@ -33,7 +33,7 @@ export const DiscordShareModal: React.FC<DiscordShareModalProps> = ({
   if (!isOpen) return null;
 
   const generateDiscordMarkdown = () => {
-    let md = `\`\`\`ansi\n\u001b[1;36m⚡ AETHERIS OCCULT CONSOLE // TRANSMISSION DOSSIER ⚡\u001b[0m\n`;
+    let md = `\`\`\`ansi\n\u001b[1;36m⚡ AETHERIS // TRANSMISSION DOSSIER ⚡\u001b[0m\n`;
     md += `\u001b[0;33mTimestamp:\u001b[0m ${new Date().toISOString()}\n`;
     md += `---------------------------------------------------\n\`\`\`\n\n`;
 
@@ -69,7 +69,7 @@ export const DiscordShareModal: React.FC<DiscordShareModalProps> = ({
       md += `> **Planetary Alignment**: \`${session.associatedPlanetaryHour}\`\n\n`;
     }
 
-    md += `*Generated via Aetheris Occult Console for Meta Quest XR // End Transmission*`;
+    md += `*Generated via Aetheris for Meta Quest XR // End Transmission*`;
     return md;
   };
 

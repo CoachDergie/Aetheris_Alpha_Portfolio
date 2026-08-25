@@ -67,7 +67,7 @@ export interface QiGongBarbellSession {
   focusStance: string;
 }
 
-export interface DailyInvocation {
+export interface JournalEntry {
   dayOfWeek: string;
   planet: string;
   barbarousFormula: string;
@@ -78,7 +78,7 @@ export interface DailyInvocation {
   martialCorrelation: string;
 }
 
-export interface DiscoveredIncantation extends DailyInvocation {
+export interface DiscoveredIncantation extends JournalEntry {
   id: string;
   source: string;
   element: 'Fire' | 'Water' | 'Air' | 'Earth' | 'Aether / Void';

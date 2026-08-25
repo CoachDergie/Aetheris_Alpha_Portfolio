@@ -19,6 +19,8 @@ import {
   Hexagon, Sparkles as SparkleIcon,
 } from 'lucide-react';
 
+import { FEATURES } from '../config/features';
+
 interface HeaderProps {
   currentTab: ViewTab;
   setTab: (tab: ViewTab) => void;
@@ -51,15 +53,34 @@ export const Header: React.FC<HeaderProps> = ({
   onExportPdf,
 }) => {
   const { tradition, setTradition, t } = useTradition();
-  const tabs: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
+  let tabs: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'HUD', icon: <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'natal', label: 'NATAL', icon: <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'combat', label: 'COMBAT', icon: <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'qigong', label: 'TRAINING', icon: <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'meditations', label: 'MEDITATION', icon: <HeartHandshake className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'tarot', label: 'TAROT', icon: <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
-    { id: 'occult', label: 'GRIMOIRE', icon: <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
+    { id: 'occult', label: 'JOURNAL', icon: <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
   ];
+
+  if (!FEATURES.ENABLE_NATAL_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'natal');
+  }
+  if (!FEATURES.ENABLE_COMBAT_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'combat');
+  }
+  if (!FEATURES.ENABLE_TRAINING_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'qigong');
+  }
+  if (!FEATURES.ENABLE_MEDITATION_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'meditations');
+  }
+  if (!FEATURES.ENABLE_TAROT_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'tarot');
+  }
+  if (!FEATURES.ENABLE_JOURNAL_TAB) {
+    tabs = tabs.filter(tab => tab.id !== 'occult');
+  }
 
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const tabButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
@@ -151,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
             id="header-search-btn"
             onClick={onOpenSearch}
             className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 hover:border-cyan-400 transition-colors"
-            title="Search Grimoire"
+            title="Search Journal"
           >
             <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
@@ -201,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="text-center space-y-0.5 mb-2 px-1 min-w-0 w-full">
         <h1 className="text-[clamp(12px,3.8vw,18px)] font-black tracking-wider uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center gap-1.5 font-mono truncate w-full">
           <span className="text-yellow-400 shrink-0">⚡</span>
-          <span className="truncate">AETHERIS // OCCULT CONSOLE</span>
+          <span className="truncate">AETHERIS</span>
         </h1>
         <p className="text-[clamp(8.5px,2.4vw,11px)] font-mono font-bold tracking-wider text-[#00e5ff] uppercase truncate w-full">
           LUNAR PHASE: {lunarPhaseName.toUpperCase()}

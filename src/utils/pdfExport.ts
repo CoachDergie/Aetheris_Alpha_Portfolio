@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { NatalData, CelestialBody, PlanetaryAspect, LunarPhaseInfo, PunchTelemetry, QiGongBarbellSession, DailyInvocation } from '../types';
+import { NatalData, CelestialBody, PlanetaryAspect, LunarPhaseInfo, PunchTelemetry, QiGongBarbellSession, JournalEntry } from '../types';
 
 export function generateAstrologyPdfReport(
   natal: NatalData,
@@ -10,7 +10,7 @@ export function generateAstrologyPdfReport(
   midheaven: { sign: string; deg: number; min: number },
   punches: PunchTelemetry[],
   barbellSession: QiGongBarbellSession,
-  dailyInvocation: DailyInvocation
+  journalEntry: JournalEntry | null
 ) {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -31,7 +31,7 @@ export function generateAstrologyPdfReport(
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('AETHERIS V.1 // OCCULT & MARTIAL DOSSIER', 24, 22);
+  doc.text('AETHERIS V.1 // ESOTERIC & MARTIAL DOSSIER', 24, 22);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
@@ -106,29 +106,35 @@ export function generateAstrologyPdfReport(
   doc.text(`Recorded Strikes: ${punches.length} punches | Avg Speed: ${avgSpeed} m/s | Avg Return: ${avgReturn} s`, 15, yPos + 10);
   doc.text(`Total Energy Expended: ${totalKcal.toFixed(1)} kCal`, 15, yPos + 15);
 
-  // Section 5: Barbarous Invocations
+  // Section 5: Affirmation Invocations
   yPos += 22;
   doc.line(15, yPos, pageWidth - 15, yPos);
   yPos += 7;
   doc.setFontSize(11);
   doc.setTextColor(255, 165, 0);
-  doc.text('5. DAILY BARBAROUS FORMULA & MARTIAL INVOCATION', 15, yPos);
+  doc.text('5. DAILY AFFIRMATION & MARTIAL INVOCATION', 15, yPos);
 
   yPos += 7;
   doc.setFontSize(8.5);
-  doc.setTextColor(255, 140, 0);
-  doc.text(`Formula: "${dailyInvocation.barbarousFormula}"`, 15, yPos);
-  yPos += 5;
-  doc.setTextColor(200, 200, 210);
-  doc.text(`Invocation: "${dailyInvocation.invocationText}"`, 15, yPos);
-  yPos += 5;
-  doc.setTextColor(170, 150, 200);
-  doc.text(`Martial Correlation: ${dailyInvocation.martialCorrelation} (${dailyInvocation.focusQlipha})`, 15, yPos);
+  if (journalEntry) {
+    doc.setTextColor(255, 140, 0);
+    doc.text(`Formula: "${journalEntry.barbarousFormula}"`, 15, yPos);
+    yPos += 5;
+    doc.setTextColor(200, 200, 210);
+    doc.text(`Invocation: "${journalEntry.invocationText}"`, 15, yPos);
+    yPos += 5;
+    doc.setTextColor(170, 150, 200);
+    doc.text(`Martial Correlation: ${journalEntry.martialCorrelation} (${journalEntry.focusQlipha})`, 15, yPos);
+  } else {
+    doc.setTextColor(150, 150, 150);
+    doc.text('No active transmission for this session.', 15, yPos);
+    yPos += 5;
+  }
 
   // Footer note
   doc.setFontSize(7.5);
   doc.setTextColor(120, 120, 140);
-  doc.text('Aetheris OpenXR Telemetry Node • For Occult Research & Internal Martial Discipline', 15, 285);
+  doc.text('Aetheris OpenXR Telemetry Node • For Esoteric Research & Internal Martial Discipline', 15, 285);
 
-  doc.save(`AETHERIS_OCCULT_REPORT_ALIGNMENT_${Date.now()}.pdf`);
+  doc.save(`AETHERIS_ESOTERIC_REPORT_ALIGNMENT_${Date.now()}.pdf`);
 }

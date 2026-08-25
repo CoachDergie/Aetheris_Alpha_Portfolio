@@ -60,10 +60,10 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
               {body.archetype}
             </p>
 
-            {/* Qliphotic Correlation */}
+            {/* Wellness Correlation */}
             {body.qliphoticSphere && (
               <div className="mt-1 px-2.5 py-0.5 rounded-md bg-[#122238] border border-cyan-400/40 text-[#00e5ff] text-[10px] font-mono font-bold">
-                ⚡ {tradition === "hermetic" ? "SEPHIRA" : "QLIPHA"}: {t(body.qliphoticSphere).toUpperCase()}
+                ✦ {t(body.qliphoticSphere).toUpperCase()}
               </div>
             )}
           </div>
@@ -81,13 +81,17 @@ export const NatalChartPanel: React.FC<NatalChartPanelProps> = ({
             <div
               key={idx}
               id={`natal-aspect-${idx}`}
-              className="bg-[#1E2638] border border-cyan-500/30 rounded-xl p-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
+              className={`bg-[#1E2638] border rounded-xl p-3 transition-all ${
+                aspect.orb < 3
+                  ? 'border-[#ffd700] shadow-[0_0_15px_rgba(255,215,0,0.3)]'
+                  : 'border-cyan-500/30 shadow-[0_2px_10px_rgba(0,0,0,0.3)]'
+              }`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black font-mono text-white uppercase tracking-wider">
                   {aspect.planet1} {aspect.aspectType.toUpperCase()} {aspect.planet2}
                 </span>
-                <span className="text-[9px] font-mono text-cyan-300 font-bold">
+                <span className={`text-[9px] font-mono font-bold ${aspect.orb < 3 ? 'text-[#ffd700]' : 'text-cyan-300'}`}>
                   ORB: {aspect.orb}° ({aspect.intensity.toUpperCase()})
                 </span>
               </div>

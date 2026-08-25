@@ -7,7 +7,7 @@ import { Sparkles, Shield, Eye, Flame, Compass, RefreshCw, Volume2, Info } from 
 interface GoeticAlchemicalBoxProps {
   bodies: CelestialBody[];
   aspects: PlanetaryAspect[];
-  onSelectSigilToGrimoire?: (sigilName: string, formula: string) => void;
+  onSelectSigilToJournal?: (sigilName: string, formula: string) => void;
 }
 
 interface GoeticDaemonSigil {
@@ -165,7 +165,7 @@ const ALCHEMICAL_ELEMENTS = [
 export const GoeticAlchemicalBox: React.FC<GoeticAlchemicalBoxProps> = ({
   bodies,
   aspects,
-  onSelectSigilToGrimoire,
+  onSelectSigilToJournal,
 }) => {
   const [activeTab, setActiveTab] = useState<'goetic' | 'alchemical'>('goetic');
   const [selectedDaemonId, setSelectedDaemonId] = useState<string>('asmodeus');
@@ -297,7 +297,7 @@ export const GoeticAlchemicalBox: React.FC<GoeticAlchemicalBoxProps> = ({
 
             {/* Left: Dynamic Scalable SVG Sigil Seal (5 cols) */}
             <div className="col-span-5 flex flex-col items-center justify-center p-2 bg-[#090312] border border-orange-500/40 rounded-xl relative group shadow-[inset_0_0_15px_rgba(255,69,0,0.15)]">
-              {/* Outer Occult Seal Circle */}
+              {/* Outer Esoteric Seal Circle */}
               <div className="relative w-20 h-20 flex items-center justify-center">
                 <svg className="w-full h-full animate-[spin_60s_linear_infinite]" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="46" fill="none" stroke="#ff4500" strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
