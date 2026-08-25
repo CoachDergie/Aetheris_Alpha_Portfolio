@@ -54,6 +54,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
     private var resourceLoader: ResourceLoader? = null
     
     private val planetAssets = ConcurrentHashMap<String, FilamentAsset>()
+    private val orbitRings = ConcurrentHashMap<String, OrbitRing>()
     private var sunAsset: FilamentAsset? = null
 
     private var swapChain: SwapChain? = null
@@ -150,7 +151,14 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                                 if (asset != null) {
                                     resourceLoader?.loadResources(asset)
                                     scene?.addEntities(asset.entities)
-                                    if (name == "sun") sunAsset = asset else planetAssets[name] = asset
+                                    if (name == "sun") {
+                                        sunAsset = asset
+                                    } else {
+                                        planetAssets[name] = asset
+                                        val ring = OrbitRing(engine, name, 18.0f)
+                                        orbitRings[name] = ring
+                                        scene?.addEntity(ring.entity)
+                                    }
                                     Log.d("Aetheris", "CelestialRenderer: Added $name")
                                 }
                             }
@@ -198,7 +206,7 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                 }
             }
 
-            // Update Planets
+            // Update Planets and Rings
             planetAssets.forEach { (name, asset) ->
                 val posRaw = SolarSystemLogic.calculatePosition(name, daysLocal, orbitalScale)
                 var finalMeshScale = baseMeshScale
@@ -221,6 +229,13 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
                         android.opengl.Matrix.translateM(this, 0, posRaw.x, posRaw.y + yOffset, posRaw.z)
                         android.opengl.Matrix.scaleM(this, 0, finalMeshScale, finalMeshScale, finalMeshScale)
                     })
+                }
+
+                orbitRings[name]?.let { ring ->
+                    val ringInstance = tm.getInstance(ring.entity)
+                    if (ringInstance != 0) {
+                        tm.setTransform(ringInstance, systemTransform)
+                    }
                 }
             }
 
@@ -257,6 +272,8 @@ class CelestialRenderer(context: Context) : SurfaceView(context), SurfaceHolder.
             val engine = engine ?: return
             assetLoader?.destroy()
             resourceLoader?.destroy()
+            orbitRings.values.forEach { it.destroy(engine) }
+            orbitRings.clear()
             filamentCamera?.let { engine.destroyEntity(it.entity) }
             view?.let { engine.destroyView(it) }
             scene?.let {

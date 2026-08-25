@@ -14,7 +14,7 @@ Everything else in this file is hand-maintained and safe to edit — regeneratin
 
 | Directory (on disk) | Registered via | Maps to in APK |
 |---|---|---|
-| `public/solarsystem/models/` | `assets.srcDirs("../public/solarsystem", ...)` in `app/build.gradle.kts` | `assets/models/` |
+| `app/src/main/assets/models/` | Native assets folder | `assets/models/` |
 | `public/tarot/` | `assets.srcDirs(..., "../public/tarot")` in `app/build.gradle.kts` | `assets/` (flat — no `tarot/` prefix unless the folder itself has a subdirectory) |
 
 Gradle merges the *contents* of each registered srcDir into `assets/` — it does not prefix the

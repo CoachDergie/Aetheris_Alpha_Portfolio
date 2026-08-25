@@ -37,7 +37,18 @@ skybox needs to be authored or loaded for it), and "Physical AR" maps to Meta's 
 these should be confirmed against Meta's actual API names before implementation, not assumed from the
 Jetpack XR equivalents.
 
-## Loft environment — 3D spawn limitation & "window into space" panel
+## System Resilience & Telemetry
+
+1. **How are you preventing memory leaks across the JavaScript interface when passing high-frequency C++ Sensor Telemetry to the React DOM?**
+   High-frequency telemetry (like IMU/kinetic combat metrics) should not be passed directly over the JS bridge on every frame, as serialization overhead and garbage collection pauses will crash or stutter the React DOM. Instead, the native layer (Kotlin/C++) aggregates and buffers the telemetry, maintaining a ring buffer of state. The React DOM only polls or receives throttled updates (e.g., 10-30Hz max) for visual rendering, while the native layer retains the raw high-frequency data for persistence or precise metrics calculations, preventing bridge saturation and memory leaks.
+
+2. **Does your gradle pipeline autonomously compile the TypeScript payload and inject the static assets into the .APK without manual intervention?**
+   Yes. The `buildReactApp` Gradle task natively executes `npm run build` using the Node Gradle plugin before the Android `preBuild` phase. The output is directly synced into `src/main/assets/ui`. Similarly, the `copySolarSystemModels` task automatically pulls the `.glb` files into the assets directory, ensuring all web payloads and 3D assets are bundled autonomously into the `.APK` during a standard Gradle build.
+
+3. **What is your exact fallback protocol when the headset's webview isolated storage drops state during an out of memory event?**
+   The WebView acts merely as a stateless UI presentation layer. The authoritative source of truth for the journal, telemetry, and active state is held in the native Android layer (e.g., via Room Database or native shared preferences). If the WebView is killed or drops its `localStorage` state during an OOM event, it re-initializes upon reload by requesting a complete state hydration payload from the NativeXRBridge. No user data is lost because the WebView's local storage is treated as a transient cache, not durable storage.
+
+## Loft environment & "Window into Space" Orrery
 
 **Finding:** arbitrary 3D entities (`Entity.create` with a `Mesh` component) cannot be spawned
 directly into Meta Horizon Home ("Loft," per our own definition below). Home only supports placing 2D
@@ -46,9 +57,10 @@ inside the app's own immersive session (a launched immersive/OpenXR activity), n
 Home space.
 
 **Planned workaround: a "window into space" panel.** Since the solar system can't be placed as free 3D
-geometry directly into Home, render it as a 2D panel using a stereographic/parallax-rendered view of
-the 3D scene — a "window" surface the user can lean their head toward to look into, without requiring
-them to leave Home for a full immersive session.
+geometry directly into Home, render it as a 2D panel using a standalone Filament 3D renderer view.
+We are using an **Orrery Approach** for rendering. True 1:1 scale (linear AU distance and true planetary radius)
+renders most planets as invisible sub-pixels or pushes them meters away, ruining readability. 
+Instead, the Orrery scaling compresses distance non-linearly (logarithmic or fixed tiers) and scales planetary meshes purely for readability and visual balance (a "gaze-able view"), ensuring the solar system operates as a comprehensible, legible instrument rather than an empty void.
 
 Relevant doc pages to confirm the exact current API/technique against before implementing — do not
 assume "stereographic window" matches Meta's own terminology until checked against these:
