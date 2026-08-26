@@ -24,10 +24,10 @@ export const ContentWarningModal: React.FC<ContentWarningModalProps> = ({ isOpen
             Welcome to <span className="font-bold text-white">AETHERIS</span>.
           </p>
           <p>
-            This application blends real-time physical training telemetry (such as kinetic combat metrics and Qi-Gong barbell conditioning) with symbolic frameworks drawn from ceremonial and chaos magick traditions.
+            This application is a digital primer and research companion designed for spiritual and esoteric practice. It synthesizes astronomical logic with symbolic frameworks to create a streamlined, efficient space for your personal work.
           </p>
           <p>
-            The invocations, astrological calculations, and qliphotic correspondences presented here are intended as conceptual tools for psychological focus and martial discipline. This synthesis is designed to empower your practice and is presented with deep respect for these esoteric traditions.
+            The Alpha release provides access to the <span className="text-cyan-400 font-bold uppercase tracking-wider">Window into Space</span> orbital mandala and a private, device-local journaling system. These tools are intended to facilitate focus and clarity, presented with respect for the traditions that inspire them.
           </p>
         </div>
 

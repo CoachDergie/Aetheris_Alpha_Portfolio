@@ -13,6 +13,7 @@ import kotlin.math.*
 /**
  * A simplified 2D Solar System renderer (Orrery).
  * Provides a stable, high-performance alternative to the 3D renderer for Alpha launch.
+ * Now includes colored Aspect Lines (Sextile, Trine, Opposition, etc.) mapped to Natal logic.
  */
 @Composable
 fun CelestialRenderer2D(days: Double, modifier: Modifier = Modifier) {
@@ -35,7 +36,6 @@ fun CelestialRenderer2D(days: Double, modifier: Modifier = Modifier) {
         val maxDim = min(size.width, size.height)
         
         // We use a scale that makes Neptune (the furthest planet) fit with padding.
-        // SolarSystemLogic.orbitalDistanceScale(30.0) is approx 9.2 units.
         val baseScale = (maxDim / 22f) 
 
         // 1. Draw Orbits
@@ -46,7 +46,6 @@ fun CelestialRenderer2D(days: Double, modifier: Modifier = Modifier) {
             val points = mutableListOf<Offset>()
             for (i in 0..segments) {
                 val theta = 2.0 * PI * i / segments
-                // True Keplerian Ellipse: r = a(1-e^2) / (1 + e*cos(theta))
                 val r = (data.semiMajorAxisAU * (1.0 - data.eccentricity * data.eccentricity)) / (1.0 + data.eccentricity * cos(theta))
                 val compressedR = SolarSystemLogic.orbitalDistanceScale(r)
                 
@@ -65,33 +64,56 @@ fun CelestialRenderer2D(days: Double, modifier: Modifier = Modifier) {
             }
         }
 
-        // 2. Draw Sun
+        // Collect positions for Aspect Logic
+        val positions = SolarSystemLogic.PLANET_DATA.keys.map { name ->
+            SolarSystemLogic.calculatePositionInfo(name, days, 1.0f)
+        }
+
+        // 2. Draw Aspect Lines (The "Tension & Harmony" logic from Natal tab)
+        val aspects = SolarSystemLogic.calculateAspects(positions)
+        aspects.forEach { aspect ->
+            val p1 = center + Offset(aspect.p1.x * baseScale, aspect.p1.z * baseScale)
+            val p2 = center + Offset(aspect.p2.x * baseScale, aspect.p2.z * baseScale)
+            
+            val color = when(aspect.type) {
+                SolarSystemLogic.AspectType.SEXTILE -> Color(0xFF00E5FF)    // Cyan (Harmony)
+                SolarSystemLogic.AspectType.TRINE -> Color(0xFF00E676)      // Emerald (Grace)
+                SolarSystemLogic.AspectType.SQUARE -> Color(0xFFFF3D00)     // Red (Tension)
+                SolarSystemLogic.AspectType.OPPOSITION -> Color(0xFFFF9100) // Orange (Balance)
+                else -> Color.White.copy(alpha = 0.2f)
+            }
+
+            drawLine(
+                color = color.copy(alpha = 0.4f),
+                start = p1,
+                end = p2,
+                strokeWidth = 2f
+            )
+        }
+
+        // 3. Draw Sun
         drawCircle(
             color = planetColors["sun"]!!,
             radius = SolarSystemLogic.planetRadiusScale("sun") * baseScale * 4f,
             center = center
         )
 
-        // 3. Draw Planets
-        SolarSystemLogic.PLANET_DATA.keys.forEach { name ->
-            if (name == "sun") return@forEach
+        // 4. Draw Planets
+        positions.forEach { pos ->
+            if (pos.name == "sun") return@forEach
             
-            // calculatePosition returns (x, height, z) - we use x and z for 2D
-            val pos = SolarSystemLogic.calculatePosition(name, days, 1.0f)
-            val x = pos.x * baseScale
-            val y = pos.z * baseScale
+            val x = pos.position.x * baseScale
+            val y = pos.position.z * baseScale
             
-            val color = planetColors[name] ?: Color.Gray
-            val radius = SolarSystemLogic.planetRadiusScale(name) * baseScale * 4f
+            val color = planetColors[pos.name] ?: Color.Gray
+            val radius = SolarSystemLogic.planetRadiusScale(pos.name) * baseScale * 4f
             
             // Draw planet body
             drawCircle(
                 color = color,
                 radius = radius,
-                center = center + Offset(x.toFloat(), y.toFloat())
+                center = center + Offset(x, y)
             )
-
-            // Optional: Subtle glow/indicator for active selection or name could be added here
         }
     }
 }
