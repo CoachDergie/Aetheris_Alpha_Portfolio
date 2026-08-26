@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import com.dyzzy.aetheris.logic.SolarSystemLogic
 import com.dyzzy.aetheris.ui.components.CelestialRenderer
+import com.dyzzy.aetheris.ui.components.CelestialRenderer2D
 import com.google.android.filament.utils.Utils
 
 class CelestialActivity : ComponentActivity() {
@@ -59,6 +59,13 @@ class CelestialActivity : ComponentActivity() {
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
+                // Alpha Launch Fix: Using 2D Renderer for stability
+                CelestialRenderer2D(
+                    days = daysSinceEpoch.doubleValue,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                /* 3D Renderer disabled for Alpha pass
                 AndroidView(
                     factory = { ctx ->
                         CelestialRenderer(ctx)
@@ -68,9 +75,10 @@ class CelestialActivity : ComponentActivity() {
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+                */
                 
                 Text(
-                    text = "WINDOW INTO SPACE",
+                    text = "WINDOW INTO SPACE (ALPHA 2D)",
                     color = Color.White.copy(alpha = 0.4f),
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 10.sp,
