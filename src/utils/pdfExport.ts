@@ -136,5 +136,12 @@ export function generateAstrologyPdfReport(
   doc.setTextColor(120, 120, 140);
   doc.text('Aetheris OpenXR Telemetry Node • For Esoteric Research & Internal Martial Discipline', 15, 285);
 
-  doc.save(`AETHERIS_ESOTERIC_REPORT_ALIGNMENT_${Date.now()}.pdf`);
+  const fileName = `AETHERIS_ESOTERIC_REPORT_ALIGNMENT_${Date.now()}.pdf`;
+  const dataUri = doc.output('datauristring');
+  const downloadLink = document.createElement('a');
+  downloadLink.href = dataUri;
+  downloadLink.download = fileName;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
 }

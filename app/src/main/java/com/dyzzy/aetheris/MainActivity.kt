@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
             permissions.entries.forEach {
                 Log.d("Aetheris", "${it.key} granted: ${it.value}")
             }
+            launchCelestialWindow()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,8 +61,6 @@ class MainActivity : ComponentActivity() {
         // Initialize Filament once
         Utils.init()
         
-        requestPermissions()
-
         xrBridge = NativeXRBridge(
             context = this,
             onAnchorToLoftRequested = {
@@ -72,16 +71,22 @@ class MainActivity : ComponentActivity() {
             }
         )
 
-        // Automatically launch the space window on startup for the dual-pane experience
-        val intent = android.content.Intent(this, CelestialActivity::class.java).apply {
-            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-        }
-        startActivity(intent)
-
         setContent {
             AetherisTheme {
                 MainHUD(xrBridge)
             }
+        }
+
+        requestPermissions()
+    }
+
+    private fun launchCelestialWindow() {
+        // Give the HUD a frame to attach before opening the separate space window.
+        window.decorView.post {
+            val intent = android.content.Intent(this, CelestialActivity::class.java).apply {
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
         }
     }
 
@@ -129,6 +134,8 @@ class MainActivity : ComponentActivity() {
 
         if (permissionsToRequest.isNotEmpty()) {
             requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            launchCelestialWindow()
         }
     }
 }

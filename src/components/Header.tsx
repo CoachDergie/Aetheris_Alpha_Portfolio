@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ViewTab } from '../types';
-import { useTradition } from '../contexts/TraditionContext';
 import { 
   LayoutGrid, 
   Sparkles, 
@@ -15,8 +14,6 @@ import {
   MapPin,
   Volume2,
   VolumeX,
-  Orbit,
-  Hexagon, Sparkles as SparkleIcon,
 } from 'lucide-react';
 
 import { FEATURES } from '../config/features';
@@ -52,7 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onExportPdf,
 }) => {
-  const { tradition, setTradition, t } = useTradition();
   let tabs: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'HUD', icon: <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
     { id: 'natal', label: 'NATAL', icon: <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> },
@@ -193,18 +189,6 @@ export const Header: React.FC<HeaderProps> = ({
             <FileText className="w-3 h-3" />
             <span>PDF</span>
           </button>
-          
-          <button
-            onClick={() => setTradition(tradition === 'hermetic' ? 'qliphothic' : 'hermetic')}
-            className="p-1 sm:p-1.5 rounded-md bg-[#161B26] border border-[#2E3B57] text-gray-300 hover:text-cyan-300 transition-colors flex items-center gap-1"
-            title={tradition === 'hermetic' ? 'Switch to Qliphothic (Nightside)' : 'Switch to Hermetic (Planetary)'}
-          >
-            {tradition === 'hermetic' ? <Orbit className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" /> : <Hexagon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500" />}
-            <span className="hidden sm:inline text-[9px] uppercase font-bold text-gray-400 ml-0.5">
-              {tradition === 'hermetic' ? 'HERMETIC' : 'QLIPHOTH'}
-            </span>
-          </button>
-
           {onToggleSound && (
             <button
               id="header-audio-btn"
@@ -221,7 +205,11 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 2. Main Headset Title & Lunar Status with Fluid Responsive Clamp Typography */}
       <div className="text-center space-y-0.5 mb-2 px-1 min-w-0 w-full">
         <h1 className="text-[clamp(12px,3.8vw,18px)] font-black tracking-wider uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center gap-1.5 font-mono truncate w-full">
-          <span className="text-yellow-400 shrink-0">⚡</span>
+          <img
+            src="file:///android_res/drawable/ic_launcher_foreground.png"
+            alt="Aetheris"
+            className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 object-contain"
+          />
           <span className="truncate">AETHERIS</span>
         </h1>
         <p className="text-[clamp(8.5px,2.4vw,11px)] font-mono font-bold tracking-wider text-[#00e5ff] uppercase truncate w-full">

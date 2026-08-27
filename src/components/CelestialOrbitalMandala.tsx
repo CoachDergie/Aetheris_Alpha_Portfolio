@@ -24,7 +24,6 @@ export const CelestialOrbitalMandala: React.FC<CelestialOrbitalMandalaProps> = (
   passthroughActive,
   setPassthroughActive,
   anchorMode,
-  setAnchorMode,
 }) => {
   const [selectedPlanet, setSelectedPlanet] = useState<CelestialBody | null>(bodies[0] || null);
   const [rotationAngle, setRotationAngle] = useState(0);
@@ -74,36 +73,6 @@ export const CelestialOrbitalMandala: React.FC<CelestialOrbitalMandalaProps> = (
             Qliphotic Spires
           </button>
 
-          {/* Anchor switcher */}
-          <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
-            <button
-              onClick={() => setAnchorMode('loft')}
-              className={`px-2 py-0.5 text-[9px] font-mono rounded ${
-                anchorMode === 'loft' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'
-              }`}
-              title="Anchor in Loft Environment"
-            >
-              Loft
-            </button>
-            <button
-              onClick={() => setAnchorMode('room')}
-              className={`px-2 py-0.5 text-[9px] font-mono rounded ${
-                anchorMode === 'room' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'
-              }`}
-              title="Anchor in Passthrough Physical Room"
-            >
-              Physical AR
-            </button>
-            <button
-              onClick={() => setAnchorMode('celestial_zenith')}
-              className={`px-2 py-0.5 text-[9px] font-mono rounded ${
-                anchorMode === 'celestial_zenith' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'
-              }`}
-              title="Anchor in Celestial Zenith Ceiling"
-            >
-              Zenith
-            </button>
-          </div>
         </div>
       </div>
 

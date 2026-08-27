@@ -4,9 +4,8 @@
     xmlns:horizonos="http://schemas.horizonos/sdk"
     xmlns:tools="http://schemas.android.com/tools"
     android:versionCode="1"
-    android:versionName='1.0'
-    android:installLocation="auto"
->
+    android:versionName="1.0"
+    android:installLocation="auto">
 
     <!-- META QUEST & VR HARDWARE FEATURES -->
     <uses-feature android:name="android.hardware.vr.headtracking" android:required="false" />
@@ -116,6 +115,8 @@
         <activity
             android:name=".CelestialActivity"
             android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.dyzzy.aetheris.celestial"
             android:theme="@style/Theme.Aetheris"
             android:screenOrientation="landscape"
             android:resizeableActivity="true"

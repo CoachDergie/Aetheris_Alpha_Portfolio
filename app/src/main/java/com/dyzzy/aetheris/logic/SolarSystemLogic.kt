@@ -76,7 +76,7 @@ object SolarSystemLogic {
      */
     fun planetRadiusScale(planetName: String): Float {
         return when (planetName) {
-            "sun" -> 0.12f
+            "sun" -> 0.065f
             "jupiter" -> 0.055f
             "saturn" -> 0.048f
             "earth", "venus" -> 0.024f
