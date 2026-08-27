@@ -23,6 +23,10 @@ android {
         versionCode = 16
         versionName = "2.5"
 
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
