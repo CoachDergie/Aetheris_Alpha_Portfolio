@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.graphics.PixelFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
@@ -57,6 +58,25 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.setFormat(PixelFormat.OPAQUE)
+        window.decorView.setBackgroundColor(android.graphics.Color.rgb(7, 9, 19))
+        window.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(android.graphics.Color.rgb(7, 9, 19))
+        )
+        window.decorView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            val sizeChanged =
+                (right - left != oldRight - oldLeft) ||
+                    (bottom - top != oldBottom - oldTop)
+            if (sizeChanged) {
+                Log.d(
+                    "AetherisResize",
+                    "Main decor bounds changed: ${right - left}x${bottom - top} " +
+                        "(was ${oldRight - oldLeft}x${oldBottom - oldTop})"
+                )
+                v.requestLayout()
+                v.postInvalidateOnAnimation()
+            }
+        }
 
         // Initialize Filament once
         Utils.init()
@@ -78,6 +98,24 @@ class MainActivity : ComponentActivity() {
         }
 
         requestPermissions()
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        Log.d(
+            "AetherisResize",
+            "Main configuration changed: orientation=${newConfig.orientation}, " +
+                "screenLayout=${newConfig.screenLayout}, screenWidthDp=${newConfig.screenWidthDp}, " +
+                "screenHeightDp=${newConfig.screenHeightDp}, densityDpi=${newConfig.densityDpi}"
+        )
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        Log.d(
+            "AetherisResize",
+            "Main window focus=$hasFocus, decor=${window.decorView.width}x${window.decorView.height}"
+        )
     }
 
     private fun launchCelestialWindow() {

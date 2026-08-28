@@ -57,8 +57,10 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
+        android:banner="@drawable/aetheris_banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:logo="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Aetheris">
@@ -81,6 +83,9 @@
         <activity
             android:name=".ImmersiveActivity"
             android:exported="true"
+            android:banner="@drawable/aetheris_banner"
+            android:icon="@mipmap/ic_launcher"
+            android:logo="@mipmap/ic_launcher"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:screenOrientation="landscape"
             android:launchMode="singleTask"
@@ -93,8 +98,10 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:banner="@drawable/aetheris_banner"
+            android:icon="@mipmap/ic_launcher"
+            android:logo="@mipmap/ic_launcher"
             android:theme="@style/Theme.Aetheris"
-            android:screenOrientation="landscape"
             android:resizeableActivity="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
             android:windowSoftInputMode="adjustResize"
@@ -103,7 +110,6 @@
             <meta-data android:name="android.supports_size_changes" android:value="true" />
             <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
             <meta-data android:name="com.oculus.vrshell.supports_free_resizing" android:value="true" />
-
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -115,18 +121,20 @@
         <activity
             android:name=".CelestialActivity"
             android:exported="true"
+            android:banner="@drawable/aetheris_banner"
+            android:icon="@mipmap/ic_launcher"
+            android:logo="@mipmap/ic_launcher"
             android:launchMode="singleTask"
             android:taskAffinity="com.dyzzy.aetheris.celestial"
             android:theme="@style/Theme.Aetheris"
-            android:screenOrientation="landscape"
             android:resizeableActivity="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+            android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi">
 
             <meta-data android:name="android.supports_size_changes" android:value="true" />
             <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
             <meta-data android:name="com.oculus.vrshell.supports_free_resizing" android:value="true" />
-
 
             <intent-filter>
                 <category android:name="com.oculus.intent.category.2D" />

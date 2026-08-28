@@ -204,12 +204,12 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 2. Main Headset Title & Lunar Status with Fluid Responsive Clamp Typography */}
       <div className="text-center space-y-0.5 mb-2 px-1 min-w-0 w-full">
-        <h1 className="text-[clamp(12px,3.8vw,18px)] font-black tracking-wider uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center gap-1.5 font-mono truncate w-full">
-          <img
-            src="file:///android_res/drawable/ic_launcher_foreground.png"
-            alt="Aetheris"
-            className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 object-contain"
-          />
+        <img
+          src="file:///android_res/drawable/ic_launcher_foreground.png"
+          alt="Aetheris"
+          className="mx-auto mb-1 w-8 h-8 sm:w-10 sm:h-10 object-contain"
+        />
+        <h1 className="text-[clamp(12px,3.8vw,18px)] font-black tracking-wider uppercase text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.6)] flex items-center justify-center font-mono truncate w-full">
           <span className="truncate">AETHERIS</span>
         </h1>
         <p className="text-[clamp(8.5px,2.4vw,11px)] font-mono font-bold tracking-wider text-[#00e5ff] uppercase truncate w-full">

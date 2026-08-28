@@ -20,10 +20,11 @@ export const MetaQuestEnvironment: React.FC<MetaQuestEnvironmentProps> = ({
 }) => {
   return (
     <div
-      className="relative w-full min-h-screen min-h-[100dvh] h-full bg-[#161B26] text-gray-200 font-sans select-none flex flex-col items-center justify-start overflow-x-hidden max-w-[100vw]"
+      className="relative w-full min-h-screen min-h-[100dvh] h-full bg-[#161B26] text-gray-200 font-sans select-none flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto max-w-[100vw]"
       style={{
         backgroundColor: '#161B26',
         minHeight: '100dvh',
+        touchAction: 'pan-y',
       }}
     >
       {/* 1. TOP COMPACT XR STATUS RIBBON */}
@@ -70,7 +71,7 @@ export const MetaQuestEnvironment: React.FC<MetaQuestEnvironmentProps> = ({
       {/* 3. MAIN XR SPATIAL CHASSIS */}
       {/* Edge-to-edge on thin viewports, cleanly centered on wider desktop/curved panels */}
       <div className="w-full flex-1 flex flex-col bg-[#161B26] items-center min-w-0 max-w-full">
-        <div className="w-full max-w-2xl flex-1 flex flex-col bg-[#161B26] min-w-0">
+        <div className="w-full max-w-2xl flex-none min-h-full flex flex-col bg-[#161B26] min-w-0">
           {children}
         </div>
       </div>

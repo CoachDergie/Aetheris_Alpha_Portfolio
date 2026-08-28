@@ -9,6 +9,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Base64
+import android.util.Log
+import android.media.MediaScannerConnection
 import java.io.File
 import java.io.FileOutputStream
 import android.widget.Toast
@@ -23,12 +25,38 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
         modifier = modifier,
         factory = { context ->
             WebView(context).apply {
-                setBackgroundColor(0) // Transparent background
+                setBackgroundColor(android.graphics.Color.rgb(10, 13, 24))
                 
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
+
+                // Force a full re-composite whenever the panel is actually resized.
+                addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+                    val sizeChanged =
+                        (right - left != oldRight - oldLeft) ||
+                            (bottom - top != oldBottom - oldTop)
+                    if (sizeChanged) {
+                        Log.d(
+                            "AetherisResize",
+                            "WebView bounds changed: ${right - left}x${bottom - top} " +
+                                "(was ${oldRight - oldLeft}x${oldBottom - oldTop})"
+                        )
+                        v.visibility = android.view.View.INVISIBLE
+                        v.post {
+                            v.visibility = android.view.View.VISIBLE
+                            Log.d(
+                                "AetherisResize",
+                                "WebView redraw requested at ${v.width}x${v.height}"
+                            )
+                            evaluateJavascript(
+                                "window.dispatchEvent(new Event('resize'));",
+                                null
+                            )
+                        }
+                    }
+                }
                 
                 settings.apply {
                     javaScriptEnabled = true
@@ -51,9 +79,16 @@ fun GrimoireWebView(xrBridge: NativeXRBridge, modifier: Modifier = Modifier) {
                             val fileData = Base64.decode(base64, Base64.DEFAULT)
                             val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                             val file = File(path, "Aetheris_Dossier_" + System.currentTimeMillis() + ".pdf")
-                            val os = FileOutputStream(file)
-                            os.write(fileData)
-                            os.close()
+                            FileOutputStream(file).use { output ->
+                                output.write(fileData)
+                            }
+                            MediaScannerConnection.scanFile(
+                                context,
+                                arrayOf(file.absolutePath),
+                                arrayOf("application/pdf")
+                            ) { scannedPath, uri ->
+                                Log.d("FileScan", "Scanned $scannedPath -> $uri")
+                            }
                             Toast.makeText(context, "Dossier exported to Downloads", Toast.LENGTH_LONG).show()
                         } else {
                             val i = Intent(Intent.ACTION_VIEW)
