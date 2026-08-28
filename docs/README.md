@@ -1,5 +1,6 @@
 # Aetheris
 
+<img width="3840" height="2160" alt="Aetheris_01" src="https://github.com/user-attachments/assets/fe1e5e7c-bbfd-4892-90d8-8cdc6e1c0ac6" />
 *A grimoire for the modern seeker — built on real sky, not guesswork.*
 
 ## Why this exists
