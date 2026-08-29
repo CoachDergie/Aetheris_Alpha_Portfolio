@@ -8,11 +8,11 @@ procedurally built, properly lit, astronomically-driven geometry inside the exis
 
 Worth stating explicitly, since it's the fork in the road: NASA's public 3D models (3D Resources,
 Eyes on the Solar System exports) are built for scientific visualization tooling, not real-time
-mobile GPUs. Common friction points, consistent with what you ran into:
+mobile GPUs. Common friction points, consistent with what I ran into:
 
 - Very high triangle counts relative to what a Quest panel needs on-screen.
 - Material graphs authored for other renderers — they don't map cleanly onto Filament's ubershader
-  or a simple PBR lit material, so you inherit someone else's shader assumptions.
+  or a simple PBR lit material, so it inherits someone else's shader assumptions.
 - Inconsistent scale/pivot/axis conventions per body (some z-up, some not centered on the mesh
   origin) — exactly the "fighting the import" experience rather than controlling the result.
 - Texture sizes authored for desktop (often 8K+) — unnecessary and expensive for a panel-sized
@@ -21,7 +21,7 @@ mobile GPUs. Common friction points, consistent with what you ran into:
 **Recommendation: don't import NASA geometry. Build each planet as a procedural UV sphere in code,
 and texture it with NASA-sourced (or NASA-derived) imagery.** This also happens to be the stronger
 portfolio artifact — a hand-rolled sphere generator, material setup, and orbital-mechanics-driven
-placement demonstrates more than "successfully imported a file."
+placement demonstrates more than "successfully imported a file.".
 
 ### Where to get the texture maps
 - **NASA Visible Earth** and the **NASA Scientific Visualization Studio (SVS)** publish equirectangular
@@ -30,7 +30,7 @@ placement demonstrates more than "successfully imported a file."
   under CC BY 4.0, already sized sanely for real-time use (typically 2K/4K/8K options) — a common,
   well-known shortcut specifically to avoid re-processing NASA's raw imagery yourself. Worth using
   their 2K or 4K tier directly rather than NASA's largest raw exports.
-- You only need: a color/albedo map per body, and optionally a bump/normal map for the rockier
+- it only needs: a color/albedo map per body, and optionally a bump/normal map for the rockier
   bodies (Mercury, Mars, the Moon) — Filament's standard lit material takes both.
 
 ---
@@ -69,11 +69,11 @@ different content).
 A fixed `stacks/slices` for every body is the same kind of unexamined-default that produces the
 "64-line orbit" problem, just moved to sphere geometry. Tier it instead:
 
-| Tier | Bodies | Suggested stacks × slices | Why |
-|---|---|---|---|
-| Hero | Sun, Earth, Saturn (+ rings) | 48×48 | Largest on-screen footprint / most looked-at |
-| Standard | Jupiter, Venus, Mars | 32×32 | Mid footprint |
-| Minor | Mercury, Uranus, Neptune, Pluto, the Moon | 20×20 | Small on-screen footprint at this panel's typical viewing distance |
+|   Tier   |                  Bodies                   |Suggested stacks × slices|                             Why                                    |
+|-    -   -|-                     -                   -|-           -           -|  -                               -                              -  |
+|   Hero   |        Sun, Earth, Saturn (+ rings)       |          48×48          | Largest on-screen footprint / most looked-at                       |
+| Standard |           Jupiter, Venus, Mars            |          32×32          | Mid footprint                                                      |
+|   Minor  | Mercury, Uranus, Neptune, Pluto, the Moon |          20×20          | Small on-screen footprint at this panel's typical viewing distance |
 
 Confirm these against actual on-device frame timing once built — the table above is a starting
 point, not a measured result.
@@ -99,13 +99,13 @@ pick two independent scale functions on purpose, not as a shortcut:
   known gap, and it's a one-function change in `SolarSystemLogic`, not a renderer change.
 
 Document both functions' chosen constants directly in code comments — a future reader (including
-you, later) should be able to tell these are deliberate visual choices, not leftover magic numbers.
+you) should be able to tell these are deliberate visual choices, not leftover magic numbers.
 
 ---
 
 ## 3. Orbit paths — real ellipses, not a fixed-segment circle
 
-The "64-line circle" pattern happens because circle-drawing doesn't need your orbital elements at
+The "64-line circle" pattern happens because circle-drawing doesn't need orbital elements at
 all — it's decoration. A correct orrery draws each orbit as the **actual ellipse** implied by that
 body's Kepler elements, which `SolarSystemLogic.PLANET_DATA` already has (semi-major axis,
 eccentricity — confirm inclination is present or add it if not).
@@ -135,6 +135,7 @@ with distance).
 - Add a **`Light.Builder(Light.Type.POINT)`** positioned at the sun's transform (origin), with
   intensity tuned so inner planets read as brighter than outer ones — Filament's physically-based
   falloff will do most of this for you once the light exists.
+  
   ```kotlin
   val sunLight = EntityManager.get().create()
   LightManager.Builder(LightManager.Type.POINT)
@@ -145,6 +146,7 @@ with distance).
       .build(engine, sunLight)
   scene?.addEntity(sunLight)
   ```
+  
 - Drop or significantly dim the existing flat `IndirectLight` — a strong ambient term flattens the
   terminator effect the point light is there to create. Keep a small amount only so the unlit side
   of a planet isn't pure black.
@@ -209,6 +211,6 @@ back-filling magic numbers later:
   visibly correct, not defaulted to Earth-like values.
 - Size scale and distance scale are two named, separately-documented functions (Section 2) — not one
   shared constant reused for both.
-- Frame rate measured on-device with all ten bodies + orbits + lighting active, recorded in the PR.
+- Frame rate measured on-device with all ten bodies + orbits + lighting active, recorded in the PR [Pull request].
 - No leftover `.glb`-loading code path, commented out "in case we go back" — if NASA assets are
   fully replaced, the old loading code is removed, not disabled.
